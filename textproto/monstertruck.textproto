@@ -1,0 +1,79 @@
+# proto-file: experimental/users/chechenglin/tcpgpudmad/proto/gpu_rxq_configuration.proto
+# proto-message: GpuRxqConfigurationList
+
+gpu_rxq_configs {
+  gpu_pci_addr: "0000:62:00.0"
+  nic_pci_addr: "0000:63:00.0"
+  ifname: "hpn2"
+  rx_queue_ids: 0
+  rx_queue_ids: 1
+  rx_queue_ids: 2
+  rx_queue_ids: 3
+  rx_queue_ids: 4
+  rx_queue_ids: 5
+  rx_queue_ids: 6
+  rx_queue_ids: 7
+  rx_queue_ids: 8
+  rx_queue_ids: 9
+  rx_queue_ids: 10
+  rx_queue_ids: 11
+  rx_queue_ids: 12
+  rx_queue_ids: 13
+}
+gpu_rxq_configs {
+  gpu_pci_addr: "0000:6a:00.0"
+  nic_pci_addr: "0000:6b:00.0"
+  ifname: "hpn1"
+  rx_queue_ids: 0
+  rx_queue_ids: 1
+  rx_queue_ids: 2
+  rx_queue_ids: 3
+  rx_queue_ids: 4
+  rx_queue_ids: 5
+  rx_queue_ids: 6
+  rx_queue_ids: 7
+  rx_queue_ids: 8
+  rx_queue_ids: 9
+  rx_queue_ids: 10
+  rx_queue_ids: 11
+  rx_queue_ids: 12
+  rx_queue_ids: 13
+}
+gpu_rxq_configs {
+  gpu_pci_addr: "0000:b3:00.0"
+  nic_pci_addr: "0000:b4:00.0"
+  ifname: "hpn3"
+  rx_queue_ids: 0
+  rx_queue_ids: 1
+  rx_queue_ids: 2
+  rx_queue_ids: 3
+  rx_queue_ids: 4
+  rx_queue_ids: 5
+  rx_queue_ids: 6
+  rx_queue_ids: 7
+  rx_queue_ids: 8
+  rx_queue_ids: 9
+  rx_queue_ids: 10
+  rx_queue_ids: 11
+  rx_queue_ids: 12
+  rx_queue_ids: 13
+}
+gpu_rxq_configs {
+  gpu_pci_addr: "0000:bb:00.0"
+  nic_pci_addr: "0000:bc:00.0"
+  ifname: "hpn4"
+  rx_queue_ids: 0
+  rx_queue_ids: 1
+  rx_queue_ids: 2
+  rx_queue_ids: 3
+  rx_queue_ids: 4
+  rx_queue_ids: 5
+  rx_queue_ids: 6
+  rx_queue_ids: 7
+  rx_queue_ids: 8
+  rx_queue_ids: 9
+  rx_queue_ids: 10
+  rx_queue_ids: 11
+  rx_queue_ids: 12
+  rx_queue_ids: 13
+}

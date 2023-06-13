@@ -1,0 +1,42 @@
+#ifndef _THIRD_PARTY_TCPDIRECT_RX_MANAGER_BENCHMARK_TCP_SEND_EVENT_HANDLER_H_
+#define _THIRD_PARTY_TCPDIRECT_RX_MANAGER_BENCHMARK_TCP_SEND_EVENT_HANDLER_H_
+
+#include <poll.h>
+#include <sys/epoll.h>
+
+#include <atomic>
+#include <cstddef>
+#include <memory>
+#include <string>
+
+#include "experimental/users/chechenglin/tcpgpudmad/benchmark/event_handler_interface.h"
+#include "experimental/users/chechenglin/tcpgpudmad/benchmark/validation.cu.h"
+
+namespace tcpdirect {
+class TcpSendEventHandler : public EventHandlerInterface {
+ public:
+  TcpSendEventHandler(std::string thread_id, int socket, size_t message_size,
+                      bool do_validation);
+  ~TcpSendEventHandler() override = default;
+  unsigned InterestedEvents() override { return EPOLLOUT | EPOLLERR; }
+  bool HandleEvents(unsigned events) override;
+  double GetRxBytes() override { return 0.0; }
+  double GetTxBytes() override;
+  std::string Error() override { return ""; }
+
+ private:
+  bool HandleEPollOut();
+  bool HandleEPollErr();
+
+  std::string thread_id_;
+  int socket_;
+  size_t message_size_;
+  bool do_validation_;
+  std::unique_ptr<char[]> tx_buf_;
+  size_t tx_offset_;
+  std::atomic<uint64_t> epoch_tx_bytes_{0};
+  std::unique_ptr<ValidationSenderCtx> validator_;
+};
+
+}  // namespace tcpdirect
+#endif

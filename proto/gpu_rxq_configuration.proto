@@ -1,0 +1,17 @@
+syntax = "proto2";
+
+package tcpdirect;
+
+message GpuRxqConfiguration {
+  optional string gpu_pci_addr = 1;
+  optional string nic_pci_addr = 2;
+  optional string ifname = 3;
+}
+
+message GpuRxqConfigurationList {
+  repeated GpuRxqConfiguration gpu_rxq_configs = 1;
+  // common global settings
+  optional int32 max_rx_rules = 2;
+  optional int32 tcpd_queue_size = 3;
+  optional int32 rss_set_size = 4;
+}

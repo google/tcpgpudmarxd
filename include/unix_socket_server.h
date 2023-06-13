@@ -1,0 +1,59 @@
+#ifndef _THIRD_PARTY_TCPDIRECT_RX_MANAGER_UNIX_SOCKET_SERVER_H_
+#define _THIRD_PARTY_TCPDIRECT_RX_MANAGER_UNIX_SOCKET_SERVER_H_
+
+#include <sys/epoll.h>
+#include <sys/types.h>
+#include <sys/un.h>
+
+#include <atomic>
+#include <functional>
+#include <memory>
+#include <queue>
+#include <string>
+#include <thread>
+#include <unordered_map>
+
+#include "experimental/users/chechenglin/tcpgpudmad/include/unix_socket_connection.h"
+#include "experimental/users/chechenglin/tcpgpudmad/proto/unix_socket_message.proto.h"
+#include "third_party/absl/container/flat_hash_map.h"
+#include "third_party/absl/status/status.h"
+
+namespace tcpdirect {
+
+class UnixSocketServer {
+  using ServiceFunc =
+      std::function<void(UnixSocketMessage &&, UnixSocketMessage *, bool *)>;
+
+ public:
+  explicit UnixSocketServer(std::string path, ServiceFunc service_handler,
+                            std::function<void()> service_setup = nullptr);
+  ~UnixSocketServer();
+  absl::Status Start();
+  void Stop();
+
+ private:
+  int RegisterEvents(int fd, uint32_t events);
+  int UnregisterFd(int fd);
+  void EventLoop();
+  void HandleListener(uint32_t events);
+  void HandleClient(int client_socket, uint32_t events);
+  void RemoveClient(int client_socket);
+
+  void Worker();
+
+  std::string path_;
+  ServiceFunc service_handler_{nullptr};
+  std::function<void()> service_setup_{nullptr};
+
+  struct sockaddr_un sockaddr_un_;
+  size_t sockaddr_len_;
+  std::atomic<bool> running_{false};
+  std::unique_ptr<std::thread> event_thread_{nullptr};
+  int listener_socket_{-1};
+  int epoll_fd_{-1};
+
+  absl::flat_hash_map<int, std::unique_ptr<UnixSocketConnection>>
+      connected_clients_;
+};
+}  // namespace tcpdirect
+#endif

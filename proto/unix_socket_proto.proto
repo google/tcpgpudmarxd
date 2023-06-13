@@ -1,0 +1,16 @@
+syntax = "proto2";
+
+package tcpdirect;
+
+message UnixSocketProto {
+  // Update the "last_modified" comment below after you add your message type
+  // last_modified: raw_bytes, index: 1.
+  oneof proto_payload_oneof {
+    bytes raw_bytes = 1;  // Leave this intact for now for backward
+                          // compatibility, so we can gradually migrate
+                          // different users (ex: gpu mem exporter import, rx
+                          // rule manager/client, socket unit test, ...).  It
+                          // will be deprecated later with its index number
+                          // retired.
+  }
+}
