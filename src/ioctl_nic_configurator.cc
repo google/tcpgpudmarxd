@@ -12,8 +12,8 @@
 #include <string>
 
 #include "include/ethtool_common.h"
-#include "third_party/absl/status/status.h"
-#include "third_party/absl/strings/str_format.h"
+#include <absl/status/status.h>
+#include <absl/strings/str_format.h>
 
 #ifndef SIOCETHTOOL
 #define SIOCETHTOOL 0x8946

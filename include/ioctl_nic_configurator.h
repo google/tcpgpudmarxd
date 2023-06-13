@@ -8,7 +8,7 @@
 
 #include "include/flow_steer_ntuple.h"
 #include "include/nic_configurator_interface.h"
-#include "third_party/absl/status/status.h"
+#include <absl/status/status.h>
 
 namespace tcpdirect {
 class IoctlNicConfigurator : public NicConfiguratorInterface {

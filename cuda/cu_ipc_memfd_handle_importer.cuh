@@ -4,7 +4,7 @@
 #include <string>
 
 #include "cuda/gpu_page_handle_interface.cu.h"
-#include "third_party/absl/status/statusor.h"
+#include <absl/status/statusor.h>
 
 namespace tcpdirect {
 

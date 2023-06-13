@@ -4,8 +4,8 @@
 #include <unordered_map>
 
 #include "base/logging.h"
-#include "third_party/absl/strings/str_format.h"
-#include "third_party/gpus/cuda/include/cuda.h"
+#include <absl/strings/str_format.h>
+
 
 namespace tcpdirect {
 

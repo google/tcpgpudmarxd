@@ -17,7 +17,7 @@
 
 #include "proto/unix_socket_message.proto.h"
 #include "proto/unix_socket_proto.proto.h"
-#include "third_party/absl/status/status.h"
+#include <absl/status/status.h>
 
 namespace tcpdirect {
 

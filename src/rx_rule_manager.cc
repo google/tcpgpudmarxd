@@ -14,9 +14,9 @@
 #include "base/logging.h"
 #include "include/flow_steer_ntuple.h"
 #include "include/nic_configurator_interface.h"
-#include "third_party/absl/functional/bind_front.h"
-#include "third_party/absl/hash/hash.h"
-#include "third_party/absl/strings/str_format.h"
+#include <absl/functional/bind_front.h>
+#include <absl/hash/hash.h>
+#include <absl/strings/str_format.h>
 
 namespace tcpdirect {
 

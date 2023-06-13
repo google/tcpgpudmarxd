@@ -5,7 +5,7 @@
 
 #include "include/ethtool_nic_configurator.h"
 #include "include/flow_steer_ntuple.h"
-#include "third_party/absl/status/status.h"
+#include <absl/status/status.h>
 
 namespace tcpdirect {
 class EthtoolNoHeaderSplitNicConfigurator : public EthtoolNicConfigurator {

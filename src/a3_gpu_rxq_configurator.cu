@@ -7,9 +7,9 @@
 #include <stdio.h>
 #include <memory>
 #include <vector>
-#include "third_party/absl/log/log.h"
-#include "third_party/absl/flags/flag.h"
-#include "third_party/absl/strings/ascii.h"
+#include <absl/log/log.h>
+#include <absl/flags/flag.h>
+#include <absl/strings/ascii.h>
 
 #define PCI_INFO_LEN 1024
 // <2-4 digit domain>:<2-4 digit bus>:<2 digit device>:<1 digit function>

@@ -4,7 +4,7 @@
 
 #include "base/logging.h"
 #include "cuda/common.cu.h"
-#include "third_party/absl/strings/str_format.h"
+#include <absl/strings/str_format.h>
 
 namespace tcpdirect {
 

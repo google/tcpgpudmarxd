@@ -14,8 +14,8 @@
 #include "proto/unix_socket_message.proto.h"
 #include "testing/base/public/gmock.h"
 #include "testing/base/public/gunit.h"
-#include "third_party/absl/status/statusor.h"
-#include "third_party/absl/strings/str_format.h"
+#include <absl/status/statusor.h>
+#include <absl/strings/str_format.h>
 
 namespace {
 

@@ -8,8 +8,8 @@
 #include "include/ipc_gpumem_fd_metadata.h"
 #include "include/unix_socket_client.h"
 #include "proto/unix_socket_message.proto.h"
-#include "third_party/absl/status/statusor.h"
-#include "third_party/absl/strings/str_format.h"
+#include <absl/status/statusor.h>
+#include <absl/strings/str_format.h>
 
 namespace tcpdirect {
 absl::StatusOr<std::unique_ptr<GpuPageHandleInterface>>

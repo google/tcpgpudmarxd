@@ -4,7 +4,7 @@
 #include <string>
 
 #include "cuda/common.cu.h"
-#include "third_party/gpus/cuda/include/cuda.h"
+
 
 namespace tcpdirect {
 class CudaContextManager {

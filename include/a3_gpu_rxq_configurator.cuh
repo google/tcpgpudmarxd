@@ -6,9 +6,9 @@
 
 #include "cuda/common.cu.h"
 #include "include/gpu_rxq_configurator_interface.h"
-#include "third_party/absl/container/flat_hash_map.h"
-#include "third_party/absl/container/flat_hash_set.h"
-#include "third_party/gpus/cuda/include/cuda.h"
+#include <absl/container/flat_hash_map.h>
+#include <absl/container/flat_hash_set.h>
+
 
 namespace tcpdirect {
 class A3GpuRxqConfigurator : public GpuRxqConfiguratorInterface {

@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "proto/gpu_rxq_configuration.proto.h"
-#include "third_party/absl/status/status.h"
+#include <absl/status/status.h>
 
 namespace tcpdirect {
 

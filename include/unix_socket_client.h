@@ -6,8 +6,8 @@
 
 #include "include/unix_socket_connection.h"
 #include "proto/unix_socket_message.proto.h"
-#include "third_party/absl/status/status.h"
-#include "third_party/absl/status/statusor.h"
+#include <absl/status/status.h>
+#include <absl/status/statusor.h>
 
 namespace tcpdirect {
 class UnixSocketClient {

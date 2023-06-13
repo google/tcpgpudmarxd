@@ -5,7 +5,7 @@
 #include "cuda/cuda_ipc_memhandle.cu.h"
 #include "include/unix_socket_client.h"
 #include "proto/unix_socket_message.proto.h"
-#include "third_party/absl/status/statusor.h"
+#include <absl/status/statusor.h>
 
 namespace tcpdirect {
 absl::StatusOr<std::unique_ptr<GpuPageHandleInterface>>

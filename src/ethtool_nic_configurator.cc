@@ -8,8 +8,8 @@
 
 #include "base/logging.h"
 #include "include/flow_steer_ntuple.h"
-#include "third_party/absl/status/status.h"
-#include "third_party/absl/strings/str_format.h"
+#include <absl/status/status.h>
+#include <absl/strings/str_format.h>
 
 namespace tcpdirect {
 absl::Status EthtoolNicConfigurator::ToggleHeaderSplit(

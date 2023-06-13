@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-#include "third_party/absl/log/log.h"
+#include <absl/log/log.h>
 
 namespace tcpdirect {
 

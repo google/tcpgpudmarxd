@@ -18,8 +18,8 @@
 
 #include "include/unix_socket_connection.h"
 #include "proto/unix_socket_message.proto.h"
-#include "third_party/absl/status/status.h"
-#include "third_party/absl/strings/str_format.h"
+#include <absl/status/status.h>
+#include <absl/strings/str_format.h>
 
 namespace tcpdirect {
 

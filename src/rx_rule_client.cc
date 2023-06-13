@@ -5,7 +5,7 @@
 #include "include/flow_steer_ntuple.h"
 #include "include/unix_socket_client.h"
 #include "proto/unix_socket_message.proto.h"
-#include "third_party/absl/status/status.h"
+#include <absl/status/status.h>
 
 namespace tcpdirect {
 

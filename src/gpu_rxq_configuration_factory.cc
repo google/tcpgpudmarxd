@@ -12,8 +12,8 @@
 #include "include/monstertruck_gpu_rxq_configurator.h"
 #include "include/predvt_gpu_rxq_configurator.h"
 #include "proto/gpu_rxq_configuration.proto.h"
-#include "third_party/absl/log/log.h"
-#include "third_party/protobuf/text_format.h"
+#include <absl/log/log.h>
+#include <protobuf/text_format.h>
 
 namespace tcpdirect {
 

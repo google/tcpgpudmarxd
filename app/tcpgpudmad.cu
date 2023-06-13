@@ -23,9 +23,9 @@
 #include "include/nic_configurator_factory.h"
 #include "include/nic_configurator_interface.h"
 #include "include/rx_rule_manager.h"
-#include "third_party/absl/flags/flag.h"
-#include "third_party/absl/flags/parse.h"
-#include "third_party/absl/strings/str_format.h"
+#include <absl/flags/flag.h>
+#include <absl/flags/parse.h>
+#include <absl/strings/str_format.h>
 
 using tcpdirect::FlowSteerNtuple;
 using tcpdirect::GpuPageExporterFactory;

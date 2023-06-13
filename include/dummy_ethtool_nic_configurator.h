@@ -4,7 +4,7 @@
 #include <string>
 
 #include "include/ethtool_nic_configurator.h"
-#include "third_party/absl/status/status.h"
+#include <absl/status/status.h>
 
 namespace tcpdirect {
 class DummyEthtoolNicConfigurator : public EthtoolNicConfigurator {

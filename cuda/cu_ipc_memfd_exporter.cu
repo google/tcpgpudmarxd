@@ -11,7 +11,7 @@
 #include "include/ipc_gpumem_fd_metadata.h"
 #include "include/unix_socket_server.h"
 #include "proto/gpu_rxq_configuration.proto.h"
-#include "third_party/absl/status/status.h"
+#include <absl/status/status.h>
 
 namespace tcpdirect {
 

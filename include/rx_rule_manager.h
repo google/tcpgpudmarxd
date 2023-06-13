@@ -13,8 +13,8 @@
 #include "include/unix_socket_server.h"
 #include "proto/gpu_rxq_configuration.proto.h"
 #include "proto/unix_socket_message.proto.h"
-#include "third_party/absl/container/flat_hash_map.h"
-#include "third_party/absl/status/status.h"
+#include <absl/container/flat_hash_map.h>
+#include <absl/status/status.h>
 
 namespace tcpdirect {
 
