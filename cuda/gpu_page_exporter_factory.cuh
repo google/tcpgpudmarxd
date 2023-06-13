@@ -4,7 +4,7 @@
 #include <memory>
 #include <string>
 
-#include "experimental/users/chechenglin/tcpgpudmad/include/gpu_page_exporter_interface.h"
+#include "include/gpu_page_exporter_interface.h"
 
 namespace tcpdirect {
 

@@ -3,7 +3,7 @@
 
 #include <string>
 
-#include "experimental/users/chechenglin/tcpgpudmad/cuda/common.cu.h"
+#include "cuda/common.cu.h"
 #include "third_party/gpus/cuda/include/cuda.h"
 
 namespace tcpdirect {

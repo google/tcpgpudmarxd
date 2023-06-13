@@ -1,4 +1,4 @@
-#include "experimental/users/chechenglin/tcpgpudmad/include/monstertruck_gpu_rxq_configurator.h"
+#include "include/monstertruck_gpu_rxq_configurator.h"
 
 #include <memory>
 #include <utility>

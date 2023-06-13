@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <string>
 
-#include "experimental/users/chechenglin/tcpgpudmad/include/flow_steer_ntuple.h"
+#include "include/flow_steer_ntuple.h"
 #include "third_party/absl/status/status.h"
 
 namespace tcpdirect {

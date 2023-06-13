@@ -1,5 +1,5 @@
-#include "experimental/users/chechenglin/tcpgpudmad/include/a3_gpu_rxq_configurator.cu.h"
-#include "experimental/users/chechenglin/tcpgpudmad/include/pci_helpers.h"
+#include "include/a3_gpu_rxq_configurator.cu.h"
+#include "include/pci_helpers.h"
 
 #include <sys/types.h>
 #include <ifaddrs.h>

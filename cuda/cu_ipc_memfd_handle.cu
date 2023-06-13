@@ -1,9 +1,9 @@
-#include "experimental/users/chechenglin/tcpgpudmad/cuda/cu_ipc_memfd_handle.cu.h"
+#include "cuda/cu_ipc_memfd_handle.cu.h"
 
 #include <string>
 
 #include "base/logging.h"
-#include "experimental/users/chechenglin/tcpgpudmad/cuda/common.cu.h"
+#include "cuda/common.cu.h"
 #include "third_party/absl/strings/str_format.h"
 
 namespace tcpdirect {

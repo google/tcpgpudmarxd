@@ -3,7 +3,7 @@
 
 #include <string>
 
-#include "experimental/users/chechenglin/tcpgpudmad/include/ethtool_nic_configurator.h"
+#include "include/ethtool_nic_configurator.h"
 #include "third_party/absl/status/status.h"
 
 namespace tcpdirect {

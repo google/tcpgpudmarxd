@@ -1,4 +1,4 @@
-#include "experimental/users/chechenglin/tcpgpudmad/include/rx_rule_manager.h"
+#include "include/rx_rule_manager.h"
 
 #include <linux/ethtool.h>
 #include <linux/netlink.h>
@@ -12,8 +12,8 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "experimental/users/chechenglin/tcpgpudmad/include/flow_steer_ntuple.h"
-#include "experimental/users/chechenglin/tcpgpudmad/include/nic_configurator_interface.h"
+#include "include/flow_steer_ntuple.h"
+#include "include/nic_configurator_interface.h"
 #include "third_party/absl/functional/bind_front.h"
 #include "third_party/absl/hash/hash.h"
 #include "third_party/absl/strings/str_format.h"

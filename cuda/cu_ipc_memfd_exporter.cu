@@ -1,16 +1,16 @@
-#include "experimental/users/chechenglin/tcpgpudmad/cuda/cu_ipc_memfd_exporter.cu.h"
+#include "cuda/cu_ipc_memfd_exporter.cu.h"
 
 #include <memory>
 #include <thread>
 #include <vector>
 
 #include "base/logging.h"
-#include "experimental/users/chechenglin/tcpgpudmad/cuda/cu_dmabuf_gpu_page_allocator.cu.h"
-#include "experimental/users/chechenglin/tcpgpudmad/cuda/cuda_context_manager.cu.h"
-#include "experimental/users/chechenglin/tcpgpudmad/include/gpu_page_exporter_interface.h"
-#include "experimental/users/chechenglin/tcpgpudmad/include/ipc_gpumem_fd_metadata.h"
-#include "experimental/users/chechenglin/tcpgpudmad/include/unix_socket_server.h"
-#include "experimental/users/chechenglin/tcpgpudmad/proto/gpu_rxq_configuration.proto.h"
+#include "cuda/cu_dmabuf_gpu_page_allocator.cu.h"
+#include "cuda/cuda_context_manager.cu.h"
+#include "include/gpu_page_exporter_interface.h"
+#include "include/ipc_gpumem_fd_metadata.h"
+#include "include/unix_socket_server.h"
+#include "proto/gpu_rxq_configuration.proto.h"
 #include "third_party/absl/status/status.h"
 
 namespace tcpdirect {

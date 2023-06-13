@@ -4,8 +4,8 @@
 #include <string>
 #include <unordered_map>
 
-#include "experimental/users/chechenglin/tcpgpudmad/cuda/gpu_page_allocator_interface.cu.h"
-#include "experimental/users/chechenglin/tcpgpudmad/include/ipc_gpumem_fd_metadata.h"
+#include "cuda/gpu_page_allocator_interface.cu.h"
+#include "include/ipc_gpumem_fd_metadata.h"
 
 namespace tcpdirect {
 

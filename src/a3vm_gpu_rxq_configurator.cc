@@ -1,4 +1,4 @@
-#include "experimental/users/chechenglin/tcpgpudmad/include/a3vm_gpu_rxq_configurator.h"
+#include "include/a3vm_gpu_rxq_configurator.h"
 
 #include <memory>
 #include <utility>

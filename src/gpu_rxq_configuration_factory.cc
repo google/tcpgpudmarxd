@@ -1,4 +1,4 @@
-#include "experimental/users/chechenglin/tcpgpudmad/include/gpu_rxq_configuration_factory.h"
+#include "include/gpu_rxq_configuration_factory.h"
 
 #include <fstream>
 #include <memory>
@@ -6,12 +6,12 @@
 #include <string>
 #include <vector>
 
-#include "experimental/users/chechenglin/tcpgpudmad/include/a3vm_gpu_rxq_configurator.h"
-#include "experimental/users/chechenglin/tcpgpudmad/include/auto_discovery_gpu_rxq_configurator.h"
-#include "experimental/users/chechenglin/tcpgpudmad/include/gpu_rxq_configurator_interface.h"
-#include "experimental/users/chechenglin/tcpgpudmad/include/monstertruck_gpu_rxq_configurator.h"
-#include "experimental/users/chechenglin/tcpgpudmad/include/predvt_gpu_rxq_configurator.h"
-#include "experimental/users/chechenglin/tcpgpudmad/proto/gpu_rxq_configuration.proto.h"
+#include "include/a3vm_gpu_rxq_configurator.h"
+#include "include/auto_discovery_gpu_rxq_configurator.h"
+#include "include/gpu_rxq_configurator_interface.h"
+#include "include/monstertruck_gpu_rxq_configurator.h"
+#include "include/predvt_gpu_rxq_configurator.h"
+#include "proto/gpu_rxq_configuration.proto.h"
 #include "third_party/absl/log/log.h"
 #include "third_party/protobuf/text_format.h"
 

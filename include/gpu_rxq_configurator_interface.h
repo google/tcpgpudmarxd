@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-#include "experimental/users/chechenglin/tcpgpudmad/proto/gpu_rxq_configuration.proto.h"
+#include "proto/gpu_rxq_configuration.proto.h"
 
 namespace tcpdirect {
 

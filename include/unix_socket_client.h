@@ -4,8 +4,8 @@
 #include <memory>
 #include <string>
 
-#include "experimental/users/chechenglin/tcpgpudmad/include/unix_socket_connection.h"
-#include "experimental/users/chechenglin/tcpgpudmad/proto/unix_socket_message.proto.h"
+#include "include/unix_socket_connection.h"
+#include "proto/unix_socket_message.proto.h"
 #include "third_party/absl/status/status.h"
 #include "third_party/absl/status/statusor.h"
 

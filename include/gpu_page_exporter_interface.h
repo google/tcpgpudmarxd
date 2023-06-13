@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-#include "experimental/users/chechenglin/tcpgpudmad/proto/gpu_rxq_configuration.proto.h"
+#include "proto/gpu_rxq_configuration.proto.h"
 #include "third_party/absl/status/status.h"
 
 namespace tcpdirect {

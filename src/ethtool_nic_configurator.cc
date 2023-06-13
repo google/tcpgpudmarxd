@@ -1,4 +1,4 @@
-#include "experimental/users/chechenglin/tcpgpudmad/include/ethtool_nic_configurator.h"
+#include "include/ethtool_nic_configurator.h"
 
 #include <arpa/inet.h>
 #include <stdlib.h>
@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/logging.h"
-#include "experimental/users/chechenglin/tcpgpudmad/include/flow_steer_ntuple.h"
+#include "include/flow_steer_ntuple.h"
 #include "third_party/absl/status/status.h"
 #include "third_party/absl/strings/str_format.h"
 

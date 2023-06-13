@@ -1,10 +1,10 @@
-#include "experimental/users/chechenglin/tcpgpudmad/include/rx_rule_client.h"
+#include "include/rx_rule_client.h"
 
 #include <memory>
 
-#include "experimental/users/chechenglin/tcpgpudmad/include/flow_steer_ntuple.h"
-#include "experimental/users/chechenglin/tcpgpudmad/include/unix_socket_client.h"
-#include "experimental/users/chechenglin/tcpgpudmad/proto/unix_socket_message.proto.h"
+#include "include/flow_steer_ntuple.h"
+#include "include/unix_socket_client.h"
+#include "proto/unix_socket_message.proto.h"
 #include "third_party/absl/status/status.h"
 
 namespace tcpdirect {

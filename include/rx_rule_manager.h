@@ -8,11 +8,11 @@
 #include <string>
 #include <vector>
 
-#include "experimental/users/chechenglin/tcpgpudmad/include/flow_steer_ntuple.h"
-#include "experimental/users/chechenglin/tcpgpudmad/include/nic_configurator_interface.h"
-#include "experimental/users/chechenglin/tcpgpudmad/include/unix_socket_server.h"
-#include "experimental/users/chechenglin/tcpgpudmad/proto/gpu_rxq_configuration.proto.h"
-#include "experimental/users/chechenglin/tcpgpudmad/proto/unix_socket_message.proto.h"
+#include "include/flow_steer_ntuple.h"
+#include "include/nic_configurator_interface.h"
+#include "include/unix_socket_server.h"
+#include "proto/gpu_rxq_configuration.proto.h"
+#include "proto/unix_socket_message.proto.h"
 #include "third_party/absl/container/flat_hash_map.h"
 #include "third_party/absl/status/status.h"
 

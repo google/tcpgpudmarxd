@@ -1,10 +1,10 @@
-#include "experimental/users/chechenglin/tcpgpudmad/cuda/cuda_ipc_memhandle_importer.cu.h"
+#include "cuda/cuda_ipc_memhandle_importer.cu.h"
 
 #include <string>
 
-#include "experimental/users/chechenglin/tcpgpudmad/cuda/cuda_ipc_memhandle.cu.h"
-#include "experimental/users/chechenglin/tcpgpudmad/include/unix_socket_client.h"
-#include "experimental/users/chechenglin/tcpgpudmad/proto/unix_socket_message.proto.h"
+#include "cuda/cuda_ipc_memhandle.cu.h"
+#include "include/unix_socket_client.h"
+#include "proto/unix_socket_message.proto.h"
 #include "third_party/absl/status/statusor.h"
 
 namespace tcpdirect {

@@ -1,4 +1,4 @@
-#include "experimental/users/chechenglin/tcpgpudmad/include/predvt_gpu_rxq_configurator.h"
+#include "include/predvt_gpu_rxq_configurator.h"
 
 #include <memory>
 #include <utility>

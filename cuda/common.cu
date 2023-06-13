@@ -1,4 +1,4 @@
-#include "experimental/users/chechenglin/tcpgpudmad/cuda/common.cu.h"
+#include "cuda/common.cu.h"
 
 namespace tcpdirect {
 

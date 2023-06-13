@@ -1,4 +1,4 @@
-#include "experimental/users/chechenglin/tcpgpudmad/include/ioctl_nic_configurator.h"
+#include "include/ioctl_nic_configurator.h"
 
 #include <linux/ethtool.h>
 #include <linux/netlink.h>
@@ -11,7 +11,7 @@
 #include <iostream>
 #include <string>
 
-#include "experimental/users/chechenglin/tcpgpudmad/include/ethtool_common.h"
+#include "include/ethtool_common.h"
 #include "third_party/absl/status/status.h"
 #include "third_party/absl/strings/str_format.h"
 

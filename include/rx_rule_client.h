@@ -4,8 +4,8 @@
 #include <memory>
 #include <string>
 
-#include "experimental/users/chechenglin/tcpgpudmad/include/flow_steer_ntuple.h"
-#include "experimental/users/chechenglin/tcpgpudmad/include/unix_socket_client.h"
+#include "include/flow_steer_ntuple.h"
+#include "include/unix_socket_client.h"
 #include "third_party/absl/status/status.h"
 namespace tcpdirect {
 class RxRuleClient {

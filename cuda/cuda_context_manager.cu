@@ -1,4 +1,4 @@
-#include "experimental/users/chechenglin/tcpgpudmad/cuda/cuda_context_manager.cu.h"
+#include "cuda/cuda_context_manager.cu.h"
 
 namespace tcpdirect {
 CudaContextManager::CudaContextManager(int gpu_cuda_idx) {

@@ -3,8 +3,8 @@
 
 #include <string>
 
-#include "experimental/users/chechenglin/tcpgpudmad/include/flow_steer_ntuple.h"
-#include "experimental/users/chechenglin/tcpgpudmad/include/nic_configurator_interface.h"
+#include "include/flow_steer_ntuple.h"
+#include "include/nic_configurator_interface.h"
 #include "third_party/absl/status/status.h"
 
 namespace tcpdirect {

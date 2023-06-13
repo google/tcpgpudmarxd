@@ -1,4 +1,4 @@
-#include "experimental/users/chechenglin/tcpgpudmad/include/dummy_ethtool_nic_configurator.h"
+#include "include/dummy_ethtool_nic_configurator.h"
 
 #include <string>
 

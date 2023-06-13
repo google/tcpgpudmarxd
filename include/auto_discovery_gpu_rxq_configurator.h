@@ -5,7 +5,7 @@
 #include <memory>
 #include <vector>
 
-#include "experimental/users/chechenglin/tcpgpudmad/include/gpu_rxq_configurator_interface.h"
+#include "include/gpu_rxq_configurator_interface.h"
 
 namespace tcpdirect {
 class AutoDiscoveryGpuRxqConfigurator : public GpuRxqConfiguratorInterface {

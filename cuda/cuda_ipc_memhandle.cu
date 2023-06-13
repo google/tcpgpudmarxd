@@ -1,7 +1,7 @@
-#include "experimental/users/chechenglin/tcpgpudmad/cuda/cuda_ipc_memhandle.cu.h"
+#include "cuda/cuda_ipc_memhandle.cu.h"
 
 #include "base/logging.h"
-#include "experimental/users/chechenglin/tcpgpudmad/cuda/common.cu.h"
+#include "cuda/common.cu.h"
 
 namespace tcpdirect {
 

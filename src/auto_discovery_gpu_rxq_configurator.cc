@@ -1,10 +1,10 @@
-#include "experimental/users/chechenglin/tcpgpudmad/include/auto_discovery_gpu_rxq_configurator.h"
+#include "include/auto_discovery_gpu_rxq_configurator.h"
 
 #include <memory>
 #include <utility>
 #include <vector>
 
-#include "experimental/users/chechenglin/tcpgpudmad/include/a3_gpu_rxq_configurator.cu.h"
+#include "include/a3_gpu_rxq_configurator.cu.h"
 
 namespace tcpdirect {
 GpuRxqConfigurationList AutoDiscoveryGpuRxqConfigurator::GetConfigurations() {

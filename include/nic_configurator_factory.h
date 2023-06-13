@@ -4,7 +4,7 @@
 #include <memory>
 #include <string>
 
-#include "experimental/users/chechenglin/tcpgpudmad/include/nic_configurator_interface.h"
+#include "include/nic_configurator_interface.h"
 
 namespace tcpdirect {
 class NicConfiguratorFactory {

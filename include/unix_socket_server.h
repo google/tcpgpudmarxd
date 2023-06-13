@@ -13,8 +13,8 @@
 #include <thread>
 #include <unordered_map>
 
-#include "experimental/users/chechenglin/tcpgpudmad/include/unix_socket_connection.h"
-#include "experimental/users/chechenglin/tcpgpudmad/proto/unix_socket_message.proto.h"
+#include "include/unix_socket_connection.h"
+#include "proto/unix_socket_message.proto.h"
 #include "third_party/absl/container/flat_hash_map.h"
 #include "third_party/absl/status/status.h"
 

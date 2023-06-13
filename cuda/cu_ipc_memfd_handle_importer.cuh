@@ -3,7 +3,7 @@
 
 #include <string>
 
-#include "experimental/users/chechenglin/tcpgpudmad/cuda/gpu_page_handle_interface.cu.h"
+#include "cuda/gpu_page_handle_interface.cu.h"
 #include "third_party/absl/status/statusor.h"
 
 namespace tcpdirect {

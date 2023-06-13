@@ -4,8 +4,8 @@
 #include <memory>
 #include <vector>
 
-#include "experimental/users/chechenglin/tcpgpudmad/cuda/common.cu.h"
-#include "experimental/users/chechenglin/tcpgpudmad/include/gpu_rxq_configurator_interface.h"
+#include "cuda/common.cu.h"
+#include "include/gpu_rxq_configurator_interface.h"
 #include "third_party/absl/container/flat_hash_map.h"
 #include "third_party/absl/container/flat_hash_set.h"
 #include "third_party/gpus/cuda/include/cuda.h"

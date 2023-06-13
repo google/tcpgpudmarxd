@@ -15,14 +15,14 @@
 #include <unordered_map>
 #include <vector>
 
-#include "experimental/users/chechenglin/tcpgpudmad/cuda/cuda_context_manager.cu.h"
-#include "experimental/users/chechenglin/tcpgpudmad/cuda/gpu_page_exporter_factory.cu.h"
-#include "experimental/users/chechenglin/tcpgpudmad/include/flow_steer_ntuple.h"
-#include "experimental/users/chechenglin/tcpgpudmad/include/gpu_page_exporter_interface.h"
-#include "experimental/users/chechenglin/tcpgpudmad/include/gpu_rxq_configuration_factory.h"
-#include "experimental/users/chechenglin/tcpgpudmad/include/nic_configurator_factory.h"
-#include "experimental/users/chechenglin/tcpgpudmad/include/nic_configurator_interface.h"
-#include "experimental/users/chechenglin/tcpgpudmad/include/rx_rule_manager.h"
+#include "cuda/cuda_context_manager.cu.h"
+#include "cuda/gpu_page_exporter_factory.cu.h"
+#include "include/flow_steer_ntuple.h"
+#include "include/gpu_page_exporter_interface.h"
+#include "include/gpu_rxq_configuration_factory.h"
+#include "include/nic_configurator_factory.h"
+#include "include/nic_configurator_interface.h"
+#include "include/rx_rule_manager.h"
 #include "third_party/absl/flags/flag.h"
 #include "third_party/absl/flags/parse.h"
 #include "third_party/absl/strings/str_format.h"

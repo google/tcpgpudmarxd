@@ -1,4 +1,4 @@
-#include "experimental/users/chechenglin/tcpgpudmad/include/unix_socket_server.h"
+#include "include/unix_socket_server.h"
 
 #include <errno.h>
 #include <sys/epoll.h>
@@ -16,8 +16,8 @@
 #include <utility>
 #include <vector>
 
-#include "experimental/users/chechenglin/tcpgpudmad/include/unix_socket_connection.h"
-#include "experimental/users/chechenglin/tcpgpudmad/proto/unix_socket_message.proto.h"
+#include "include/unix_socket_connection.h"
+#include "proto/unix_socket_message.proto.h"
 #include "third_party/absl/status/status.h"
 #include "third_party/absl/strings/str_format.h"
 

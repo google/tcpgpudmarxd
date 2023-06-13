@@ -9,9 +9,9 @@
 #include <string>
 #include <utility>
 
-#include "experimental/users/chechenglin/tcpgpudmad/include/unix_socket_client.h"
-#include "experimental/users/chechenglin/tcpgpudmad/include/unix_socket_server.h"
-#include "experimental/users/chechenglin/tcpgpudmad/proto/unix_socket_message.proto.h"
+#include "include/unix_socket_client.h"
+#include "include/unix_socket_server.h"
+#include "proto/unix_socket_message.proto.h"
 #include "testing/base/public/gmock.h"
 #include "testing/base/public/gunit.h"
 #include "third_party/absl/status/statusor.h"
