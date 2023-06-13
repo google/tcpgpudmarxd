@@ -2,7 +2,7 @@ syntax = "proto2";
 
 package tcpdirect;
 
-import "proto/unix_socket_proto.proto";
+import "unix_socket_proto.proto";
 
 message UnixSocketMessage {
   // The types of the payload here reflect what ancillary messages of the unix
