@@ -6,4 +6,4 @@ protobuf_generate_cpp(PROTO_SRC PROTO_HEADER
 	unix_socket_message.proto
 	gpu_rxq_configuration.proto
 )
-add_library(proto ${PROTO_HEADER} ${PROTO_SRC})
+add_library(tcpgpudmarxd_proto ${PROTO_HEADER} ${PROTO_SRC})
