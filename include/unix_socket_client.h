@@ -5,7 +5,7 @@
 #include <string>
 
 #include "include/unix_socket_connection.h"
-#include "proto/unix_socket_message.proto.h"
+#include "proto/unix_socket_message.pb.h"
 #include <absl/status/status.h>
 #include <absl/status/statusor.h>
 

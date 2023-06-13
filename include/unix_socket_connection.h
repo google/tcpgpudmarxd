@@ -15,8 +15,8 @@
 #include <unordered_map>
 #include <utility>
 
-#include "proto/unix_socket_message.proto.h"
-#include "proto/unix_socket_proto.proto.h"
+#include "proto/unix_socket_message.pb.h"
+#include "proto/unix_socket_proto.pb.h"
 #include <absl/status/status.h>
 
 namespace tcpdirect {

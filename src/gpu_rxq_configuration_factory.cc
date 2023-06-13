@@ -11,7 +11,7 @@
 #include "include/gpu_rxq_configurator_interface.h"
 #include "include/monstertruck_gpu_rxq_configurator.h"
 #include "include/predvt_gpu_rxq_configurator.h"
-#include "proto/gpu_rxq_configuration.proto.h"
+#include "proto/gpu_rxq_configuration.pb.h"
 #include <absl/log/log.h>
 #include <protobuf/text_format.h>
 

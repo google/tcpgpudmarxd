@@ -8,7 +8,7 @@
 #include "cuda/dmabuf_gpu_page_allocator.cu.h"
 #include "include/gpu_page_exporter_interface.h"
 #include "include/unix_socket_server.h"
-#include "proto/gpu_rxq_configuration.proto.h"
+#include "proto/gpu_rxq_configuration.pb.h"
 #include <absl/status/status.h>
 
 namespace tcpdirect {

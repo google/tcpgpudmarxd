@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-#include "proto/gpu_rxq_configuration.proto.h"
+#include "proto/gpu_rxq_configuration.pb.h"
 #include <absl/status/status.h>
 
 namespace tcpdirect {

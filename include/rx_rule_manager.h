@@ -11,8 +11,8 @@
 #include "include/flow_steer_ntuple.h"
 #include "include/nic_configurator_interface.h"
 #include "include/unix_socket_server.h"
-#include "proto/gpu_rxq_configuration.proto.h"
-#include "proto/unix_socket_message.proto.h"
+#include "proto/gpu_rxq_configuration.pb.h"
+#include "proto/unix_socket_message.pb.h"
 #include <absl/container/flat_hash_map.h>
 #include <absl/status/status.h>
 
