@@ -3,7 +3,7 @@
 
 #include <string>
 
-#include "cuda/gpu_page_handle_interface.cu.h"
+#include "cuda/gpu_page_handle_interface.cuh"
 
 namespace tcpdirect {
 // Note: Users are responsibile for initializing the CUDA Primary Context of

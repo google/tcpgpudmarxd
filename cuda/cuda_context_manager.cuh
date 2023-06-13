@@ -3,7 +3,7 @@
 
 #include <string>
 
-#include "cuda/common.cu.h"
+#include "cuda/common.cuh"
 
 
 namespace tcpdirect {

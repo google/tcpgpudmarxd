@@ -4,7 +4,7 @@
 #include <string>
 #include <unordered_map>
 
-#include "cuda/gpu_page_allocator_interface.cu.h"
+#include "cuda/gpu_page_allocator_interface.cuh"
 
 namespace tcpdirect {
 

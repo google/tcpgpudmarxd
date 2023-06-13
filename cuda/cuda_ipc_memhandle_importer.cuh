@@ -3,7 +3,7 @@
 
 #include <string>
 
-#include "cuda/cuda_ipc_memhandle.cu.h"
+#include "cuda/cuda_ipc_memhandle.cuh"
 #include <absl/status/statusor.h>
 
 namespace tcpdirect {

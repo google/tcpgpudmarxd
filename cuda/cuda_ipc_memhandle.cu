@@ -1,7 +1,7 @@
-#include "cuda/cuda_ipc_memhandle.cu.h"
+#include "cuda/cuda_ipc_memhandle.cuh"
 
 #include "base/logging.h"
-#include "cuda/common.cu.h"
+#include "cuda/common.cuh"
 
 namespace tcpdirect {
 

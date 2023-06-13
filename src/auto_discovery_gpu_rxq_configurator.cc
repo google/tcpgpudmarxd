@@ -4,7 +4,7 @@
 #include <utility>
 #include <vector>
 
-#include "include/a3_gpu_rxq_configurator.cu.h"
+#include "include/a3_gpu_rxq_configurator.cuh"
 
 namespace tcpdirect {
 GpuRxqConfigurationList AutoDiscoveryGpuRxqConfigurator::GetConfigurations() {

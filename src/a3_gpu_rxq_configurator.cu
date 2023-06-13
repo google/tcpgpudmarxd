@@ -1,4 +1,4 @@
-#include "include/a3_gpu_rxq_configurator.cu.h"
+#include "include/a3_gpu_rxq_configurator.cuh"
 #include "include/pci_helpers.h"
 
 #include <sys/types.h>

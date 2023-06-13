@@ -1,10 +1,10 @@
-#include "cuda/cu_ipc_memfd_handle_importer.cu.h"
+#include "cuda/cu_ipc_memfd_handle_importer.cuh"
 
 #include <string>
 
 #include "base/logging.h"
-#include "cuda/common.cu.h"
-#include "cuda/cu_ipc_memfd_handle.cu.h"
+#include "cuda/common.cuh"
+#include "cuda/cu_ipc_memfd_handle.cuh"
 #include "include/ipc_gpumem_fd_metadata.h"
 #include "include/unix_socket_client.h"
 #include "proto/unix_socket_message.pb.h"

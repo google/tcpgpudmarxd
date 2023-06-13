@@ -4,7 +4,7 @@
 #include <memory>
 #include <vector>
 
-#include "cuda/common.cu.h"
+#include "cuda/common.cuh"
 #include "include/gpu_rxq_configurator_interface.h"
 #include <absl/container/flat_hash_map.h>
 #include <absl/container/flat_hash_set.h>

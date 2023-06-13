@@ -1,11 +1,11 @@
-#include "cuda/cuda_ipc_memhandle_exporter.cu.h"
+#include "cuda/cuda_ipc_memhandle_exporter.cuh"
 
 #include <memory>
 #include <vector>
 
 #include "base/logging.h"
-#include "cuda/cuda_context_manager.cu.h"
-#include "cuda/dmabuf_gpu_page_allocator.cu.h"
+#include "cuda/cuda_context_manager.cuh"
+#include "cuda/dmabuf_gpu_page_allocator.cuh"
 #include "include/unix_socket_server.h"
 #include "proto/gpu_rxq_configuration.pb.h"
 #include "proto/unix_socket_message.pb.h"

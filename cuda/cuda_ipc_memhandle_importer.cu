@@ -1,8 +1,8 @@
-#include "cuda/cuda_ipc_memhandle_importer.cu.h"
+#include "cuda/cuda_ipc_memhandle_importer.cuh"
 
 #include <string>
 
-#include "cuda/cuda_ipc_memhandle.cu.h"
+#include "cuda/cuda_ipc_memhandle.cuh"
 #include "include/unix_socket_client.h"
 #include "proto/unix_socket_message.pb.h"
 #include <absl/status/statusor.h>

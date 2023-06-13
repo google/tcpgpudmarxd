@@ -3,7 +3,7 @@
 
 #include <string>
 
-#include "cuda/gpu_page_handle_interface.cu.h"
+#include "cuda/gpu_page_handle_interface.cuh"
 
 namespace tcpdirect {
 class CudaIpcMemhandle : public GpuPageHandleInterface {

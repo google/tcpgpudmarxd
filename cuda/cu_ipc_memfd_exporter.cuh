@@ -4,8 +4,8 @@
 #include <memory>
 #include <vector>
 
-#include "cuda/cu_dmabuf_gpu_page_allocator.cu.h"
-#include "cuda/cuda_context_manager.cu.h"
+#include "cuda/cu_dmabuf_gpu_page_allocator.cuh"
+#include "cuda/cuda_context_manager.cuh"
 #include "include/gpu_page_exporter_interface.h"
 #include "include/ipc_gpumem_fd_metadata.h"
 #include "include/unix_socket_server.h"

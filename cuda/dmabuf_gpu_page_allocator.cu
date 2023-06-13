@@ -1,4 +1,4 @@
-#include "cuda/dmabuf_gpu_page_allocator.cu.h"
+#include "cuda/dmabuf_gpu_page_allocator.cuh"
 
 #include <errno.h>
 #include <fcntl.h>
@@ -6,7 +6,7 @@
 #include <sys/ioctl.h>
 
 #include "base/logging.h"
-#include "cuda/common.cu.h"
+#include "cuda/common.cuh"
 #include <absl/strings/str_format.h>
 
 namespace tcpdirect {

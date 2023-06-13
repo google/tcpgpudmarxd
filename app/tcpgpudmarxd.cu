@@ -15,8 +15,8 @@
 #include <unordered_map>
 #include <vector>
 
-#include "cuda/cuda_context_manager.cu.h"
-#include "cuda/gpu_page_exporter_factory.cu.h"
+#include "cuda/cuda_context_manager.cuh"
+#include "cuda/gpu_page_exporter_factory.cuh"
 #include "include/flow_steer_ntuple.h"
 #include "include/gpu_page_exporter_interface.h"
 #include "include/gpu_rxq_configuration_factory.h"
