@@ -13,18 +13,19 @@
 #include "include/predvt_gpu_rxq_configurator.h"
 #include "proto/gpu_rxq_configuration.pb.h"
 #include <absl/log/log.h>
-#include <protobuf/text_format.h>
+#include <google/protobuf/text_format.h>
 
 namespace tcpdirect {
 
 namespace {
-bool GetConfigurationList(absl::string_view filename,
+using google::protobuf::TextFormat;
+bool GetConfigurationList(std::string filename,
                           GpuRxqConfigurationList* configuration_list) {
   std::ifstream text_proto_filestream(filename);
   std::stringstream buffer;
   buffer << text_proto_filestream.rdbuf();
 
-  proto2::TextFormat::Parser parser;
+  TextFormat::Parser parser;
   const bool success = parser.ParseFromString(buffer.str(), configuration_list);
   return success;
 }
@@ -59,7 +60,7 @@ GpuRxqConfigurationList GpuRxqConfigurationFactory::FromFile(
 GpuRxqConfigurationList GpuRxqConfigurationFactory::FromCmdLine(
     const std::string& proto_string) {
   GpuRxqConfigurationList gpu_configuration_list;
-  proto2::TextFormat::Parser parser;
+  TextFormat::Parser parser;
   const bool success =
       parser.ParseFromString(proto_string, &gpu_configuration_list);
   if (!success) {

@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-#include "base/logging.h"
+#include <absl/log/log.h>
 #include "include/flow_steer_ntuple.h"
 #include "include/nic_configurator_interface.h"
 #include <absl/functional/bind_front.h>

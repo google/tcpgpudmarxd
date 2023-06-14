@@ -2,7 +2,8 @@
 
 #include <string>
 
-#include "base/logging.h"
+#include <absl/log/log.h>
+#include <absl/strings/str_format.h>
 
 namespace tcpdirect {
 int GpuPageExporterInterface::gpumem_bind_rxq(int fd, const std::string& ifname,

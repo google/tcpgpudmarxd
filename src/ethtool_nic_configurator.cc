@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "base/logging.h"
+#include <absl/log/log.h>
 #include "include/flow_steer_ntuple.h"
 #include <absl/status/status.h>
 #include <absl/strings/str_format.h>

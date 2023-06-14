@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "base/logging.h"
+#include <absl/log/log.h>
 
 namespace tcpdirect {
 
