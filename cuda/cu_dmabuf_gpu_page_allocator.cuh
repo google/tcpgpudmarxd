@@ -1,6 +1,8 @@
 #ifndef _THIRD_PARTY_TCPDIRECT_RX_MANAGER_CU_DMABUF_GPU_PAGE_ALLOCATOR_INTERFACE_H_
 #define _THIRD_PARTY_TCPDIRECT_RX_MANAGER_CU_DMABUF_GPU_PAGE_ALLOCATOR_INTERFACE_H_
 
+#include <cuda.h>
+
 #include <string>
 #include <unordered_map>
 

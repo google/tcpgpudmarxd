@@ -3,7 +3,7 @@
 #include <memory>
 #include <vector>
 
-#include "base/logging.h"
+#include <absl/log/log.h>
 #include "cuda/cuda_context_manager.cuh"
 #include "cuda/dmabuf_gpu_page_allocator.cuh"
 #include "include/unix_socket_server.h"

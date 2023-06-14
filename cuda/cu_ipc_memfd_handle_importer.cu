@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "base/logging.h"
+#include <absl/log/log.h>
 #include "cuda/common.cuh"
 #include "cuda/cu_ipc_memfd_handle.cuh"
 #include "include/ipc_gpumem_fd_metadata.h"
@@ -10,6 +10,7 @@
 #include "proto/unix_socket_message.pb.h"
 #include <absl/status/statusor.h>
 #include <absl/strings/str_format.h>
+#include <absl/log/check.h>
 
 namespace tcpdirect {
 absl::StatusOr<std::unique_ptr<GpuPageHandleInterface>>

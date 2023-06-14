@@ -1,6 +1,8 @@
 #ifndef _EXPERIMENTAL_USERS_CHECHENGLIN_TCPGPUDMAD_CUDA_IPC_MEMHANDLE_H_
 #define _EXPERIMENTAL_USERS_CHECHENGLIN_TCPGPUDMAD_CUDA_IPC_MEMHANDLE_H_
 
+#include <cuda.h>
+
 #include <string>
 
 #include "cuda/gpu_page_handle_interface.cuh"

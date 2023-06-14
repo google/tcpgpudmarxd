@@ -6,6 +6,7 @@
 #include "include/unix_socket_client.h"
 #include "proto/unix_socket_message.pb.h"
 #include <absl/status/statusor.h>
+#include <absl/log/check.h>
 
 namespace tcpdirect {
 absl::StatusOr<std::unique_ptr<GpuPageHandleInterface>>

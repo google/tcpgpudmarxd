@@ -4,7 +4,7 @@
 #include <thread>
 #include <vector>
 
-#include "base/logging.h"
+#include <absl/log/log.h>
 #include "cuda/cu_dmabuf_gpu_page_allocator.cuh"
 #include "cuda/cuda_context_manager.cuh"
 #include "include/gpu_page_exporter_interface.h"

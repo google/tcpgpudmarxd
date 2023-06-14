@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "base/logging.h"
+#include <absl/log/log.h>
 #include "cuda/common.cuh"
 #include <absl/strings/str_format.h>
 

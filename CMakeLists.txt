@@ -16,3 +16,4 @@ find_package(Protobuf REQUIRED)
 
 ADD_SUBDIRECTORY(proto)
 ADD_SUBDIRECTORY(src)
+ADD_SUBDIRECTORY(cuda)
