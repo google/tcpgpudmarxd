@@ -16,7 +16,6 @@ set(GPU_RXQ_CONFIG_SRC
 )
 
 add_library(gpu_rxq_configurator STATIC ${GPU_RXQ_CONFIG_SRC})
-target_include_directories(gpu_rxq_configurator PRIVATE cuda)
 target_include_directories(gpu_rxq_configurator PRIVATE ${CMAKE_BINARY_DIR} ${Protobuf_INCLUDE_DIRS})
 target_include_directories(gpu_rxq_configurator PUBLIC ${CMAKE_SOURCE_DIR})
 target_link_libraries(gpu_rxq_configurator PRIVATE CUDA::cuda_driver)

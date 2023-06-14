@@ -23,7 +23,6 @@ set(CUDA_IPC_MEMHANDLE_SRC
 	cuda_ipc_memhandle.cu
 )
 add_library(cuda_ipc_memhandle STATIC ${CUDA_IPC_MEMHANDLE_SRC})
-target_include_directories(cuda_ipc_memhandle PRIVATE cuda)
 target_include_directories(cuda_ipc_memhandle PUBLIC ${CMAKE_SOURCE_DIR})
 target_link_libraries(cuda_ipc_memhandle PRIVATE CUDA::cuda_driver)
 target_link_libraries(cuda_ipc_memhandle PRIVATE absl::log absl::flags absl::status absl::str_format)
@@ -36,7 +35,6 @@ set(DMABUF_GPU_ALLOC_SRC
 	dmabuf_gpu_page_allocator.cu
 )
 add_library(dmabuf_gpu_page_allocator STATIC ${DMABUF_GPU_ALLOC_SRC})
-target_include_directories(dmabuf_gpu_page_allocator PRIVATE cuda)
 target_include_directories(dmabuf_gpu_page_allocator PUBLIC ${CMAKE_SOURCE_DIR})
 target_link_libraries(dmabuf_gpu_page_allocator PRIVATE CUDA::cuda_driver)
 target_link_libraries(dmabuf_gpu_page_allocator PRIVATE absl::log absl::flags absl::status absl::str_format)
@@ -49,7 +47,6 @@ set(CUDA_IPC_MEMHANDLE_EXPORTER_SRC
 	cuda_ipc_memhandle_exporter.cu
 )
 add_library(cuda_ipc_memhandle_exporter STATIC ${CUDA_IPC_MEMHANDLE_EXPORTER_SRC})
-target_include_directories(cuda_ipc_memhandle_exporter PRIVATE cuda)
 target_include_directories(cuda_ipc_memhandle_exporter PRIVATE ${CMAKE_BINARY_DIR} ${Protobuf_INCLUDE_DIRS})
 target_include_directories(cuda_ipc_memhandle_exporter PUBLIC ${CMAKE_SOURCE_DIR})
 target_link_libraries(cuda_ipc_memhandle_exporter PRIVATE CUDA::cuda_driver)
@@ -66,7 +63,6 @@ set(CUDA_IPC_MEMHANDLE_IMPORTER_SRC
 	cuda_ipc_memhandle_importer.cu
 )
 add_library(cuda_ipc_memhandle_importer STATIC ${CUDA_IPC_MEMHANDLE_IMPORTER_SRC})
-target_include_directories(cuda_ipc_memhandle_importer PRIVATE cuda)
 target_include_directories(cuda_ipc_memhandle_importer PRIVATE ${CMAKE_BINARY_DIR} ${Protobuf_INCLUDE_DIRS})
 target_include_directories(cuda_ipc_memhandle_importer PUBLIC ${CMAKE_SOURCE_DIR})
 target_link_libraries(cuda_ipc_memhandle_importer PRIVATE CUDA::cuda_driver)
@@ -83,7 +79,6 @@ set(CU_IPC_MEMFD_HANDLE_SRC
 	cu_ipc_memfd_handle.cu
 )
 add_library(cu_ipc_memfd_handle STATIC ${CU_IPC_MEMFD_HANDLE_SRC})
-target_include_directories(cu_ipc_memfd_handle PRIVATE cuda)
 target_include_directories(cu_ipc_memfd_handle PUBLIC ${CMAKE_SOURCE_DIR})
 target_link_libraries(cu_ipc_memfd_handle PRIVATE CUDA::cuda_driver)
 target_link_libraries(cu_ipc_memfd_handle PRIVATE absl::log absl::flags absl::status absl::str_format)
@@ -96,7 +91,6 @@ set(CU_DMABUF_GPU_ALLOC_SRC
 	cu_dmabuf_gpu_page_allocator.cu
 )
 add_library(cu_dmabuf_gpu_page_allocator STATIC ${CU_DMABUF_GPU_ALLOC_SRC})
-target_include_directories(cu_dmabuf_gpu_page_allocator PRIVATE cuda)
 target_include_directories(cu_dmabuf_gpu_page_allocator PUBLIC ${CMAKE_SOURCE_DIR})
 target_link_libraries(cu_dmabuf_gpu_page_allocator PRIVATE CUDA::cuda_driver)
 target_link_libraries(cu_dmabuf_gpu_page_allocator PRIVATE absl::log absl::flags absl::status absl::str_format)
@@ -109,7 +103,6 @@ set(CU_IPC_MEMFD_HANDLE_EXPORTER_SRC
 	cu_ipc_memfd_exporter.cu
 )
 add_library(cu_ipc_memfd_handle_exporter STATIC ${CU_IPC_MEMFD_HANDLE_EXPORTER_SRC})
-target_include_directories(cu_ipc_memfd_handle_exporter PRIVATE cuda)
 target_include_directories(cu_ipc_memfd_handle_exporter PRIVATE ${CMAKE_BINARY_DIR} ${Protobuf_INCLUDE_DIRS})
 target_include_directories(cu_ipc_memfd_handle_exporter PUBLIC ${CMAKE_SOURCE_DIR})
 target_link_libraries(cu_ipc_memfd_handle_exporter PRIVATE CUDA::cuda_driver)
@@ -126,7 +119,6 @@ set(CU_IPC_MEMFD_HANDLE_IMPORTER_SRC
 	cu_ipc_memfd_handle_importer.cu
 )
 add_library(cu_ipc_memfd_handle_importer STATIC ${CU_IPC_MEMFD_HANDLE_IMPORTER_SRC})
-target_include_directories(cu_ipc_memfd_handle_importer PRIVATE cuda)
 target_include_directories(cu_ipc_memfd_handle_importer PRIVATE ${CMAKE_BINARY_DIR} ${Protobuf_INCLUDE_DIRS})
 target_include_directories(cu_ipc_memfd_handle_importer PUBLIC ${CMAKE_SOURCE_DIR})
 target_link_libraries(cu_ipc_memfd_handle_importer PRIVATE CUDA::cuda_driver)
