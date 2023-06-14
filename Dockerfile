@@ -13,7 +13,7 @@ WORKDIR /third_party
 RUN git clone https://github.com/abseil/abseil-cpp.git
 WORKDIR abseil-cpp
 RUN git fetch --all --tags
-RUN git checkout tags/20220623.0 -b build
+RUN git checkout tags/20230125.3 -b build
 WORKDIR build
 RUN cmake -DCMAKE_CXX_STANDARD=17 -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DABSL_USE_GOOGLETEST_HEAD=ON ..
 RUN cmake --build . -j 8 --target all && cmake --install .
@@ -31,4 +31,5 @@ RUN cmake -DCMAKE_CUDA_ARCHITECTURES=90 -DCMAKE_BUILD_TYPE=Release ..
 RUN make -j
 
 WORKDIR /tcpgpudmarxd
-ENTRYPOINT /bin/bash
+USER root
+ENTRYPOINT /tcpgpudmarxd/build/tcpgpudmarxd
