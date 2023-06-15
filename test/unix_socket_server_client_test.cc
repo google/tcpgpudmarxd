@@ -11,9 +11,8 @@
 
 #include "include/unix_socket_client.h"
 #include "include/unix_socket_server.h"
-#include "proto/unix_socket_message.proto.h"
-#include "testing/base/public/gmock.h"
-#include "testing/base/public/gunit.h"
+#include "proto/unix_socket_message.pb.h"
+#include <gtest/gtest.h>
 #include <absl/status/statusor.h>
 #include <absl/strings/str_format.h>
 
@@ -22,6 +21,8 @@ namespace {
 using tcpdirect::UnixSocketClient;
 using tcpdirect::UnixSocketMessage;
 using tcpdirect::UnixSocketServer;
+
+#define EXPECT_OK(status) EXPECT_TRUE(status.ok())
 
 TEST(UnixSocketServerTest, EchoServer) {
   std::string socket_path = absl::StrFormat("/tmp/echo_server");
@@ -90,7 +91,7 @@ TEST(UnixSocketServerTest, EchoServer) {
     // Check fd
     char buf[100];
     close(pipefd[1]);
-    read(pipefd[0], buf, 100);
+    EXPECT_GT(read(pipefd[0], buf, 100), 0);
     EXPECT_EQ(strncmp(buf, hello_from_client, strlen(hello_from_client)), 0);
     close(pipefd[0]);
     wait(nullptr);

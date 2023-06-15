@@ -62,7 +62,7 @@ set(UNIX_SOCKET_LIB_SRC
 add_library(unix_socket_lib STATIC ${UNIX_SOCKET_LIB_SRC})
 target_include_directories(unix_socket_lib PUBLIC ${CMAKE_SOURCE_DIR})
 target_include_directories(unix_socket_lib PRIVATE ${CMAKE_BINARY_DIR} ${Protobuf_INCLUDE_DIRS})
-target_link_libraries(unix_socket_lib PRIVATE absl::log absl::status absl::str_format)
+target_link_libraries(unix_socket_lib PRIVATE absl::flat_hash_map absl::log absl::status absl::statusor absl::str_format)
 target_link_libraries(unix_socket_lib PUBLIC tcpgpudmarxd_proto)
 target_link_libraries(unix_socket_lib PUBLIC ${Protobuf_LIBRARIES})
 

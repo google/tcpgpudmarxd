@@ -29,6 +29,8 @@ RUN rm -rf build docker-build
 WORKDIR build
 RUN cmake -DCMAKE_CUDA_ARCHITECTURES=90 -DCMAKE_BUILD_TYPE=Release ..
 RUN make -j
+WORKDIR test
+RUN ctest
 
 WORKDIR /tcpgpudmarxd
 USER root
