@@ -15,19 +15,19 @@
 #include <unordered_map>
 #include <vector>
 
-#include "cuda/cuda_context_manager.cuh"
+#include <absl/flags/flag.h>
+#include <absl/flags/parse.h>
+#include <absl/log/log.h>
+#include <absl/strings/str_format.h>
+
+#include "cuda/common.cuh"
 #include "cuda/gpu_page_exporter_factory.cuh"
-#include "include/flow_steer_ntuple.h"
 #include "include/gpu_page_exporter_interface.h"
 #include "include/gpu_rxq_configuration_factory.h"
 #include "include/nic_configurator_factory.h"
 #include "include/nic_configurator_interface.h"
 #include "include/rx_rule_manager.h"
-#include <absl/flags/flag.h>
-#include <absl/flags/parse.h>
-#include <absl/strings/str_format.h>
 
-using tcpdirect::FlowSteerNtuple;
 using tcpdirect::GpuPageExporterFactory;
 using tcpdirect::GpuPageExporterInterface;
 using tcpdirect::GpuRxqConfiguration;
@@ -60,22 +60,7 @@ ABSL_FLAG(std::string, uds_path, "/tmp",
 
 namespace {
 
-constexpr int kDefaultRssNum{16};
-constexpr std::string_view kVersion{"0.0.7"};
-
-static void get_cuda_error(const char *fn, CUresult err) {
-  const char *name = "[unknown]", *explanation = "[unknown]";
-
-  if (cuGetErrorName(err, &name))
-    std::cerr << "Error: error getting error name" << std::endl;
-
-  if (cuGetErrorString(err, &explanation))
-    std::cerr << "Error: error getting error string" << std::endl;
-
-  std::cerr << absl::StrFormat("CUDA Error in func %s: %d %s (%s)", fn, err,
-                               name, explanation)
-            << std::endl;
-}
+constexpr std::string_view kVersion{"1.0.0"};
 
 static std::atomic<bool> gShouldStop(false);
 
@@ -121,10 +106,7 @@ int main(int argc, char **argv) {
     gpu_rxq_configs = GpuRxqConfigurationFactory::BuildPreset(gpu_nic_preset);
   }
 
-  if (CUresult err = cuInit(0); err != CUDA_SUCCESS) {
-    get_cuda_error("cuInit", err);
-    return 1;
-  }
+  CU_ASSERT_SUCCESS(cuInit(0));
 
   std::string gpu_shmem_type = absl::GetFlag(FLAGS_gpu_shmem_type);
   std::unique_ptr<GpuPageExporterInterface> gpu_page_exporter =
@@ -134,7 +116,6 @@ int main(int argc, char **argv) {
     std::cerr << "Failed to create gpu_page_exporter";
     return 1;
   }
-
   // 2. Start the Gpu-Rxq exporter
   std::string uds_path = absl::GetFlag(FLAGS_uds_path);
   RETURN_IF_ERROR(gpu_page_exporter->Initialize(gpu_rxq_configs, uds_path));

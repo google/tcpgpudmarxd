@@ -1,0 +1,18 @@
+enable_language(CUDA)
+find_package(CUDAToolkit)
+find_package(CUDA REQUIRED)
+find_package(absl REQUIRED)
+find_package(Protobuf REQUIRED)
+
+
+add_executable(tcpgpudmarxd tcpgpudmarxd.cu)
+target_include_directories(tcpgpudmarxd PRIVATE ${CMAKE_BINARY_DIR} ${Protobuf_INCLUDE_DIRS})
+target_include_directories(tcpgpudmarxd PRIVATE "${CMAKE_SOURCE_DIR}")
+target_link_libraries(tcpgpudmarxd cuda_common)
+target_link_libraries(tcpgpudmarxd gpu_rxq_configurator)
+target_link_libraries(tcpgpudmarxd nic_configurator)
+target_link_libraries(tcpgpudmarxd rx_rule_manager)
+target_link_libraries(tcpgpudmarxd gpu_page_exporter_factory)
+target_link_libraries(tcpgpudmarxd absl::flags absl::flags_parse absl::log absl::str_format)
+target_link_libraries(tcpgpudmarxd tcpgpudmarxd_proto)
+target_link_libraries(tcpgpudmarxd ${Protobuf_LIBRARIES})

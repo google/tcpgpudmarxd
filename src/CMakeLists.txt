@@ -41,7 +41,7 @@ target_link_libraries(nic_configurator PRIVATE absl::absl_check absl::status abs
 target_link_libraries(nic_configurator PUBLIC tcpgpudmarxd_proto)
 target_link_libraries(nic_configurator PUBLIC ${Protobuf_LIBRARIES})
 
-# rxq dma page exporter interface
+# gpu page exporter interface
 
 add_library(gpu_page_exporter_interface STATIC
 	gpu_page_exporter_interface.cc)
