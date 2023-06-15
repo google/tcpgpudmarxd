@@ -28,7 +28,6 @@ function run_tcpgpudmarxd() {
     --device /dev/nvidiactl:/dev/nvidiactl \
     --env LD_LIBRARY_PATH=/usr/local/nvidia/lib64 \
     --volume /tmp:/tmp \
-    --entrypoint /tcpgpudmarxd/build/tcpgpudmarxd \
   	<GCR path> "$@"
 }
 ```
