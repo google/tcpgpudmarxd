@@ -12,5 +12,26 @@ message UnixSocketProto {
                           // rule manager/client, socket unit test, ...).  It
                           // will be deprecated later with its index number
                           // retired.
+    FlowSteerRuleRequest flow_steer_rule_request = 2;
   }
+}
+
+message FlowSteerRuleRequest {
+  optional FlowSteerNtupleProto flow_steer_ntuple = 1;
+  optional int32 queue_id = 2;
+  optional string gpu_pci_addr = 3;
+}
+
+message FlowSteerNtupleProto {
+  optional int32 flow_type = 1;
+
+  message SocketAddress {
+    // IP address in the presentation format
+    // For example: 192.168.0.1
+    optional string ip_address = 1;
+    // Port number in the host format
+    optional int32 port = 2;
+  }
+  optional SocketAddress src = 2;
+  optional SocketAddress dst = 3;
 }

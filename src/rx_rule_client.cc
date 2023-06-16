@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "include/flow_steer_ntuple.h"
+#include "include/proto_utils.h"
 #include "include/unix_socket_client.h"
 #include "proto/unix_socket_message.pb.h"
 
@@ -18,9 +19,9 @@ absl::Status ConnectAndSendMessage(const FlowSteerNtuple& flow_steer_ntuple,
 
   UnixSocketMessage message;
   UnixSocketProto* proto = message.mutable_proto();
-  proto->mutable_raw_bytes()->resize(sizeof(FlowSteerNtuple));
-  memcpy(proto->mutable_raw_bytes()->data(), &flow_steer_ntuple,
-         sizeof(FlowSteerNtuple));
+  *proto->mutable_flow_steer_rule_request()->mutable_flow_steer_ntuple() =
+    ConvertStructToProto(flow_steer_ntuple);
+
 
   client->Send(message);
 

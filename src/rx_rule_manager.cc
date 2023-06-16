@@ -6,17 +6,20 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 
+#include <cstddef>
 #include <functional>
 #include <memory>
 #include <string>
 #include <vector>
 
 #include <absl/log/log.h>
-#include "include/flow_steer_ntuple.h"
-#include "include/nic_configurator_interface.h"
 #include <absl/functional/bind_front.h>
 #include <absl/hash/hash.h>
 #include <absl/strings/str_format.h>
+
+#include "include/flow_steer_ntuple.h"
+#include "include/proto_utils.h"
+#include "include/nic_configurator_interface.h"
 
 namespace tcpdirect {
 
@@ -95,19 +98,18 @@ void RxRuleManager::AddUnixSocketServer(const std::string& suffix) {
                   bool* fin) {
         UnixSocketProto* proto = response->mutable_proto();
         std::string* buffer = proto->mutable_raw_bytes();
-        if (!request.has_proto() || !request.proto().has_raw_bytes()) {
+       if (!request.has_proto() ||
+            !(request.proto().has_flow_steer_rule_request())) {
+          LOG(ERROR) << "Expecting proto format request. "
+                     << request.DebugString();
           buffer->append("Error.\n\nExpecting proto format request.\n");
           *fin = true;
           return;
         }
-        if (request.proto().raw_bytes().size() !=
-            sizeof(struct FlowSteerNtuple)) {
-          buffer->append("Received illegal flow steering rule request.");
-          *fin = true;
-          return;
-        }
-        const FlowSteerNtuple& ntuple =
-            *((FlowSteerNtuple*)request.proto().raw_bytes().data());
+
+        FlowSteerNtuple ntuple = ConvertProtoToStruct(
+            request.proto().flow_steer_rule_request().flow_steer_ntuple());
+
         if (auto status = operation(ntuple); !status.ok()) {
           *fin = true;
           buffer->append("Failed to set flow steering rule.");
