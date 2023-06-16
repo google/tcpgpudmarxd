@@ -34,4 +34,4 @@ RUN ctest
 
 WORKDIR /tcpgpudmarxd
 USER root
-ENTRYPOINT /tcpgpudmarxd/build/tcpgpudmarxd
+ENTRYPOINT /tcpgpudmarxd/build/app/tcpgpudmarxd

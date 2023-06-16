@@ -17,6 +17,7 @@
 
 #include <absl/flags/flag.h>
 #include <absl/flags/parse.h>
+#include <absl/log/check.h>
 #include <absl/log/log.h>
 #include <absl/strings/str_format.h>
 
@@ -83,7 +84,9 @@ int main(int argc, char **argv) {
 
   // 1. Collect GPU/NIC pair configurations
   std::string gpu_nic_preset = absl::GetFlag(FLAGS_gpu_nic_preset);
-  std::cout << "Collecting GPU/NIC pair configurations ..." << std::endl;
+
+  LOG(INFO) << absl::StrFormat("Collecting GPU/NIC pair configurations with preset: %s", gpu_nic_preset);
+
   GpuRxqConfigurationList gpu_rxq_configs;
   if (gpu_nic_preset == "manual") {
     if (!absl::GetFlag(FLAGS_gpu_nic_topology_proto).empty() &&
@@ -92,9 +95,11 @@ int main(int argc, char **argv) {
                     "gpu_nic_topology at the same time.";
     }
     if (!absl::GetFlag(FLAGS_gpu_nic_topology_proto).empty()) {
+      LOG(INFO) << "Getting GPU/NIC topology from text-format proto.";
       gpu_rxq_configs = GpuRxqConfigurationFactory::FromCmdLine(
           absl::GetFlag(FLAGS_gpu_nic_topology_proto));
     } else if (!absl::GetFlag(FLAGS_gpu_nic_topology).empty()) {
+      LOG(INFO) << "Getting GPU/NIC toplogy from proto file.";
       gpu_rxq_configs = GpuRxqConfigurationFactory::FromFile(
           absl::GetFlag(FLAGS_gpu_nic_topology));
     } else {
@@ -105,6 +110,10 @@ int main(int argc, char **argv) {
   } else {
     gpu_rxq_configs = GpuRxqConfigurationFactory::BuildPreset(gpu_nic_preset);
   }
+
+  CHECK(gpu_rxq_configs.gpu_rxq_configs().size() > 0);
+  CHECK(gpu_rxq_configs.tcpd_queue_size() > 0);
+  CHECK(gpu_rxq_configs.rss_set_size() > 0);
 
   CU_ASSERT_SUCCESS(cuInit(0));
 
