@@ -12,9 +12,7 @@ After that, use the following script to launch the container on VMs:
 
 function run_tcpgpudmarxd() {
   docker run --pull=always -it --rm \
-    -u 0 --cap-add=NET_ADMIN --network=host \
-    --pid=host \
-    --userns=host \
+    --cap-add=NET_ADMIN --network=host \
     --volume /var/lib/nvidia/lib64:/usr/local/nvidia/lib64 \
     --device /dev/nvidia0:/dev/nvidia0 \
     --device /dev/nvidia1:/dev/nvidia1 \
@@ -28,7 +26,8 @@ function run_tcpgpudmarxd() {
     --device /dev/nvidiactl:/dev/nvidiactl \
     --env LD_LIBRARY_PATH=/usr/local/nvidia/lib64 \
     --volume /tmp:/tmp \
-  	<GCR path> "$@"
+    --entrypoint /tcpgpudmarxd/build/app/tcpgpudmarxd \
+    <GCR path> "$@"
 }
 ```
 
