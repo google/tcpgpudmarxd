@@ -1,5 +1,8 @@
 #include "include/rx_rule_client.h"
 
+#include <absl/status/status.h>
+#include <absl/strings/str_format.h>
+
 #include <memory>
 
 #include "include/flow_steer_ntuple.h"
@@ -7,47 +10,69 @@
 #include "include/unix_socket_client.h"
 #include "proto/unix_socket_message.pb.h"
 
-#include <absl/status/status.h>
-#include <absl/strings/str_format.h>
-
 namespace tcpdirect {
 
-absl::Status ConnectAndSendMessage(const FlowSteerNtuple& flow_steer_ntuple,
+RxRuleClient::RxRuleClient(const std::string& prefix) {
+  prefix_ = prefix;
+  if (prefix_.back() == '/') {
+    prefix_.pop_back();
+  }
+}
+
+absl::Status ConnectAndSendMessage(UnixSocketMessage message,
+                                   UnixSocketMessage* response,
                                    UnixSocketClient* client) {
   auto status = client->Connect();
   if (!status.ok()) return status;
 
-  UnixSocketMessage message;
-  UnixSocketProto* proto = message.mutable_proto();
-  *proto->mutable_flow_steer_rule_request()->mutable_flow_steer_ntuple() =
-    ConvertStructToProto(flow_steer_ntuple);
-
-
   client->Send(message);
 
-  auto response = client->Receive();
-  if (!response.ok()) return response.status();
+  auto response_status = client->Receive();
 
-  if (!response->has_proto() || !response->proto().has_raw_bytes() ||
-      response->proto().raw_bytes() != "Ok.") {
-    return absl::InternalError(response->DebugString());
-  }
+  if (!response_status.ok()) return response_status.status();
+
+  *response = response_status.value();
 
   return absl::OkStatus();
 }
 
-absl::Status RxRuleClient::RequestFlowSteerRule(
-    const FlowSteerNtuple& flow_steer_ntuple) {
-  auto us_client = std::make_unique<UnixSocketClient>(
-      absl::StrFormat("%s/rx_rule_manager", prefix_));
-  return ConnectAndSendMessage(flow_steer_ntuple, us_client.get());
-}
+absl::Status RxRuleClient::UpdateFlowSteerRule(
+    FlowSteerRuleOp op, const FlowSteerNtuple& flow_steer_ntuple,
+    std::string gpu_pci_addr, int qid) {
+  std::string server_addr =
+      (op == CREATE) ? "rx_rule_manager" : "rx_rule_uninstall";
 
-absl::Status RxRuleClient::DeleteFlowSteerRule(
-    const FlowSteerNtuple& flow_steer_ntuple) {
   auto us_client = std::make_unique<UnixSocketClient>(
-      absl::StrFormat("%s/rx_rule_uninstall", prefix_));
-  return ConnectAndSendMessage(flow_steer_ntuple, us_client.get());
+      absl::StrFormat("%s/%s", prefix_, server_addr));
+
+  UnixSocketMessage message;
+
+  UnixSocketProto* proto = message.mutable_proto();
+  FlowSteerRuleRequest* fsr = proto->mutable_flow_steer_rule_request();
+  *fsr->mutable_flow_steer_ntuple() = ConvertStructToProto(flow_steer_ntuple);
+
+  if (!gpu_pci_addr.empty()) {
+    fsr->set_gpu_pci_addr(gpu_pci_addr);
+  }
+
+  if (qid >= 0) {
+    fsr->set_queue_id(qid);
+  }
+
+  UnixSocketMessage response;
+
+  if (auto status = ConnectAndSendMessage(message, &response, us_client.get());
+      !status.ok()) {
+    return status;
+  }
+
+  if (!response.has_proto() || !response.proto().has_raw_bytes() ||
+      response.proto().raw_bytes() != "Ok.") {
+    return absl::InternalError(absl::StrFormat(
+        "Updating FlowSteerRule Failed: %s", response.DebugString()));
+  }
+
+  return absl::OkStatus();
 }
 
 }  // namespace tcpdirect

@@ -1,15 +1,17 @@
-#include "cuda/cuda_ipc_memhandle_exporter.cuh"
+#include <absl/log/check.h>
+#include <absl/log/log.h>
+#include <absl/status/status.h>
 
 #include <memory>
+#include <numeric>
 #include <vector>
 
-#include <absl/log/log.h>
 #include "cuda/cuda_context_manager.cuh"
+#include "cuda/cuda_ipc_memhandle_exporter.cuh"
 #include "cuda/dmabuf_gpu_page_allocator.cuh"
 #include "include/unix_socket_server.h"
 #include "proto/gpu_rxq_configuration.pb.h"
 #include "proto/unix_socket_message.pb.h"
-#include <absl/status/status.h>
 
 namespace tcpdirect {
 
@@ -23,31 +25,35 @@ absl::Status CudaIpcMemhandleExporter::Initialize(
   LOG(INFO) << "Setting up CUDA context and dmabuf page allocator ...";
 
   int tcpd_qstart = config_list.rss_set_size();
-  int tcpd_qend = tcpd_qstart + config_list.tcpd_queue_size();
 
   for (const auto &gpu_rxq_config : config_list.gpu_rxq_configs()) {
     std::string ifname = gpu_rxq_config.ifname();
-    std::string gpu_pci_addr = gpu_rxq_config.gpu_pci_addr();
     std::string nic_pci_addr = gpu_rxq_config.nic_pci_addr();
-    ifname_binding_map_[ifname] = {
-        .config = gpu_rxq_config,
-        .cuda_ctx = std::make_unique<CudaContextManager>(gpu_pci_addr),
-        .page_allocator = std::make_unique<DmabufGpuPageAllocator>(
-            gpu_pci_addr, nic_pci_addr, /*create_page_pool=*/true,
-            /*pool_size=*/RX_POOL_SIZE),
-    };
-    gpu_pci_to_ifname_map_[gpu_pci_addr] = ifname;
+    for (const auto &gpu_info : gpu_rxq_config.gpu_infos()) {
+      std::string gpu_pci_addr = gpu_info.gpu_pci_addr();
+      gpu_pci_binding_map_[gpu_info.gpu_pci_addr()] = {
+          .cuda_ctx = std::make_unique<CudaContextManager>(gpu_pci_addr),
+          .page_allocator = std::make_unique<DmabufGpuPageAllocator>(
+              gpu_pci_addr, nic_pci_addr, /*create_page_pool=*/true,
+              /*pool_size=*/RX_POOL_SIZE),
+          .ifname = ifname,
+          .queue_ids = {gpu_info.queue_ids().begin(),
+                        gpu_info.queue_ids().end()},
+      };
+    }
   }
 
   // 3. Allocate gpu memory, bind rxq, and get cudaIpcMemHandle
   LOG(INFO)
       << "Allocating gpu memory, binding rxq, and getting cudaIpcMemHandle ...";
 
-  for (auto &[ifname, gpu_rxq_binding] : ifname_binding_map_) {
+  for (auto &[gpu_pci, gpu_rxq_binding] : gpu_pci_binding_map_) {
     auto &cuda_ctx = *gpu_rxq_binding.cuda_ctx;
     auto &page_allocator = *gpu_rxq_binding.page_allocator;
     auto &page_id = gpu_rxq_binding.page_id;
     auto &mem_handle = gpu_rxq_binding.mem_handle;
+    auto &ifname = gpu_rxq_binding.ifname;
+    auto &qids = gpu_rxq_binding.queue_ids;
     cuda_ctx.PushContext();
     bool allocation_success = false;
     page_allocator.AllocatePage(RX_POOL_SIZE, &page_id, &allocation_success);
@@ -57,7 +63,7 @@ absl::Status CudaIpcMemhandleExporter::Initialize(
                                     ifname);
     }
 
-    for (int qid = tcpd_qstart; qid < tcpd_qend; ++qid) {
+    for (int qid : qids) {
       if (int ret =
               gpumem_bind_rxq(page_allocator.GetGpuMemFd(page_id), ifname, qid);
           ret < 0) {
@@ -92,21 +98,7 @@ absl::Status CudaIpcMemhandleExporter::Export() {
           return;
         }
         const std::string &gpu_pci = request.proto().raw_bytes();
-        if (gpu_pci_to_ifname_map_.find(gpu_pci) ==
-            gpu_pci_to_ifname_map_.end()) {
-          buffer->append(
-              absl::StrFormat("ifname not found for gpu pci: %s\n", gpu_pci));
-          *fin = true;
-          return;
-        }
-        const std::string &ifname = gpu_pci_to_ifname_map_[gpu_pci];
-        if (ifname_binding_map_.find(ifname) == ifname_binding_map_.end()) {
-          buffer->append(
-              absl::StrFormat("memhandle not found for %s\n", gpu_pci));
-          *fin = true;
-          return;
-        }
-        GpuRxqBinding &binding = ifname_binding_map_[ifname];
+        GpuRxqBinding &binding = gpu_pci_binding_map_[gpu_pci];
         for (int i = 0; i < sizeof(binding.mem_handle); ++i) {
           buffer->push_back(*((char *)&binding.mem_handle + i));
         }

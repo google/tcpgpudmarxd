@@ -1,15 +1,17 @@
-#include "include/a3_gpu_rxq_configurator.cuh"
-#include "include/pci_helpers.h"
-
-#include <sys/types.h>
-#include <ifaddrs.h>
+#include <absl/flags/flag.h>
+#include <absl/log/check.h>
+#include <absl/log/log.h>
+#include <absl/strings/ascii.h>
 #include <dirent.h>
+#include <ifaddrs.h>
 #include <stdio.h>
+#include <sys/types.h>
+
 #include <memory>
 #include <vector>
-#include <absl/log/log.h>
-#include <absl/flags/flag.h>
-#include <absl/strings/ascii.h>
+
+#include "include/a3_gpu_rxq_configurator.cuh"
+#include "include/pci_helpers.h"
 
 #define PCI_INFO_LEN 1024
 // <2-4 digit domain>:<2-4 digit bus>:<2 digit device>:<1 digit function>
@@ -19,13 +21,17 @@ ABSL_FLAG(
     int, num_hops, 2,
     "Number of hops to the PCIE switch shared by the 2 GPUs and the NIC(s).");
 
-
 namespace tcpdirect {
+namespace {
+constexpr int kRssSetSize{8};
+constexpr int kTcpdQueueCount{8};
+}  // namespace
 
 GpuRxqConfigurationList A3GpuRxqConfigurator::GetConfigurations() {
   GpuRxqConfigurationList config_list;
   absl::flat_hash_map<std::string, std::string> netdev_to_pci;
   absl::flat_hash_map<std::string, std::string> pci_to_netdev;
+  absl::flat_hash_map<std::string, std::vector<std::string>> netdev_to_gpu_pcis;
   struct ifaddrs *all_ifs = nullptr;
   if (getifaddrs(&all_ifs) != 0 || all_ifs == nullptr) {
     LOG(ERROR) << "Failed to retrieve network ifs, error: " << strerror(errno);
@@ -103,15 +109,30 @@ GpuRxqConfigurationList A3GpuRxqConfigurator::GetConfigurations() {
     LOG(INFO) << "Corresponding PCI NIC for GPU PCI addr " << gpu_pci_addr
               << " is " << netdev_name;
 
+    netdev_to_gpu_pcis[netdev_name].push_back(gpu_pci_addr);
+  }
+
+  for (const auto &[netdev_name, gpu_pci_addrs] : netdev_to_gpu_pcis) {
     GpuRxqConfiguration configuration;
-    configuration.set_gpu_pci_addr(std::string(gpu_pci_addr));
+    int queue_start = kRssSetSize;
+    int queue_count = kTcpdQueueCount / gpu_pci_addrs.size();
+    CHECK(queue_count > 0);
+    for (const auto &gpu_pci_addr : gpu_pci_addrs) {
+      GpuInfo *gpu_info = configuration.add_gpu_infos();
+      gpu_info->set_gpu_pci_addr(gpu_pci_addr);
+      for (int i = queue_start; i < queue_start + queue_count; ++i) {
+        gpu_info->add_queue_ids(i);
+      }
+      queue_start += queue_count;
+    }
     configuration.set_nic_pci_addr(netdev_to_pci[netdev_name]);
     configuration.set_ifname(netdev_name);
     *(config_list.add_gpu_rxq_configs()) = std::move(configuration);
   }
+
   freeifaddrs(all_ifs);
-  config_list.set_tcpd_queue_size(15);
-  config_list.set_rss_set_size(0);
+  config_list.set_tcpd_queue_size(kTcpdQueueCount);
+  config_list.set_rss_set_size(kRssSetSize);
   return config_list;
 }
 }  // namespace tcpdirect

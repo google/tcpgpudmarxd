@@ -2,8 +2,13 @@ syntax = "proto2";
 
 package tcpdirect;
 
-message GpuRxqConfiguration {
+message GpuInfo {
   optional string gpu_pci_addr = 1;
+  repeated uint32 queue_ids = 2;
+}
+
+message GpuRxqConfiguration {
+  repeated GpuInfo gpu_infos = 1;
   optional string nic_pci_addr = 2;
   optional string ifname = 3;
 }

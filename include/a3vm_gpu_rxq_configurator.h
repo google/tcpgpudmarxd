@@ -11,5 +11,9 @@ class A3VmGpuRxqConfigurator : public GpuRxqConfiguratorInterface {
  public:
   GpuRxqConfigurationList GetConfigurations() override;
 };
+class A3VmGpuRxqConfigurator4GPU4NIC : public GpuRxqConfiguratorInterface {
+ public:
+  GpuRxqConfigurationList GetConfigurations() override;
+};
 }  // namespace tcpdirect
 #endif

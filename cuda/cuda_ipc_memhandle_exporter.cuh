@@ -1,6 +1,8 @@
 #ifndef _EXPERIMENTAL_USERS_CHECHENGLIN_CUDA_IPC_MEMHANDLE_EXPORTER_H_
 #define _EXPERIMENTAL_USERS_CHECHENGLIN_CUDA_IPC_MEMHANDLE_EXPORTER_H_
 
+#include <absl/status/status.h>
+
 #include <memory>
 #include <vector>
 
@@ -9,16 +11,16 @@
 #include "include/gpu_page_exporter_interface.h"
 #include "include/unix_socket_server.h"
 #include "proto/gpu_rxq_configuration.pb.h"
-#include <absl/status/status.h>
 
 namespace tcpdirect {
 
 class CudaIpcMemhandleExporter : public GpuPageExporterInterface {
  public:
   struct GpuRxqBinding {
-    GpuRxqConfiguration config;
     std::unique_ptr<CudaContextManager> cuda_ctx;
     std::unique_ptr<DmabufGpuPageAllocator> page_allocator;
+    std::string ifname;
+    std::vector<int> queue_ids;
     unsigned long page_id;
     cudaIpcMemHandle_t mem_handle;
   };
@@ -31,8 +33,7 @@ class CudaIpcMemhandleExporter : public GpuPageExporterInterface {
 
  private:
   std::string prefix_;
-  std::unordered_map<std::string, GpuRxqBinding> ifname_binding_map_;
-  std::unordered_map<std::string, std::string> gpu_pci_to_ifname_map_;
+  std::unordered_map<std::string, GpuRxqBinding> gpu_pci_binding_map_;
   std::vector<std::unique_ptr<UnixSocketServer>> us_servers_;
 };
 

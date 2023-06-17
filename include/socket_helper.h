@@ -1,8 +1,13 @@
 #ifndef _THIRD_PARTY_TCPDIRECT_RX_MANAGER_BENCHMARK_SOCKET_HELPER_H_
 #define _THIRD_PARTY_TCPDIRECT_RX_MANAGER_BENCHMARK_SOCKET_HELPER_H_
 
+#include <ifaddrs.h>
+#include <netdb.h>
 #include <netinet/in.h>
+#include <sys/socket.h>
 
+#include <cstdint>
+#include <cstring>
 #include <string>
 #include <vector>
 
@@ -12,6 +17,13 @@ union SocketAddress {
   struct sockaddr sa;
   struct sockaddr_in sin;
   struct sockaddr_in6 sin6;
+};
+
+struct NetifInfo {
+  std::string ifname;
+  union SocketAddress addr;
+  uint16_t dbdf[4];
+  bool has_pcie_addr;
 };
 
 int CreateTcpSocket(int address_family);
@@ -41,6 +53,40 @@ void AcceptConnectionAndSendHpnAddress(
 void ConnectAndReceiveHpnAddress(
     union SocketAddress* server_addr,
     std::vector<union SocketAddress>* server_hpn_addresses);
+
+int ReadNicPci(const char* ifname, uint16_t* dbdf);
+
+void DiscoverNetif(std::vector<NetifInfo>& nic_info);
+
+template <typename F>
+void DiscoverNetif(std::vector<NetifInfo>& nic_info, F&& filter) {
+  struct ifaddrs *interfaces, *interface;
+  getifaddrs(&interfaces);
+  for (interface = interfaces; interface; interface = interface->ifa_next) {
+    if (interface->ifa_addr == NULL) continue;
+
+    /* We only support IPv4 & IPv6 */
+    if (!filter(interface)) {
+      continue;
+    }
+    int family = interface->ifa_addr->sa_family;
+    std::string ifname = std::string(interface->ifa_name);
+    struct NetifInfo info;
+    info.ifname = ifname;
+    if (family == AF_INET) {
+      memcpy(&info.addr.sin, interface->ifa_addr, sizeof(sockaddr_in));
+    } else {
+      memcpy(&info.addr.sin6, interface->ifa_addr, sizeof(sockaddr_in6));
+    }
+    int ret = ReadNicPci(ifname.c_str(), info.dbdf);
+    if (ret == 0) {
+      info.has_pcie_addr = true;
+    } else {
+      info.has_pcie_addr = false;
+    }
+    nic_info.emplace_back(info);
+  }
+}
 }  // namespace tcpdirect
 
 #endif /* _THIRD_PARTY_TCPDIRECT_RX_MANAGER_BENCHMARK_SOCKET_HELPER_H_ */

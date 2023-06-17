@@ -8,7 +8,6 @@ find_package(Protobuf REQUIRED)
 set(GPU_RXQ_CONFIG_SRC
 	a3_gpu_rxq_configurator.cu
 	a3vm_gpu_rxq_configurator.cc
-	auto_discovery_gpu_rxq_configurator.cc
 	gpu_rxq_configuration_factory.cc
 	monstertruck_gpu_rxq_configurator.cc
 	predvt_gpu_rxq_configurator.cc
@@ -19,7 +18,7 @@ add_library(gpu_rxq_configurator STATIC ${GPU_RXQ_CONFIG_SRC})
 target_include_directories(gpu_rxq_configurator PRIVATE ${CMAKE_BINARY_DIR} ${Protobuf_INCLUDE_DIRS})
 target_include_directories(gpu_rxq_configurator PUBLIC ${CMAKE_SOURCE_DIR})
 target_link_libraries(gpu_rxq_configurator PRIVATE CUDA::cuda_driver)
-target_link_libraries(gpu_rxq_configurator PRIVATE absl::log absl::flags absl::status absl::str_format)
+target_link_libraries(gpu_rxq_configurator PRIVATE absl::absl_check absl::log absl::flags absl::status absl::str_format)
 target_link_libraries(gpu_rxq_configurator PUBLIC tcpgpudmarxd_proto)
 target_link_libraries(gpu_rxq_configurator PUBLIC ${Protobuf_LIBRARIES})
 set_target_properties(gpu_rxq_configurator PROPERTIES CUDA_RUNTIME_LIBRARY Shared)
@@ -95,7 +94,7 @@ target_link_libraries(rx_rule_client PUBLIC ${Protobuf_LIBRARIES})
 add_library(rx_rule_manager STATIC rx_rule_manager.cc)
 target_include_directories(rx_rule_manager PUBLIC ${CMAKE_SOURCE_DIR})
 target_include_directories(rx_rule_manager PRIVATE ${CMAKE_BINARY_DIR} ${Protobuf_INCLUDE_DIRS})
-target_link_libraries(rx_rule_manager PRIVATE absl::log absl::status absl::str_format)
+target_link_libraries(rx_rule_manager PRIVATE absl::log absl::status absl::statusor absl::str_format)
 target_link_libraries(rx_rule_manager PUBLIC tcpgpudmarxd_proto)
 target_link_libraries(rx_rule_manager PUBLIC proto_utils)
 target_link_libraries(rx_rule_manager PUBLIC ${Protobuf_LIBRARIES})

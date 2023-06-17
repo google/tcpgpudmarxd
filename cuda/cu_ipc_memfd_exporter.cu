@@ -1,17 +1,19 @@
-#include "cuda/cu_ipc_memfd_exporter.cuh"
+#include <absl/log/check.h>
+#include <absl/log/log.h>
+#include <absl/status/status.h>
 
 #include <memory>
+#include <numeric>
 #include <thread>
 #include <vector>
 
-#include <absl/log/log.h>
 #include "cuda/cu_dmabuf_gpu_page_allocator.cuh"
+#include "cuda/cu_ipc_memfd_exporter.cuh"
 #include "cuda/cuda_context_manager.cuh"
 #include "include/gpu_page_exporter_interface.h"
 #include "include/ipc_gpumem_fd_metadata.h"
 #include "include/unix_socket_server.h"
 #include "proto/gpu_rxq_configuration.pb.h"
-#include <absl/status/status.h>
 
 namespace tcpdirect {
 
@@ -24,22 +26,26 @@ absl::Status CuIpcMemfdExporter::Initialize(
   // Setup CUDA context and DmabufPageAllocator
   LOG(INFO) << "Setting up CUDA context and dmabuf page allocator ...";
 
-  int tcpd_qstart = config_list.rss_set_size();
-  int tcpd_qend = tcpd_qstart + config_list.tcpd_queue_size();
-
   for (const auto &gpu_rxq_config : config_list.gpu_rxq_configs()) {
     std::string ifname = gpu_rxq_config.ifname();
-    std::string gpu_pci_addr = gpu_rxq_config.gpu_pci_addr();
     std::string nic_pci_addr = gpu_rxq_config.nic_pci_addr();
-    int dev_id;
-    CUDA_ASSERT_SUCCESS(cudaDeviceGetByPCIBusId(&dev_id, gpu_pci_addr.c_str()))
-    ifname_binding_map_[ifname] = {
-        .dev_id = dev_id,
-        .config = gpu_rxq_config,
-        .page_allocator = std::make_unique<CuDmabufGpuPageAllocator>(
-            dev_id, gpu_pci_addr, nic_pci_addr, /*pool_size=*/RX_POOL_SIZE),
-    };
-    gpu_pci_to_ifname_map_[gpu_pci_addr] = ifname;
+    for (const auto &gpu_info : gpu_rxq_config.gpu_infos()) {
+      std::string gpu_pci_addr = gpu_info.gpu_pci_addr();
+      int dev_id;
+
+      CUDA_ASSERT_SUCCESS(
+          cudaDeviceGetByPCIBusId(&dev_id, gpu_pci_addr.c_str()));
+
+      gpu_pci_bindings_.emplace_back(GpuRxqBinding{
+          .dev_id = dev_id,
+          .gpu_pci_addr = gpu_pci_addr,
+          .ifname = ifname,
+          .page_allocator = std::make_unique<CuDmabufGpuPageAllocator>(
+              dev_id, gpu_pci_addr, nic_pci_addr, /*pool_size=*/RX_POOL_SIZE),
+          .queue_ids = {gpu_info.queue_ids().begin(),
+                        gpu_info.queue_ids().end()},
+      });
+    }
   }
 
   // 3. Allocate gpu memory, bind rxq, and get IpcGpuMemFdMetadata
@@ -47,27 +53,29 @@ absl::Status CuIpcMemfdExporter::Initialize(
       << "Allocating gpu memory, binding rxq, and getting cudaIpcMemHandle ...";
 
   std::vector<std::thread> alloc_threads;
-  for (auto &[_, gpu_rxq_binding] : ifname_binding_map_) {
-    auto &config = gpu_rxq_binding.config;
-    auto &dev_id = gpu_rxq_binding.dev_id;
+  for (auto &gpu_rxq_binding : gpu_pci_bindings_) {
+    const auto &gpu_pci_addr = gpu_rxq_binding.gpu_pci_addr;
+    const auto &ifname = gpu_rxq_binding.ifname;
+    const auto &dev_id = gpu_rxq_binding.dev_id;
     auto &page_allocator = *gpu_rxq_binding.page_allocator;
     auto &page_id = gpu_rxq_binding.page_id;
     auto &gpumem_fd_metadata = gpu_rxq_binding.gpumem_fd_metadata;
+    auto &qids = gpu_rxq_binding.queue_ids;
     alloc_threads.emplace_back([&]() {
       CUDA_ASSERT_SUCCESS(cudaSetDevice(dev_id));
       bool allocation_success = false;
       page_allocator.AllocatePage(RX_POOL_SIZE, &page_id, &allocation_success);
 
       if (!allocation_success) {
-        LOG(ERROR) << "Failed to allocate GPUMEM page: " << config.ifname();
+        LOG(ERROR) << "Failed to allocate GPUMEM page: " << ifname;
         return;
       }
 
-      for (int qid = tcpd_qstart; qid < tcpd_qend; ++qid) {
+      for (int qid : qids) {
         if (int ret = gpumem_bind_rxq(page_allocator.GetGpuMemFd(page_id),
-                                      config.ifname(), qid);
+                                      ifname, qid);
             ret < 0) {
-          LOG(ERROR) << "Failed to bind rxq: " << config.ifname();
+          LOG(ERROR) << "Failed to bind rxq: " << ifname;
           return;
         }
       }
@@ -77,12 +85,12 @@ absl::Status CuIpcMemfdExporter::Initialize(
 
     // Find memhandle by gpu pci
     us_servers_.emplace_back(std::make_unique<UnixSocketServer>(
-        absl::StrFormat("%s/get_gpu_fd_%s", prefix_, config.gpu_pci_addr()),
+        absl::StrFormat("%s/get_gpu_fd_%s", prefix_, gpu_pci_addr),
         /*service_handler=*/
         [&](UnixSocketMessage &&request, UnixSocketMessage *response,
             bool *fin) {
           if (request.has_proto() &&
-              request.proto().raw_bytes() == config.gpu_pci_addr()) {
+              request.proto().raw_bytes() == gpu_pci_addr) {
             response->set_fd(gpumem_fd_metadata.fd);
           } else {
             response->set_fd(-1);
@@ -92,14 +100,13 @@ absl::Status CuIpcMemfdExporter::Initialize(
         [&]() { CUDA_ASSERT_SUCCESS(cudaSetDevice(dev_id)); }));
 
     us_servers_.emplace_back(std::make_unique<UnixSocketServer>(
-        absl::StrFormat("%s/get_gpu_metadata_%s", prefix_,
-                        config.gpu_pci_addr()),
+        absl::StrFormat("%s/get_gpu_metadata_%s", prefix_, gpu_pci_addr),
         /*service_handler=*/
         [&](UnixSocketMessage &&request, UnixSocketMessage *response,
             bool *fin) {
           std::string *buffer = response->mutable_proto()->mutable_raw_bytes();
           if (request.has_proto() &&
-              request.proto().raw_bytes() == config.gpu_pci_addr()) {
+              request.proto().raw_bytes() == gpu_pci_addr) {
             for (int i = 0; i < sizeof(gpumem_fd_metadata); ++i) {
               buffer->push_back(*((char *)&gpumem_fd_metadata + i));
             }

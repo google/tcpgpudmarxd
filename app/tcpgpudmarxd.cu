@@ -200,8 +200,7 @@ int main(int argc, char **argv) {
 
   // Stopping the servers.
 CLEANUP:
-  std::cout << "Program terminates, starting clean-up procedure ..."
-            << std::endl;
+  LOG(INFO) << "Program terminates, starting clean-up procedure ...";
 
   LOG(INFO) << "Stopping Rx Rule Manager, recyling stale rules ...";
   rx_rule_manager.Cleanup();

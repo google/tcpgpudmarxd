@@ -107,7 +107,7 @@ add_library(cu_ipc_memfd_handle_exporter STATIC ${CU_IPC_MEMFD_HANDLE_EXPORTER_S
 target_include_directories(cu_ipc_memfd_handle_exporter PRIVATE ${CMAKE_BINARY_DIR} ${Protobuf_INCLUDE_DIRS})
 target_include_directories(cu_ipc_memfd_handle_exporter PUBLIC ${CMAKE_SOURCE_DIR})
 target_link_libraries(cu_ipc_memfd_handle_exporter PRIVATE CUDA::cuda_driver)
-target_link_libraries(cu_ipc_memfd_handle_exporter PRIVATE absl::log absl::status absl::str_format)
+target_link_libraries(cu_ipc_memfd_handle_exporter PRIVATE absl::absl_check absl::log absl::status absl::str_format)
 target_link_libraries(cu_ipc_memfd_handle_exporter PUBLIC tcpgpudmarxd_proto)
 target_link_libraries(cu_ipc_memfd_handle_exporter PUBLIC ${Protobuf_LIBRARIES})
 target_link_libraries(cu_ipc_memfd_handle_exporter PRIVATE cuda_common)

@@ -4,7 +4,7 @@ package tcpdirect;
 
 message UnixSocketProto {
   // Update the "last_modified" comment below after you add your message type
-  // last_modified: raw_bytes, index: 1.
+  // last_modified: queue_id_response, index: 4.
   oneof proto_payload_oneof {
     bytes raw_bytes = 1;  // Leave this intact for now for backward
                           // compatibility, so we can gradually migrate
@@ -13,7 +13,17 @@ message UnixSocketProto {
                           // will be deprecated later with its index number
                           // retired.
     FlowSteerRuleRequest flow_steer_rule_request = 2;
+    QueueIdQuery queue_id_query = 3;
+    QueueIdResponse queue_id_response = 4;
   }
+}
+
+message QueueIdQuery {
+  required string gpu_pci_addr = 1;
+}
+
+message QueueIdResponse {
+  repeated int32 queue_ids = 1;
 }
 
 message FlowSteerRuleRequest {
