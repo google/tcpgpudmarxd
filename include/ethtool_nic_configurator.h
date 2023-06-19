@@ -1,11 +1,12 @@
 #ifndef _EXPERIMENTAL_USERS_CHECHENGLIN_TCPGPUDMAD_INCLUDE_ETHTOOL_NIC_CONFIGURATOR_H_
 #define _EXPERIMENTAL_USERS_CHECHENGLIN_TCPGPUDMAD_INCLUDE_ETHTOOL_NIC_CONFIGURATOR_H_
 
+#include <absl/status/status.h>
+
 #include <string>
 
 #include "include/flow_steer_ntuple.h"
 #include "include/nic_configurator_interface.h"
-#include <absl/status/status.h>
 
 namespace tcpdirect {
 class EthtoolNicConfigurator : public NicConfiguratorInterface {
@@ -14,10 +15,12 @@ class EthtoolNicConfigurator : public NicConfiguratorInterface {
   ~EthtoolNicConfigurator() override { Cleanup(); }
   absl::Status Init() override { return absl::OkStatus(); }
   void Cleanup() override {}
-  absl::Status ToggleHeaderSplit(const std::string& ifname,
-                                 bool enable) override;
+  absl::Status TogglePrivateFeature(const std::string& ifname,
+                                    const std::string& feature,
+                                    bool on) override;
+  absl::Status ToggleFeature(const std::string& ifname,
+                             const std::string& feature, bool on) override;
   absl::Status SetRss(const std::string& ifname, int num_queues) override;
-  absl::Status SetNtuple(const std::string& ifname) override;
   absl::Status AddFlow(const std::string& ifname,
                        const struct FlowSteerNtuple& ntuple, int queue_id,
                        int location_id) override;

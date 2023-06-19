@@ -43,14 +43,6 @@ RxRuleManager::RxRuleManager(const GpuRxqConfigurationList& config_list,
 }
 
 absl::Status RxRuleManager::Init() {
-  // Set RSS for every NIC
-  for (const auto& ifname : ifnames_) {
-    if (auto status = nic_configurator_->SetRss(ifname, rss_set_size_);
-        !status.ok()) {
-      return status;
-    }
-  }
-
   AddUnixSocketServer("rx_rule_manager");
   AddUnixSocketServer("rx_rule_uninstall");
 
@@ -72,13 +64,6 @@ void RxRuleManager::Cleanup() {
           !status.ok()) {
         LOG(ERROR) << status;
       }
-    }
-  }
-  for (const auto& ifname : ifnames_) {
-    if (auto status =
-            nic_configurator_->SetRss(ifname, rss_set_size_ + tcpd_queue_size_);
-        !status.ok()) {
-      LOG(ERROR) << status;
     }
   }
   for (auto& us_server : us_servers_) {

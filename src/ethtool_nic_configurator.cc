@@ -1,32 +1,36 @@
 #include "include/ethtool_nic_configurator.h"
 
+#include <absl/log/log.h>
+#include <absl/status/status.h>
+#include <absl/strings/str_format.h>
 #include <arpa/inet.h>
-#include <stdlib.h>
 #include <linux/ethtool.h>
+#include <stdlib.h>
 
 #include <string>
 
-#include <absl/log/log.h>
 #include "include/flow_steer_ntuple.h"
-#include <absl/status/status.h>
-#include <absl/strings/str_format.h>
 
 namespace tcpdirect {
-absl::Status EthtoolNicConfigurator::ToggleHeaderSplit(
-    const std::string& ifname, bool enable) {
-  return RunSystem(
-      absl::StrFormat("ethtool --set-priv-flags %s enable-header-split %s",
-                      ifname, (enable ? "on" : "off")));
+absl::Status EthtoolNicConfigurator::TogglePrivateFeature(
+    const std::string& ifname, const std::string& feature, bool on) {
+  return RunSystem(absl::StrFormat("ethtool --set-priv-flags %s %s %s", ifname,
+                                   feature, (on ? "on" : "off")));
 }
+
+absl::Status EthtoolNicConfigurator::ToggleFeature(const std::string& ifname,
+                                                   const std::string& feature,
+                                                   bool on) {
+  return RunSystem(absl::StrFormat("ethtool -K %s %s %s", ifname, feature,
+                                   (on ? "on" : "off")));
+}
+
 absl::Status EthtoolNicConfigurator::SetRss(const std::string& ifname,
                                             int num_queues) {
   if (num_queues > 0)
     return RunSystem(absl::StrFormat("ethtool --set-rxfh-indir %s equal %d",
                                      ifname, num_queues));
   return absl::OkStatus();
-}
-absl::Status EthtoolNicConfigurator::SetNtuple(const std::string& ifname) {
-  return RunSystem(absl::StrFormat("ethtool -K %s ntuple on", ifname));
 }
 absl::Status EthtoolNicConfigurator::AddFlow(
     const std::string& ifname, const struct FlowSteerNtuple& ntuple,
@@ -57,7 +61,6 @@ absl::Status EthtoolNicConfigurator::RunSystem(const std::string& command) {
   if (auto ret = system(command.c_str()); ret != 0) {
     std::string error_msg = absl::StrFormat(
         "Run system failed.  Ret: %d, Command: %s", ret, command);
-    LOG(ERROR) << error_msg;
     return absl::InternalError(error_msg);
   }
   return absl::OkStatus();

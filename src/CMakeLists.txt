@@ -27,7 +27,6 @@ set_target_properties(gpu_rxq_configurator PROPERTIES CUDA_RUNTIME_LIBRARY Share
 # NIC configurator
 
 set(NIC_CONFIGURATOR_SRC
-	ioctl_nic_configurator.cc
 	dummy_ethtool_nic_configurator.cc
 	ethtool_no_headersplit_nic_configurator.cc
 	ethtool_nic_configurator.cc
@@ -37,7 +36,7 @@ set(NIC_CONFIGURATOR_SRC
 add_library(nic_configurator STATIC ${NIC_CONFIGURATOR_SRC})
 target_include_directories(nic_configurator PRIVATE ${CMAKE_BINARY_DIR} ${Protobuf_INCLUDE_DIRS})
 target_include_directories(nic_configurator PUBLIC ${CMAKE_SOURCE_DIR})
-target_link_libraries(nic_configurator PRIVATE absl::absl_check absl::status absl::str_format)
+target_link_libraries(nic_configurator PRIVATE absl::absl_check absl::log absl::status absl::str_format)
 target_link_libraries(nic_configurator PUBLIC tcpgpudmarxd_proto)
 target_link_libraries(nic_configurator PUBLIC ${Protobuf_LIBRARIES})
 
