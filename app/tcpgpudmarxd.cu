@@ -54,7 +54,7 @@ ABSL_FLAG(std::string, uds_path, "/tmp",
 
 namespace {
 
-constexpr std::string_view kVersion{"1.0.0"};
+constexpr std::string_view kVersion{"1.1.0"};
 
 static std::atomic<bool> gShouldStop(false);
 
@@ -91,6 +91,10 @@ int main(int argc, char **argv) {
     std::cout << kVersion << std::endl;
     return 0;
   }
+
+  // 0. Version Info
+
+  LOG(INFO) << absl::StrFormat("Running TCPD Receive Data Path Manager, version (%s)", kVersion);
 
   // 1. Collect GPU/NIC pair configurations
   std::string gpu_nic_preset = absl::GetFlag(FLAGS_gpu_nic_preset);
