@@ -1,8 +1,21 @@
-## Build the image and push it to your project repository
+## Build the image and push it to your project artifact registry
+
+Ensure docker is authorized to use gcloud:
 
 ```
-$ docker build -t <GCR path> -f Dockerfile .
-$ docker push <GCR path>
+gcloud auth configure-docker us-docker.pkg.dev
+```
+
+```
+$ docker build -t <artifact-registry path> -f Dockerfile .
+$ docker push <artifact-registry path>
+```
+
+Example:
+
+```
+docker build -t us-docker.pkg.dev/a3-tcpd-staging-hostpool/stable/tcpgpudmarxd -f Dockerfile .
+docker push us-docker.pkg.dev/a3-tcpd-staging-hostpool/stable/tcpgpudmarxd
 ```
 
 If you see DNS errors as the ones below when building the docker image,
@@ -28,7 +41,7 @@ Err:3 https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64
 Adding `--network=host` to the build command may resolve the issue.
 
 ```
-$ docker build --network=host -t <GCR path> -f Dockerfile .
+$ docker build --network=host -t <artifact-registry path> -f Dockerfile .
 ```
 
 If you see the following errors when trying to push the docker image:
@@ -43,13 +56,13 @@ in: https://cloud.google.com/container-registry/docs/advanced-authentication
 You can try:
 
 ```
-gcloud docker -- push <GCR path>
+gcloud docker -- push <artifact-registry path>
 ```
 
 or for staging:
 
 ```
-staging_gcloud docker -- push <GCR path>
+staging_gcloud docker -- push <artifact-registry path>
 ```
 
 Re-installing docker also helps.  Instructions are available in:
@@ -80,7 +93,7 @@ function run_tcpgpudmarxd() {
     --env LD_LIBRARY_PATH=/usr/local/nvidia/lib64 \
     --volume /tmp:/tmp \
     --entrypoint /tcpgpudmarxd/build/app/tcpgpudmarxd \
-    <GCR path> "$@"
+    <artifact-registry path> "$@"
 }
 ```
 
