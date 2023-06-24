@@ -177,11 +177,6 @@ absl::Status RxRuleManager::Init() {
 }
 
 void RxRuleManager::Cleanup() {
-  for (auto& [ifname, nic_rules_bank] : ifname_to_rules_bank_map_) {
-    for (int location_id : nic_rules_bank->LocationsInUse()) {
-      LOG_IF_ERROR(nic_configurator_->RemoveFlow(ifname, location_id));
-    }
-  }
   for (auto& us_server : us_servers_) {
     us_server->Stop();
   }
