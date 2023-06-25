@@ -62,6 +62,7 @@ class UnixSocketConnection {
   char* send_buffer_;
   std::queue<UnixSocketMessage> incoming_;
   std::queue<UnixSocketMessage> outgoing_;
+  std::string proto_data_;  // buffer for outgoing proto messages
   struct msghdr send_msg_;
   struct iovec send_iov_;
   char send_control_[CMSG_SPACE(sizeof(int))];

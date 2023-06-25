@@ -115,12 +115,12 @@ void UnixSocketConnection::SendFd(int fd, SendStatus* status) {
 
 void UnixSocketConnection::SendProto(const UnixSocketProto& proto,
                                      SendStatus* status) {
-  std::string proto_data;
-  proto.SerializeToString(&proto_data);
+  proto_data_.clear();
+  proto.SerializeToString(&proto_data_);
   memset(&send_msg_, 0, sizeof(send_msg_));
   if (send_state_ == LENGTH && send_offset_ == 0) {
     send_length_ = sizeof(uint16_t);
-    send_length_network_order_ = htons((uint16_t)proto_data.size());
+    send_length_network_order_ = htons((uint16_t)proto_data_.size());
     send_buffer_ = (char*)&send_length_network_order_;
   }
   // Setup IO vector
@@ -145,8 +145,8 @@ void UnixSocketConnection::SendProto(const UnixSocketProto& proto,
   // Send operation completes.  Move forward to next state or next message.
   switch (send_state_) {
     case LENGTH: {
-      send_length_ = (uint16_t)proto_data.size();
-      send_buffer_ = (char*)proto_data.data();
+      send_length_ = (uint16_t)proto_data_.size();
+      send_buffer_ = (char*)proto_data_.data();
       send_state_ = PAYLOAD;
       *status = IN_PROGRESS;
       break;
