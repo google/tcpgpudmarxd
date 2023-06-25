@@ -139,5 +139,8 @@ void CuIpcMemfdExporter::Cleanup() {
   for (auto &server : us_servers_) {
     server->Stop();
   }
+  for (auto &gpu_rxq_binding : gpu_pci_bindings_) {
+    gpu_rxq_binding.page_allocator->Cleanup();
+  }
 }
 }  // namespace tcpdirect

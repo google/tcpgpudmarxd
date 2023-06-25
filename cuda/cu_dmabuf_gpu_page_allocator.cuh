@@ -30,6 +30,8 @@ class CuDmabufGpuPageAllocator : public GpuPageAllocatorInterface {
   CUdeviceptr GetGpuMem(unsigned long id) override;
   int GetGpuMemFd(unsigned long id) override;
   void Reset() override {}
+  void Cleanup();
+
   ~CuDmabufGpuPageAllocator() override;
   IpcGpuMemFdMetadata GetIpcGpuMemFdMetadata(unsigned long id);
 

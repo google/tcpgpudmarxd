@@ -188,9 +188,11 @@ IpcGpuMemFdMetadata CuDmabufGpuPageAllocator::GetIpcGpuMemFdMetadata(
   };
 }
 
-CuDmabufGpuPageAllocator::~CuDmabufGpuPageAllocator() {
+void CuDmabufGpuPageAllocator::Cleanup() {
   for (auto &[id, _] : gpu_dma_buf_map_) {
     FreePage(id);
   }
 }
+
+CuDmabufGpuPageAllocator::~CuDmabufGpuPageAllocator() { }
 }  // namespace tcpdirect

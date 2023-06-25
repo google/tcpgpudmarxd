@@ -227,6 +227,8 @@ CLEANUP:
   LOG(INFO) << "Recovering NIC configurations ...";
   for (auto &gpu_rxq_config : gpu_rxq_configs.gpu_rxq_configs()) {
     LOG_IF_ERROR(nic_configurator->TogglePrivateFeature(
+        gpu_rxq_config.ifname(), "enable-header-split", true));
+    LOG_IF_ERROR(nic_configurator->TogglePrivateFeature(
         gpu_rxq_config.ifname(), "enable-header-split", false));
     LOG_IF_ERROR(nic_configurator->TogglePrivateFeature(
         gpu_rxq_config.ifname(), "enable-max-rx-buffer-size", false));
