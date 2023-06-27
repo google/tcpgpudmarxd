@@ -49,6 +49,7 @@ NicRulesBank::NicRulesBank(const std::string& ifname, int max_rx_rules) {
 }
 
 int NicRulesBank::UseRule(size_t flow_hash) {
+  if (unused_locations_.empty()) return -1;
   int location_id = unused_locations_.front();
   unused_locations_.pop();
   flow_hash_to_location_map_[flow_hash] = location_id;
@@ -286,6 +287,11 @@ absl::Status RxRuleManager::ConfigFlowSteering(
   }
 
   int location_id = nic_rules_bank->UseRule(flow_hash);
+
+  if (location_id < 0) {
+    return absl::ResourceExhaustedError(
+        absl::StrFormat("No more rx rules available for NIC: %s", ifname));
+  }
 
   int queue_id = -1;
 
