@@ -54,7 +54,7 @@ ABSL_FLAG(std::string, uds_path, "/tmp",
 
 namespace {
 
-constexpr std::string_view kVersion{"1.1.1"};
+constexpr std::string_view kVersion{"1.1.2"};
 
 static std::atomic<bool> gShouldStop(false);
 
