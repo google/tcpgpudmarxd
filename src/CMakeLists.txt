@@ -98,3 +98,4 @@ target_link_libraries(rx_rule_manager PRIVATE absl::log absl::status absl::statu
 target_link_libraries(rx_rule_manager PUBLIC tcpgpudmarxd_proto)
 target_link_libraries(rx_rule_manager PUBLIC proto_utils)
 target_link_libraries(rx_rule_manager PUBLIC ${Protobuf_LIBRARIES})
+target_link_libraries(rx_rule_manager PUBLIC GTest::gtest_main)

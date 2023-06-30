@@ -12,6 +12,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "gtest/gtest_prod.h"
 #include "include/flow_steer_ntuple.h"
 #include "include/nic_configurator_interface.h"
 #include "include/unix_socket_server.h"
@@ -32,7 +33,7 @@ enum RxRuleServerType {
 
 class NicRulesBank {
  public:
-  NicRulesBank(const std::string& ifname, int max_rx_rules);
+  NicRulesBank(const std::string &ifname, int max_rx_rules);
   bool Availble() const { return unused_locations_.size() > 0; }
   bool RuleExists(size_t flow_hash) {
     return flow_hash_to_location_map_.find(flow_hash) !=
@@ -51,8 +52,8 @@ class NicRulesBank {
 
 class GpuRxqScaler {
  public:
-  GpuRxqScaler(const std::string& gpu_pci_addr,
-               const std::vector<int>& queue_ids);
+  GpuRxqScaler(const std::string &gpu_pci_addr,
+               const std::vector<int> &queue_ids);
   int AddFlow(int location_id);
   void AddFlow(int location_id, int queue_id);
   void RemoveFlow(int location_id);
@@ -66,6 +67,11 @@ class GpuRxqScaler {
   std::vector<int> QueueIds();
 
  private:
+  FRIEND_TEST(GpuRxqScalerTest, AddFlowWithQueueIdSuccess);
+  FRIEND_TEST(GpuRxqScalerTest, AddFlowWithoutQueueIdSuccess);
+  FRIEND_TEST(GpuRxqScalerTest, RemoveFlowSuccess);
+  FRIEND_TEST(GpuRxqScalerTest, RemoveFlowFail);
+
   bool GreaterFlowCounts(int qa, int qb) {
     return qid_qinfo_map_[qa].flow_counts > qid_qinfo_map_[qb].flow_counts;
   }
@@ -77,23 +83,24 @@ class GpuRxqScaler {
 
 class RxRuleManager {
  public:
-  explicit RxRuleManager(const GpuRxqConfigurationList& config_list,
-                         const std::string& prefix,
-                         NicConfiguratorInterface* nic_configurator);
+  explicit RxRuleManager(const GpuRxqConfigurationList &config_list,
+                         const std::string &prefix,
+                         NicConfiguratorInterface *nic_configurator);
   ~RxRuleManager() { Cleanup(); }
   absl::Status Init();
   void Cleanup();
 
  private:
-  void AddFlowSteerRuleServer(const std::string& suffix);
+  FRIEND_TEST(RxRuleManagerConstructorTest, InitGpuRxqConfigSuccess);
+  void AddFlowSteerRuleServer(const std::string &suffix);
   void AddGpuQueueIdsServer();
   absl::StatusOr<std::string> GetGpuFromFlowSteerRuleRequest(
-      const FlowSteerRuleRequest& fsr);
-  absl::Status ConfigFlowSteering(const FlowSteerRuleRequest& fsr);
-  absl::Status DeleteFlowSteering(const FlowSteerRuleRequest& fsr);
-  size_t GetFlowHash(const struct FlowSteerNtuple& ntuple);
+      const FlowSteerRuleRequest &fsr);
+  absl::Status ConfigFlowSteering(const FlowSteerRuleRequest &fsr);
+  absl::Status DeleteFlowSteering(const FlowSteerRuleRequest &fsr);
+  size_t GetFlowHash(const struct FlowSteerNtuple &ntuple);
   std::string prefix_;
-  NicConfiguratorInterface* nic_configurator_;
+  NicConfiguratorInterface *nic_configurator_;
   std::unordered_map<std::string, std::unique_ptr<NicRulesBank>>
       ifname_to_rules_bank_map_;
   std::unordered_map<std::string, std::string> ifname_to_first_gpu_map_;
