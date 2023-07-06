@@ -47,8 +47,56 @@ target_link_libraries(rx_rule_client_test PUBLIC unix_socket_lib)
 target_link_libraries(rx_rule_client_test PUBLIC GTest::gtest_main)
 target_link_libraries(rx_rule_client_test PUBLIC GTest::gmock_main)
 
+add_executable(
+    gpu_rxq_configuration_factory_test
+    gpu_rxq_configuration_factory_test.cc
+)
+target_include_directories(gpu_rxq_configuration_factory_test PUBLIC ${CMAKE_SOURCE_DIR})
+target_include_directories(gpu_rxq_configuration_factory_test PRIVATE ${CMAKE_BINARY_DIR} ${Protobuf_INCLUDE_DIRS})
+target_link_libraries(gpu_rxq_configuration_factory_test PRIVATE absl::log absl::status absl::statusor absl::str_format)
+target_link_libraries(gpu_rxq_configuration_factory_test PUBLIC tcpgpudmarxd_proto)
+target_link_libraries(gpu_rxq_configuration_factory_test PUBLIC ${Protobuf_LIBRARIES})
+target_link_libraries(gpu_rxq_configuration_factory_test PUBLIC gpu_rxq_configurator)
+target_link_libraries(gpu_rxq_configuration_factory_test PUBLIC unix_socket_lib)
+target_link_libraries(gpu_rxq_configuration_factory_test PUBLIC GTest::gtest_main)
+target_link_libraries(gpu_rxq_configuration_factory_test PUBLIC GTest::gmock_main)
+
+add_executable(
+    proto_utils_test
+    proto_utils_test.cc
+)
+target_include_directories(proto_utils_test PUBLIC ${CMAKE_SOURCE_DIR})
+target_include_directories(proto_utils_test PRIVATE ${CMAKE_BINARY_DIR} ${Protobuf_INCLUDE_DIRS})
+target_link_libraries(proto_utils_test PRIVATE absl::log absl::status absl::statusor absl::str_format)
+target_link_libraries(proto_utils_test PUBLIC tcpgpudmarxd_proto)
+target_link_libraries(proto_utils_test PUBLIC ${Protobuf_LIBRARIES})
+target_link_libraries(proto_utils_test PUBLIC proto_utils)
+target_link_libraries(proto_utils_test PUBLIC unix_socket_lib)
+target_link_libraries(proto_utils_test PUBLIC GTest::gtest_main)
+target_link_libraries(proto_utils_test PUBLIC GTest::gmock_main)
+
+add_executable(
+    socket_helper_test
+    socket_helper_test.cc
+)
+target_include_directories(socket_helper_test PUBLIC ${CMAKE_SOURCE_DIR})
+target_include_directories(socket_helper_test PRIVATE ${CMAKE_BINARY_DIR} ${Protobuf_INCLUDE_DIRS})
+target_link_libraries(socket_helper_test PRIVATE absl::log absl::status absl::statusor absl::str_format)
+target_link_libraries(socket_helper_test PUBLIC tcpgpudmarxd_proto)
+target_link_libraries(socket_helper_test PUBLIC ${Protobuf_LIBRARIES})
+target_link_libraries(socket_helper_test PUBLIC socket_helper)
+target_link_libraries(socket_helper_test PUBLIC unix_socket_lib)
+target_link_libraries(socket_helper_test PUBLIC GTest::gtest_main)
+target_link_libraries(socket_helper_test PUBLIC GTest::gmock_main)
+
 include(GoogleTest)
 gtest_discover_tests(unix_socket_test)
 gtest_discover_tests(rx_rule_manager_test)
 gtest_discover_tests(rx_rule_client_test)
+gtest_discover_tests(gpu_rxq_configuration_factory_test)
+gtest_discover_tests(proto_utils_test)
+gtest_discover_tests(socket_helper_test)
+
+
+
 

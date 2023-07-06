@@ -1,0 +1,8 @@
+gpu_rxq_configs {
+  gpu_infos {
+    gpu_pci_addr: "0000:62:00.0"
+    queue_ids: 0
+  }
+  nic_pci_addr: "0000:63:00.0"
+  ifname: "hpn2"
+}

@@ -68,7 +68,7 @@ TEST_F(RxRuleClientTest, UpdateFlowSteerRuleSuccess) {
   flow_steer_ntuple.dst_sin = tcpdirect::AddressFromStr("5.6.7.8").sin;
   tcpdirect::SetAddressPort((union SocketAddress *)&flow_steer_ntuple.src_sin,
                             1234);
-  tcpdirect::SetAddressPort((union SocketAddress *)&flow_steer_ntuple.src_sin,
+  tcpdirect::SetAddressPort((union SocketAddress *)&flow_steer_ntuple.dst_sin,
                             5678);
   flow_steer_ntuple.flow_type = 1;
 
@@ -93,7 +93,7 @@ TEST_F(RxRuleClientTest, UpdateFlowSteerRuleFailed) {
   flow_steer_ntuple.dst_sin = tcpdirect::AddressFromStr("5.6.7.8").sin;
   tcpdirect::SetAddressPort((union SocketAddress *)&flow_steer_ntuple.src_sin,
                             1234);
-  tcpdirect::SetAddressPort((union SocketAddress *)&flow_steer_ntuple.src_sin,
+  tcpdirect::SetAddressPort((union SocketAddress *)&flow_steer_ntuple.dst_sin,
                             5678);
   flow_steer_ntuple.flow_type = 1;
 
@@ -120,7 +120,7 @@ TEST_F(RxRuleClientTest, PopBackSuccess) {
   flow_steer_ntuple.dst_sin = tcpdirect::AddressFromStr("5.6.7.8").sin;
   tcpdirect::SetAddressPort((union SocketAddress *)&flow_steer_ntuple.src_sin,
                             1234);
-  tcpdirect::SetAddressPort((union SocketAddress *)&flow_steer_ntuple.src_sin,
+  tcpdirect::SetAddressPort((union SocketAddress *)&flow_steer_ntuple.dst_sin,
                             5678);
   flow_steer_ntuple.flow_type = 1;
 
@@ -142,7 +142,7 @@ TEST_F(RxRuleClientTest, NoServer) {
   flow_steer_ntuple.dst_sin = tcpdirect::AddressFromStr("5.6.7.8").sin;
   tcpdirect::SetAddressPort((union SocketAddress *)&flow_steer_ntuple.src_sin,
                             1234);
-  tcpdirect::SetAddressPort((union SocketAddress *)&flow_steer_ntuple.src_sin,
+  tcpdirect::SetAddressPort((union SocketAddress *)&flow_steer_ntuple.dst_sin,
                             5678);
   flow_steer_ntuple.flow_type = 1;
 

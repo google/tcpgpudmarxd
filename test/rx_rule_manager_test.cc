@@ -24,6 +24,7 @@
 namespace tcpdirect {
 
 using tcpdirect::FlowSteerNtuple;
+using tcpdirect::GpuRxqConfigurationList;
 using tcpdirect::GpuRxqScaler;
 using tcpdirect::NicRulesBank;
 using tcpdirect::RxRuleManager;
@@ -50,7 +51,7 @@ class MockNicConfigurator : public tcpdirect::NicConfiguratorInterface {
 
 TEST(RxRuleManagerInitTest, InitSuccess) {
   MockNicConfigurator nic_configurator;
-  tcpdirect::GpuRxqConfigurationList list;
+  GpuRxqConfigurationList list;
   std::string prefix = "/tmp";
   RxRuleManager rx_rule_manager(list, prefix, &nic_configurator);
   EXPECT_EQ(rx_rule_manager.Init(), absl::OkStatus());
@@ -58,7 +59,7 @@ TEST(RxRuleManagerInitTest, InitSuccess) {
 
 TEST(RxRuleManagerInitTest, PopBackSuccess) {
   MockNicConfigurator nic_configurator;
-  tcpdirect::GpuRxqConfigurationList list;
+  GpuRxqConfigurationList list;
   std::string prefix = "/tmp/";
   RxRuleManager rx_rule_manager(list, prefix, &nic_configurator);
   EXPECT_EQ(rx_rule_manager.Init(), absl::OkStatus());
@@ -66,7 +67,7 @@ TEST(RxRuleManagerInitTest, PopBackSuccess) {
 
 TEST(RxRuleManagerConstructorTest, InitGpuRxqConfigSuccess) {
   MockNicConfigurator nic_configurator;
-  tcpdirect::GpuRxqConfigurationList list;
+  GpuRxqConfigurationList list;
   auto *config = list.add_gpu_rxq_configs();
   auto *gpu_info = config->add_gpu_infos();
   gpu_info->set_gpu_pci_addr("a.b.c.d");
