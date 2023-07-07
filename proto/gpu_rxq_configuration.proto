@@ -19,4 +19,5 @@ message GpuRxqConfigurationList {
   optional int32 max_rx_rules = 2;
   optional int32 tcpd_queue_size = 3;
   optional int32 rss_set_size = 4;
+  optional uint64 rx_pool_size = 5;
 }

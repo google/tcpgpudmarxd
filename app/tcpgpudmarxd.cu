@@ -51,10 +51,14 @@ ABSL_FLAG(std::string, gpu_shmem_type, "file",
 ABSL_FLAG(std::string, uds_path, "/tmp",
           "The path to the filesystem folder where unix domain sockets will be "
           "bound to.");
+ABSL_FLAG(uint64_t, rx_pool_size, 0,
+          "Receive buffer size. Default: 0, meaning no override and either the "
+          "value from GpuRxqConfigurationList (if present) or the component "
+          "level default value will be used.");
 
 namespace {
 
-constexpr std::string_view kVersion{"1.1.3"};
+constexpr std::string_view kVersion{"1.1.4"};
 
 static std::atomic<bool> gShouldStop(false);
 
@@ -126,6 +130,13 @@ int main(int argc, char **argv) {
     }
   } else {
     gpu_rxq_configs = GpuRxqConfigurationFactory::BuildPreset(gpu_nic_preset);
+  }
+
+  if (absl::GetFlag(FLAGS_rx_pool_size) > 0) {
+    // overrides rx_pool_size in the configs
+    size_t rx_pool_size = absl::GetFlag(FLAGS_rx_pool_size);
+    LOG(INFO) << absl::StrFormat("Overriding rx_pool_size: %ld", rx_pool_size);
+    gpu_rxq_configs.set_rx_pool_size(rx_pool_size);
   }
 
   CHECK(gpu_rxq_configs.gpu_rxq_configs().size() > 0);

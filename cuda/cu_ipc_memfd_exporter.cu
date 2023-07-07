@@ -23,8 +23,14 @@ absl::Status CuIpcMemfdExporter::Initialize(
   if (prefix_.back() == '/') {
     prefix_.pop_back();
   }
+
   // Setup CUDA context and DmabufPageAllocator
   LOG(INFO) << "Setting up CUDA context and dmabuf page allocator ...";
+
+  size_t rx_pool_size = RX_POOL_SIZE;
+  if (config_list.has_rx_pool_size()) {
+    rx_pool_size = config_list.rx_pool_size();
+  }
 
   for (const auto &gpu_rxq_config : config_list.gpu_rxq_configs()) {
     std::string ifname = gpu_rxq_config.ifname();
@@ -41,7 +47,7 @@ absl::Status CuIpcMemfdExporter::Initialize(
           .gpu_pci_addr = gpu_pci_addr,
           .ifname = ifname,
           .page_allocator = std::make_unique<CuDmabufGpuPageAllocator>(
-              dev_id, gpu_pci_addr, nic_pci_addr, /*pool_size=*/RX_POOL_SIZE),
+              dev_id, gpu_pci_addr, nic_pci_addr, rx_pool_size),
           .queue_ids = {gpu_info.queue_ids().begin(),
                         gpu_info.queue_ids().end()},
       });
@@ -64,7 +70,7 @@ absl::Status CuIpcMemfdExporter::Initialize(
     alloc_threads.emplace_back([&]() {
       CUDA_ASSERT_SUCCESS(cudaSetDevice(dev_id));
       bool allocation_success = false;
-      page_allocator.AllocatePage(RX_POOL_SIZE, &page_id, &allocation_success);
+      page_allocator.AllocatePage(rx_pool_size, &page_id, &allocation_success);
 
       if (!allocation_success) {
         LOG(ERROR) << "Failed to allocate GPUMEM page: " << ifname;

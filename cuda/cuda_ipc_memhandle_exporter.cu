@@ -24,6 +24,12 @@ absl::Status CudaIpcMemhandleExporter::Initialize(
   // Setup CUDA context and DmabufPageAllocator
   LOG(INFO) << "Setting up CUDA context and dmabuf page allocator ...";
 
+  size_t rx_pool_size = RX_POOL_SIZE;
+
+  if (config_list.has_rx_pool_size()) {
+    rx_pool_size = config_list.has_rx_pool_size();
+  }
+
   int tcpd_qstart = config_list.rss_set_size();
 
   for (const auto &gpu_rxq_config : config_list.gpu_rxq_configs()) {
@@ -35,7 +41,7 @@ absl::Status CudaIpcMemhandleExporter::Initialize(
           .cuda_ctx = std::make_unique<CudaContextManager>(gpu_pci_addr),
           .page_allocator = std::make_unique<DmabufGpuPageAllocator>(
               gpu_pci_addr, nic_pci_addr, /*create_page_pool=*/true,
-              /*pool_size=*/RX_POOL_SIZE),
+              rx_pool_size),
           .ifname = ifname,
           .queue_ids = {gpu_info.queue_ids().begin(),
                         gpu_info.queue_ids().end()},
@@ -56,7 +62,7 @@ absl::Status CudaIpcMemhandleExporter::Initialize(
     auto &qids = gpu_rxq_binding.queue_ids;
     cuda_ctx.PushContext();
     bool allocation_success = false;
-    page_allocator.AllocatePage(RX_POOL_SIZE, &page_id, &allocation_success);
+    page_allocator.AllocatePage(rx_pool_size, &page_id, &allocation_success);
 
     if (!allocation_success) {
       return absl::UnavailableError("Failed to allocate GPUMEM page: " +
