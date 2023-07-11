@@ -110,6 +110,7 @@ void DiscoverNetif(std::vector<NetifInfo>& nic_info, F&& filter) {
     }
     nic_info.emplace_back(info);
   }
+  freeifaddrs(interfaces);
 }
 }  // namespace gpudirect_tcpxd
 
