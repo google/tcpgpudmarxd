@@ -28,14 +28,14 @@
 #include "include/nic_configurator_interface.h"
 #include "include/rx_rule_manager.h"
 
-using tcpdirect::GpuPageExporterFactory;
-using tcpdirect::GpuPageExporterInterface;
-using tcpdirect::GpuRxqConfiguration;
-using tcpdirect::GpuRxqConfigurationFactory;
-using tcpdirect::GpuRxqConfigurationList;
-using tcpdirect::NicConfiguratorFactory;
-using tcpdirect::NicConfiguratorInterface;
-using tcpdirect::RxRuleManager;
+using gpudirect_tcpxd::GpuPageExporterFactory;
+using gpudirect_tcpxd::GpuPageExporterInterface;
+using gpudirect_tcpxd::GpuRxqConfiguration;
+using gpudirect_tcpxd::GpuRxqConfigurationFactory;
+using gpudirect_tcpxd::GpuRxqConfigurationList;
+using gpudirect_tcpxd::NicConfiguratorFactory;
+using gpudirect_tcpxd::NicConfiguratorInterface;
+using gpudirect_tcpxd::RxRuleManager;
 
 ABSL_FLAG(std::string, gpu_nic_preset, "auto",
           "The preset configuration for GPU/NIC pairs.  Options: monstertruck, "

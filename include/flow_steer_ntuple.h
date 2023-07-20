@@ -20,7 +20,7 @@
 #include <netinet/in.h>
 #include <stdint.h>
 
-namespace tcpdirect {
+namespace gpudirect_tcpxd {
 
 struct FlowSteerNtuple {
   uint32_t flow_type;
@@ -35,5 +35,5 @@ struct FlowSteerNtuple {
     };
   };
 };
-}  // namespace tcpdirect
+}  // namespace gpudirect_tcpxd
 #endif

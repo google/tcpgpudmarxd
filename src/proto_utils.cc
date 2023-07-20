@@ -25,7 +25,7 @@
 #include "include/socket_helper.h"
 #include "proto/unix_socket_proto.pb.h"
 
-namespace tcpdirect {
+namespace gpudirect_tcpxd {
 
 struct FlowSteerNtuple ConvertProtoToStruct(
     const FlowSteerNtupleProto& ntuple_proto) {
@@ -76,4 +76,4 @@ FlowSteerNtupleProto ConvertStructToProto(
 
   return ntuple_proto;
 }
-}  // namespace tcpdirect
+}  // namespace gpudirect_tcpxd

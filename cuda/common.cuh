@@ -8,7 +8,7 @@
 #include <cuda.h>
 
 
-namespace tcpdirect {
+namespace gpudirect_tcpxd {
 
 #define CU_ASSERT_SUCCESS(expr)                                         \
   {                                                                     \
@@ -45,5 +45,5 @@ namespace tcpdirect {
 using PciAddrToGpuIdxMap = std::unordered_map<std::string, int>;
 void GetPciAddrToGpuIndexMap(PciAddrToGpuIdxMap* pciaddr_gpuidx_map);
 
-}  // namespace tcpdirect
+}  // namespace gpudirect_tcpxd
 #endif

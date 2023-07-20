@@ -20,7 +20,7 @@
 #include "include/ethtool_nic_configurator.h"
 #include "include/ethtool_no_headersplit_nic_configurator.h"
 
-namespace tcpdirect {
+namespace gpudirect_tcpxd {
 std::unique_ptr<NicConfiguratorInterface> NicConfiguratorFactory::Build(
     const std::string& name) {
   if (name == "monstertruck" || name == "predvt") {
@@ -28,4 +28,4 @@ std::unique_ptr<NicConfiguratorInterface> NicConfiguratorFactory::Build(
   }
   return std::make_unique<EthtoolNicConfigurator>();
 }
-}  // namespace tcpdirect
+}  // namespace gpudirect_tcpxd

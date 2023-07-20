@@ -34,7 +34,7 @@
 #include <absl/container/flat_hash_map.h>
 #include <absl/status/status.h>
 
-namespace tcpdirect {
+namespace gpudirect_tcpxd {
 
 class UnixSocketServer {
   using ServiceFunc =
@@ -71,5 +71,5 @@ class UnixSocketServer {
   absl::flat_hash_map<int, std::unique_ptr<UnixSocketConnection>>
       connected_clients_;
 };
-}  // namespace tcpdirect
+}  // namespace gpudirect_tcpxd
 #endif

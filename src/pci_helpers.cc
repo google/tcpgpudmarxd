@@ -27,7 +27,7 @@
 
 #include <absl/log/log.h>
 
-namespace tcpdirect {
+namespace gpudirect_tcpxd {
 
 #define PCI_VENDOR_LEN 6
 
@@ -148,4 +148,4 @@ int list_vendor_devices(const char* parent_dir_path,
   return 0;
 }
 
-}  // namespace tcpdirect
+}  // namespace gpudirect_tcpxd

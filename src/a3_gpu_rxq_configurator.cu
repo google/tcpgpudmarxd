@@ -21,7 +21,7 @@ ABSL_FLAG(
     int, num_hops, 2,
     "Number of hops to the PCIE switch shared by the 2 GPUs and the NIC(s).");
 
-namespace tcpdirect {
+namespace gpudirect_tcpxd {
 namespace {
 constexpr int kRssSetSize{8};
 constexpr int kTcpdQueueCount{8};
@@ -135,4 +135,4 @@ GpuRxqConfigurationList A3GpuRxqConfigurator::GetConfigurations() {
   config_list.set_rss_set_size(kRssSetSize);
   return config_list;
 }
-}  // namespace tcpdirect
+}  // namespace gpudirect_tcpxd

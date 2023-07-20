@@ -1,6 +1,6 @@
 #include "cuda/common.cuh"
 
-namespace tcpdirect {
+namespace gpudirect_tcpxd {
 
 void GetPciAddrToGpuIndexMap(PciAddrToGpuIdxMap* pci_addr_to_gpu_idx) {
   int num_gpu = 0;
@@ -17,4 +17,4 @@ void GetPciAddrToGpuIndexMap(PciAddrToGpuIdxMap* pci_addr_to_gpu_idx) {
     LOG(INFO) << absl::StrFormat("%s --> CUDA device %d", kv.first, kv.second);
   }
 }
-}  // namespace tcpdirect
+}  // namespace gpudirect_tcpxd

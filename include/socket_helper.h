@@ -27,7 +27,7 @@
 #include <string>
 #include <vector>
 
-namespace tcpdirect {
+namespace gpudirect_tcpxd {
 
 union SocketAddress {
   struct sockaddr sa;
@@ -103,6 +103,6 @@ void DiscoverNetif(std::vector<NetifInfo>& nic_info, F&& filter) {
     nic_info.emplace_back(info);
   }
 }
-}  // namespace tcpdirect
+}  // namespace gpudirect_tcpxd
 
 #endif /* _THIRD_PARTY_TCPDIRECT_RX_MANAGER_BENCHMARK_SOCKET_HELPER_H_ */

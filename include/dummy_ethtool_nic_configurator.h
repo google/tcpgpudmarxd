@@ -22,11 +22,11 @@
 #include "include/ethtool_nic_configurator.h"
 #include <absl/status/status.h>
 
-namespace tcpdirect {
+namespace gpudirect_tcpxd {
 class DummyEthtoolNicConfigurator : public EthtoolNicConfigurator {
  public:
   DummyEthtoolNicConfigurator() = default;
   absl::Status RunSystem(const std::string& command) override;
 };
-}  // namespace tcpdirect
+}  // namespace gpudirect_tcpxd
 #endif

@@ -19,7 +19,7 @@
 #include <absl/log/log.h>
 #include <absl/strings/str_format.h>
 
-namespace tcpdirect {
+namespace gpudirect_tcpxd {
 int GpuPageExporterInterface::gpumem_bind_rxq(int fd, const std::string& ifname,
                                               int rxqid) {
   struct dma_buf_frags_bind_rx_queue bind_cmd;
@@ -33,4 +33,4 @@ int GpuPageExporterInterface::gpumem_bind_rxq(int fd, const std::string& ifname,
   }
   return 0;
 }
-}  // namespace tcpdirect
+}  // namespace gpudirect_tcpxd

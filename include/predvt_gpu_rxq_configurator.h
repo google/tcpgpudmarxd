@@ -22,10 +22,10 @@
 
 #include "include/gpu_rxq_configurator_interface.h"
 
-namespace tcpdirect {
+namespace gpudirect_tcpxd {
 class PreDvtGpuRxqConfigurator : public GpuRxqConfiguratorInterface {
  public:
   GpuRxqConfigurationList GetConfigurations() override;
 };
-}  // namespace tcpdirect
+}  // namespace gpudirect_tcpxd
 #endif

@@ -18,7 +18,7 @@
 #include <utility>
 #include <vector>
 
-namespace tcpdirect {
+namespace gpudirect_tcpxd {
 GpuRxqConfigurationList MonstertruckGpuRxqConfigurator::GetConfigurations() {
   GpuRxqConfigurationList config_list;
   {
@@ -68,4 +68,4 @@ GpuRxqConfigurationList MonstertruckGpuRxqConfigurator::GetConfigurations() {
   config_list.set_rss_set_size(0);
   return config_list;
 }
-}  // namespace tcpdirect
+}  // namespace gpudirect_tcpxd

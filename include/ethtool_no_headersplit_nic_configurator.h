@@ -24,7 +24,7 @@
 #include "include/ethtool_nic_configurator.h"
 #include "include/flow_steer_ntuple.h"
 
-namespace tcpdirect {
+namespace gpudirect_tcpxd {
 class EthtoolNoHeaderSplitNicConfigurator : public EthtoolNicConfigurator {
  public:
   EthtoolNoHeaderSplitNicConfigurator() = default;
@@ -33,5 +33,5 @@ class EthtoolNoHeaderSplitNicConfigurator : public EthtoolNicConfigurator {
                                     const std::string& feature,
                                     bool on) override;
 };
-}  // namespace tcpdirect
+}  // namespace gpudirect_tcpxd
 #endif

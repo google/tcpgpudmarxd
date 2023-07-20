@@ -8,7 +8,7 @@
 #include <absl/status/statusor.h>
 #include <absl/log/check.h>
 
-namespace tcpdirect {
+namespace gpudirect_tcpxd {
 absl::StatusOr<std::unique_ptr<GpuPageHandleInterface>>
 CudaIpcMemhandleImporter::Import(const std::string& prefix,
                                  const std::string& gpu_pci_addr) {
@@ -26,4 +26,4 @@ CudaIpcMemhandleImporter::Import(const std::string& prefix,
   }
   return absl::NotFoundError("Not found");
 }
-}  // namespace tcpdirect
+}  // namespace gpudirect_tcpxd

@@ -35,7 +35,7 @@
 #include "proto/unix_socket_proto.pb.h"
 #include <absl/status/status.h>
 
-namespace tcpdirect {
+namespace gpudirect_tcpxd {
 
 enum SendStatus {
   DONE = 0,
@@ -88,5 +88,5 @@ class UnixSocketConnection {
   char recv_control_[CMSG_SPACE(sizeof(int))];
 };
 
-}  // namespace tcpdirect
+}  // namespace gpudirect_tcpxd
 #endif

@@ -25,7 +25,7 @@
 
 #include "include/flow_steer_ntuple.h"
 
-namespace tcpdirect {
+namespace gpudirect_tcpxd {
 absl::Status EthtoolNicConfigurator::TogglePrivateFeature(
     const std::string& ifname, const std::string& feature, bool on) {
   return RunSystem(absl::StrFormat("ethtool --set-priv-flags %s %s %s", ifname,
@@ -79,4 +79,4 @@ absl::Status EthtoolNicConfigurator::RunSystem(const std::string& command) {
   }
   return absl::OkStatus();
 }
-}  // namespace tcpdirect
+}  // namespace gpudirect_tcpxd

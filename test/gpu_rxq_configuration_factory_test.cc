@@ -42,7 +42,7 @@
 #include <google/protobuf/text_format.h>
 
 namespace {
-using tcpdirect::GpuRxqConfigurationList;
+using gpudirect_tcpxd::GpuRxqConfigurationList;
 
 TEST(GpuRxqConfigurationFactoryTest, GetFromFileSuccess) {
   GpuRxqConfigurationList list;
@@ -55,7 +55,7 @@ TEST(GpuRxqConfigurationFactoryTest, GetFromFileSuccess) {
   std::string filename =
       "../../test/data/gpu_rxq_configuration_factory_test.txt";
   auto gpu_rxq_configs =
-      tcpdirect::GpuRxqConfigurationFactory::FromFile(filename);
+      gpudirect_tcpxd::GpuRxqConfigurationFactory::FromFile(filename);
   EXPECT_EQ(gpu_rxq_configs.DebugString(), list.DebugString());
 }
 
@@ -72,7 +72,7 @@ TEST(GpuRxqConfigurationFactoryTest, GetFromCmdLineSuccess) {
     }
   )pb";
   list =
-      tcpdirect::GpuRxqConfigurationFactory::FromCmdLine(proto_string);
+      gpudirect_tcpxd::GpuRxqConfigurationFactory::FromCmdLine(proto_string);
   EXPECT_EQ(list.DebugString(), list.DebugString());
 }
 } // namespace

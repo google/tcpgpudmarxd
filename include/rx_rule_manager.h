@@ -35,7 +35,7 @@
 #include "proto/gpu_rxq_configuration.pb.h"
 #include "proto/unix_socket_message.pb.h"
 
-namespace tcpdirect {
+namespace gpudirect_tcpxd {
 
 struct QueueInfo {
   int queue_id;
@@ -126,5 +126,5 @@ class RxRuleManager {
   std::unordered_map<std::string, std::string> ip_to_ifname_map_;
   std::vector<std::unique_ptr<UnixSocketServer>> us_servers_;
 };
-}  // namespace tcpdirect
+}  // namespace gpudirect_tcpxd
 #endif

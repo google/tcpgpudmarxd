@@ -21,7 +21,7 @@
 #include <stdint.h>
 
 #include <cstddef>
-namespace tcpdirect {
+namespace gpudirect_tcpxd {
 #define KERNEL_VERSION(a, b, c) (((a) << 16) + ((b) << 8) + (c))
 
 inline static constexpr int OFF_FLAG_DEF_SIZE = 42;
@@ -113,5 +113,5 @@ const struct off_flag_def off_flag_def[] = {
     {"rxhash", "receive-hashing", "rx-hashing", 0, 0, ETH_FLAG_RXHASH, 0},
 };
 
-}  // namespace tcpdirect
+}  // namespace gpudirect_tcpxd
 #endif  // EXPERIMENTAL_USERS_CHECHENGLIN_TCPGPUDMAD_INCLUDE_ETHTOOL_COMMON_H_

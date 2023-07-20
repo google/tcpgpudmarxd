@@ -14,7 +14,7 @@
 
 syntax = "proto2";
 
-package tcpdirect;
+package gpudirect_tcpxd;
 
 message GpuInfo {
   optional string gpu_pci_addr = 1;

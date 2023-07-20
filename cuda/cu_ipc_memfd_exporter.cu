@@ -15,7 +15,7 @@
 #include "include/unix_socket_server.h"
 #include "proto/gpu_rxq_configuration.pb.h"
 
-namespace tcpdirect {
+namespace gpudirect_tcpxd {
 
 absl::Status CuIpcMemfdExporter::Initialize(
     const GpuRxqConfigurationList &config_list, const std::string &prefix) {
@@ -149,4 +149,4 @@ void CuIpcMemfdExporter::Cleanup() {
     gpu_rxq_binding.page_allocator->Cleanup();
   }
 }
-}  // namespace tcpdirect
+}  // namespace gpudirect_tcpxd

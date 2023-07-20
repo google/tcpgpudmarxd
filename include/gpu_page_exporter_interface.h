@@ -30,7 +30,7 @@
 #include "proto/gpu_rxq_configuration.pb.h"
 #include <absl/status/status.h>
 
-namespace tcpdirect {
+namespace gpudirect_tcpxd {
 
 #define DMA_BUF_BASE 'b'
 #define RX_POOL_SIZE (1UL << 32)
@@ -51,5 +51,5 @@ class GpuPageExporterInterface {
   virtual void Cleanup() = 0;
   static int gpumem_bind_rxq(int fd, const std::string& ifname, int rxqid);
 };
-}  // namespace tcpdirect
+}  // namespace gpudirect_tcpxd
 #endif

@@ -6,7 +6,7 @@
 #include "cuda/common.cuh"
 #include <absl/strings/str_format.h>
 
-namespace tcpdirect {
+namespace gpudirect_tcpxd {
 
 CuIpcMemfdHandle::CuIpcMemfdHandle(int fd, int dev_id, size_t size,
                                    size_t align) {
@@ -36,4 +36,4 @@ CuIpcMemfdHandle::~CuIpcMemfdHandle() {
   cuMemAddressFree(ptr_, size_);
 }
 
-}  // namespace tcpdirect
+}  // namespace gpudirect_tcpxd

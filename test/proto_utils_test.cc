@@ -45,9 +45,9 @@
 #include <google/protobuf/text_format.h>
 
 namespace {
-using tcpdirect::FlowSteerNtuple;
-using tcpdirect::FlowSteerNtupleProto;
-using tcpdirect::SocketAddress;
+using gpudirect_tcpxd::FlowSteerNtuple;
+using gpudirect_tcpxd::FlowSteerNtupleProto;
+using gpudirect_tcpxd::SocketAddress;
 
 TEST(ProtoUtilsTest, ConvertProtoToStructSuccess) {
   FlowSteerNtupleProto ntuple_proto;
@@ -58,33 +58,33 @@ TEST(ProtoUtilsTest, ConvertProtoToStructSuccess) {
   auto *dst = ntuple_proto.mutable_dst();
   dst->set_ip_address("5.6.7.8");
   dst->set_port(3);
-  auto proto_struct = tcpdirect::ConvertProtoToStruct(ntuple_proto);
+  auto proto_struct = gpudirect_tcpxd::ConvertProtoToStruct(ntuple_proto);
 
   EXPECT_EQ(proto_struct.flow_type, 1);
   EXPECT_EQ(
-      tcpdirect::AddressToStr((union SocketAddress *)&proto_struct.src_sin),
+      gpudirect_tcpxd::AddressToStr((union SocketAddress *)&proto_struct.src_sin),
       "1.2.3.4");
   EXPECT_EQ(
-      tcpdirect::GetAddressPort((union SocketAddress *)&proto_struct.src_sin),
+      gpudirect_tcpxd::GetAddressPort((union SocketAddress *)&proto_struct.src_sin),
       2);
   EXPECT_EQ(
-      tcpdirect::AddressToStr((union SocketAddress *)&proto_struct.dst_sin),
+      gpudirect_tcpxd::AddressToStr((union SocketAddress *)&proto_struct.dst_sin),
       "5.6.7.8");
   EXPECT_EQ(
-      tcpdirect::GetAddressPort((union SocketAddress *)&proto_struct.dst_sin),
+      gpudirect_tcpxd::GetAddressPort((union SocketAddress *)&proto_struct.dst_sin),
       3);
 }
 
 TEST(ProtoUtilsTest, ConvertStructToProtoSuccess) {
   FlowSteerNtuple flow_steer_ntuple;
   flow_steer_ntuple.flow_type = 1;
-  flow_steer_ntuple.src_sin = tcpdirect::AddressFromStr("1.2.3.4").sin;
-  flow_steer_ntuple.dst_sin = tcpdirect::AddressFromStr("5.6.7.8").sin;
-  tcpdirect::SetAddressPort((union SocketAddress *)&flow_steer_ntuple.src_sin,
+  flow_steer_ntuple.src_sin = gpudirect_tcpxd::AddressFromStr("1.2.3.4").sin;
+  flow_steer_ntuple.dst_sin = gpudirect_tcpxd::AddressFromStr("5.6.7.8").sin;
+  gpudirect_tcpxd::SetAddressPort((union SocketAddress *)&flow_steer_ntuple.src_sin,
                             2);
-  tcpdirect::SetAddressPort((union SocketAddress *)&flow_steer_ntuple.dst_sin,
+  gpudirect_tcpxd::SetAddressPort((union SocketAddress *)&flow_steer_ntuple.dst_sin,
                             3);
-  auto proto = tcpdirect::ConvertStructToProto(flow_steer_ntuple);
+  auto proto = gpudirect_tcpxd::ConvertStructToProto(flow_steer_ntuple);
 
   EXPECT_EQ(proto.flow_type(), 1);
   EXPECT_EQ(proto.src().ip_address(), "1.2.3.4");

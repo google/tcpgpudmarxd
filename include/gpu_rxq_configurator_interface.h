@@ -23,12 +23,12 @@
 
 #include "proto/gpu_rxq_configuration.pb.h"
 
-namespace tcpdirect {
+namespace gpudirect_tcpxd {
 
 class GpuRxqConfiguratorInterface {
  public:
   virtual GpuRxqConfigurationList GetConfigurations() = 0;
   virtual ~GpuRxqConfiguratorInterface() = default;
 };
-}  // namespace tcpdirect
+}  // namespace gpudirect_tcpxd
 #endif

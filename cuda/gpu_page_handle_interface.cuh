@@ -3,11 +3,11 @@
 
 #include <cuda.h>
 
-namespace tcpdirect {
+namespace gpudirect_tcpxd {
 class GpuPageHandleInterface {
  public:
   virtual ~GpuPageHandleInterface() = default;
   virtual CUdeviceptr GetGpuMem() = 0;
 };
-}  // namespace tcpdirect
+}  // namespace gpudirect_tcpxd
 #endif

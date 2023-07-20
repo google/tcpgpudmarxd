@@ -14,7 +14,7 @@
 
 syntax = "proto2";
 
-package tcpdirect;
+package gpudirect_tcpxd;
 
 message UnixSocketProto {
   // Update the "last_modified" comment below after you add your message type

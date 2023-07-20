@@ -9,7 +9,7 @@
 #include "cuda/gpu_page_allocator_interface.cuh"
 #include "include/ipc_gpumem_fd_metadata.h"
 
-namespace tcpdirect {
+namespace gpudirect_tcpxd {
 
 struct CuGpuDmaBuf {
   int dma_buf_fd{-1};
@@ -58,5 +58,5 @@ class CuDmabufGpuPageAllocator : public GpuPageAllocatorInterface {
   CuDmabufGpuPageAllocator(const CuDmabufGpuPageAllocator &);
   void operator=(const CuDmabufGpuPageAllocator &);
 };
-}  // namespace tcpdirect
+}  // namespace gpudirect_tcpxd
 #endif

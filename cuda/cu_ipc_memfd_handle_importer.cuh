@@ -6,7 +6,7 @@
 #include "cuda/gpu_page_handle_interface.cuh"
 #include <absl/status/statusor.h>
 
-namespace tcpdirect {
+namespace gpudirect_tcpxd {
 
 class CuIpcMemfdHandleImporter {
  public:
@@ -14,6 +14,6 @@ class CuIpcMemfdHandleImporter {
       const std::string& prefix, const std::string& gpu_pci_addr);
 };
 
-}  // namespace tcpdirect
+}  // namespace gpudirect_tcpxd
 
 #endif

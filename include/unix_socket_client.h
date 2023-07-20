@@ -25,7 +25,7 @@
 #include <absl/status/status.h>
 #include <absl/status/statusor.h>
 
-namespace tcpdirect {
+namespace gpudirect_tcpxd {
 class UnixSocketClient {
  public:
   explicit UnixSocketClient(std::string path) : path_(path) {}
@@ -37,5 +37,5 @@ class UnixSocketClient {
   std::unique_ptr<UnixSocketConnection> conn_;
   std::string path_;
 };
-}  // namespace tcpdirect
+}  // namespace gpudirect_tcpxd
 #endif

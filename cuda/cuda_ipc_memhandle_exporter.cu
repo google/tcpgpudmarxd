@@ -13,7 +13,7 @@
 #include "proto/gpu_rxq_configuration.pb.h"
 #include "proto/unix_socket_message.pb.h"
 
-namespace tcpdirect {
+namespace gpudirect_tcpxd {
 
 absl::Status CudaIpcMemhandleExporter::Initialize(
     const GpuRxqConfigurationList &config_list, const std::string &prefix) {
@@ -124,4 +124,4 @@ void CudaIpcMemhandleExporter::Cleanup() {
     server->Stop();
   }
 }
-}  // namespace tcpdirect
+}  // namespace gpudirect_tcpxd

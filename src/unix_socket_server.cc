@@ -35,7 +35,7 @@
 #include <absl/status/status.h>
 #include <absl/strings/str_format.h>
 
-namespace tcpdirect {
+namespace gpudirect_tcpxd {
 
 namespace {
 constexpr int kDefaultBacklog{1024};
@@ -199,4 +199,4 @@ void UnixSocketServer::RemoveClient(int client_socket) {
   UnregisterFd(client_socket);
   connected_clients_.erase(client_socket);
 }
-}  // namespace tcpdirect
+}  // namespace gpudirect_tcpxd

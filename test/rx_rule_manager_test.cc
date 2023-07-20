@@ -35,15 +35,15 @@
 #include "include/socket_helper.h"
 #include "proto/unix_socket_message.pb.h"
 
-namespace tcpdirect {
+namespace gpudirect_tcpxd {
 
-using tcpdirect::FlowSteerNtuple;
-using tcpdirect::GpuRxqConfigurationList;
-using tcpdirect::GpuRxqScaler;
-using tcpdirect::NicRulesBank;
-using tcpdirect::RxRuleManager;
+using gpudirect_tcpxd::FlowSteerNtuple;
+using gpudirect_tcpxd::GpuRxqConfigurationList;
+using gpudirect_tcpxd::GpuRxqScaler;
+using gpudirect_tcpxd::NicRulesBank;
+using gpudirect_tcpxd::RxRuleManager;
 
-class MockNicConfigurator : public tcpdirect::NicConfiguratorInterface {
+class MockNicConfigurator : public gpudirect_tcpxd::NicConfiguratorInterface {
  public:
   MOCK_METHOD(absl::Status, Init, (), (override));
   MOCK_METHOD(void, Cleanup, (), (override));
@@ -259,4 +259,4 @@ TEST(GpuRxqScalerTest, PushQueueIdsSuccess) {
               testing::UnorderedElementsAre(0, 1, 2, 3));
 }
 
-}  // namespace tcpdirect
+}  // namespace gpudirect_tcpxd

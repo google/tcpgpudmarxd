@@ -32,9 +32,9 @@
 
 namespace {
 
-using tcpdirect::UnixSocketClient;
-using tcpdirect::UnixSocketMessage;
-using tcpdirect::UnixSocketServer;
+using gpudirect_tcpxd::UnixSocketClient;
+using gpudirect_tcpxd::UnixSocketMessage;
+using gpudirect_tcpxd::UnixSocketServer;
 
 #define EXPECT_OK(status) EXPECT_TRUE(status.ok())
 

@@ -1,6 +1,6 @@
 #include "cuda/cuda_context_manager.cuh"
 
-namespace tcpdirect {
+namespace gpudirect_tcpxd {
 CudaContextManager::CudaContextManager(int gpu_cuda_idx) {
   CU_ASSERT_SUCCESS(cuDeviceGet(&dev, gpu_cuda_idx));
   CU_ASSERT_SUCCESS(cuCtxCreate(&ctx, 0, dev));
@@ -24,4 +24,4 @@ CudaContextManager::~CudaContextManager() {
   CUcontext old_ctx;
   CU_ASSERT_SUCCESS(cuCtxPopCurrent(&old_ctx));
 }
-}  // namespace tcpdirect
+}  // namespace gpudirect_tcpxd

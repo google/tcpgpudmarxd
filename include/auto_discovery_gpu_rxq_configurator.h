@@ -23,10 +23,10 @@
 
 #include "include/gpu_rxq_configurator_interface.h"
 
-namespace tcpdirect {
+namespace gpudirect_tcpxd {
 class AutoDiscoveryGpuRxqConfigurator : public GpuRxqConfiguratorInterface {
  public:
   GpuRxqConfigurationList GetConfigurations() override;
 };
-}  // namespace tcpdirect
+}  // namespace gpudirect_tcpxd
 #endif  // EXPERIMENTAL_USERS_CHECHENGLIN_TCPGPUDMAD_INCLUDE_AUTO_DISCOVERY_GPU_RXQ_CONFIGURATOR_H_

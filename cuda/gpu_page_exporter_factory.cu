@@ -7,7 +7,7 @@
 #include "cuda/cuda_ipc_memhandle_exporter.cuh"
 #include "include/gpu_page_exporter_interface.h"
 
-namespace tcpdirect {
+namespace gpudirect_tcpxd {
 std::unique_ptr<GpuPageExporterInterface> GpuPageExporterFactory::Build(
     const std::string& type) {
   if (type == "file") {
@@ -17,4 +17,4 @@ std::unique_ptr<GpuPageExporterInterface> GpuPageExporterFactory::Build(
   }
   return nullptr;
 }
-}  // namespace tcpdirect
+}  // namespace gpudirect_tcpxd

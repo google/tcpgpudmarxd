@@ -24,7 +24,7 @@
 
 #include "include/flow_steer_ntuple.h"
 
-namespace tcpdirect {
+namespace gpudirect_tcpxd {
 class NicConfiguratorInterface {
  public:
   virtual ~NicConfiguratorInterface() = default;
@@ -42,5 +42,5 @@ class NicConfiguratorInterface {
   virtual absl::Status RemoveFlow(const std::string& ifname,
                                   int location_id) = 0;
 };
-}  // namespace tcpdirect
+}  // namespace gpudirect_tcpxd
 #endif

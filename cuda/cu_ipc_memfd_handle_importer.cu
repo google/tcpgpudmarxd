@@ -12,7 +12,7 @@
 #include <absl/strings/str_format.h>
 #include <absl/log/check.h>
 
-namespace tcpdirect {
+namespace gpudirect_tcpxd {
 absl::StatusOr<std::unique_ptr<GpuPageHandleInterface>>
 CuIpcMemfdHandleImporter::Import(const std::string& prefix,
                                  const std::string& gpu_pci_addr) {
@@ -57,4 +57,4 @@ CuIpcMemfdHandleImporter::Import(const std::string& prefix,
       new CuIpcMemfdHandle(resp.value().fd(), dev_id, gpumem_fd_metadata.size,
                            gpumem_fd_metadata.align));
 }
-}  // namespace tcpdirect
+}  // namespace gpudirect_tcpxd

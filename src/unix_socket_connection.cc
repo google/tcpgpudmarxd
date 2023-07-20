@@ -31,7 +31,7 @@
 #include <absl/status/status.h>
 #include <absl/strings/str_format.h>
 
-namespace tcpdirect {
+namespace gpudirect_tcpxd {
 
 UnixSocketConnection::UnixSocketConnection(int fd) : fd_(fd) {
   read_length_ = sizeof(uint16_t);
@@ -210,4 +210,4 @@ UnixSocketMessage UnixSocketConnection::ReadMessage() {
   return ret;
 }
 
-}  // namespace tcpdirect
+}  // namespace gpudirect_tcpxd

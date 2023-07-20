@@ -8,7 +8,7 @@
 #include "cuda/common.cuh"
 
 
-namespace tcpdirect {
+namespace gpudirect_tcpxd {
 class CudaContextManager {
  public:
   CudaContextManager(int gpu_cuda_idx);
@@ -21,6 +21,6 @@ class CudaContextManager {
   CUcontext ctx;
   CUdevice dev;
 };
-}  // namespace tcpdirect
+}  // namespace gpudirect_tcpxd
 
 #endif

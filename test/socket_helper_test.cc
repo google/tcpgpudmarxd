@@ -44,19 +44,19 @@
 #include <google/protobuf/text_format.h>
 
 namespace {
-using tcpdirect::SocketAddress;
+using gpudirect_tcpxd::SocketAddress;
 
 TEST(SocketHelperTest, SetAddressPortIpv4) {
   SocketAddress socket_address;
   socket_address.sa.sa_family = AF_INET;
-  tcpdirect::SetAddressPort(&socket_address, 1234);
+  gpudirect_tcpxd::SetAddressPort(&socket_address, 1234);
   EXPECT_EQ(socket_address.sin.sin_port, htons(1234));
 }
 
 TEST(SocketHelperTest, SetAddressPortIpv6) {
   SocketAddress socket_address;
   socket_address.sa.sa_family = AF_INET6;
-  tcpdirect::SetAddressPort(&socket_address, 1234);
+  gpudirect_tcpxd::SetAddressPort(&socket_address, 1234);
   EXPECT_EQ(socket_address.sin6.sin6_port, htons(1234));
 }
 
@@ -81,7 +81,7 @@ TEST(SocketHelperTest, AddressFromStrIpv4) {
   void *dst = (void *)&socket_address.sin.sin_addr;
   int ret = inet_pton(sa_family, address_str.c_str(), dst);
 
-  auto addr = tcpdirect::AddressFromStr(address_str);
+  auto addr = gpudirect_tcpxd::AddressFromStr(address_str);
   EXPECT_EQ(memcmp(&addr.sin.sin_addr, dst, sizeof(struct in_addr )), 0);
 }
 
@@ -92,7 +92,7 @@ TEST(SocketHelperTest, AddressFromStrIpv6) {
   void *dst = (void *)&socket_address.sin6.sin6_addr;
   int ret = inet_pton(sa_family, address_str.c_str(), dst);
 
-  auto addr = tcpdirect::AddressFromStr(address_str);
+  auto addr = gpudirect_tcpxd::AddressFromStr(address_str);
   EXPECT_EQ(memcmp(&addr.sin6.sin6_addr, dst, sizeof(struct in_addr )), 0);
 }
 
@@ -105,7 +105,7 @@ TEST(SocketHelperTest, AddressToStrIpv4){
   int ret = inet_pton(sa_family, addr_str_1.c_str(), dst);
   socket_address.sa.sa_family = sa_family;
 
-  auto addr_str_2 = tcpdirect::AddressToStr(&socket_address);
+  auto addr_str_2 = gpudirect_tcpxd::AddressToStr(&socket_address);
   EXPECT_EQ(addr_str_2, addr_str_1);
 }
 
@@ -117,7 +117,7 @@ TEST(SocketHelperTest, AddressToStrIpv6) {
   int ret = inet_pton(sa_family, addr_str_1.c_str(), dst);
   socket_address.sa.sa_family = sa_family;
 
-  auto addr_str_2 = tcpdirect::AddressToStr(&socket_address);
+  auto addr_str_2 = gpudirect_tcpxd::AddressToStr(&socket_address);
   EXPECT_EQ(addr_str_2, addr_str_1);
 }
 } // namespace

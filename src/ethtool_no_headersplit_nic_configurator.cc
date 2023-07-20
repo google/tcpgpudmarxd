@@ -23,7 +23,7 @@
 
 #include "include/flow_steer_ntuple.h"
 
-namespace tcpdirect {
+namespace gpudirect_tcpxd {
 namespace {
 constexpr int kInitRxSize{512};
 constexpr int kEndRxSize{1024};
@@ -45,4 +45,4 @@ absl::Status EthtoolNoHeaderSplitNicConfigurator::TogglePrivateFeature(
   }
   return EthtoolNicConfigurator::TogglePrivateFeature(ifname, feature, on);
 }
-}  // namespace tcpdirect
+}  // namespace gpudirect_tcpxd

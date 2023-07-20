@@ -36,7 +36,7 @@
 #include "include/proto_utils.h"
 #include "include/socket_helper.h"
 
-namespace tcpdirect {
+namespace gpudirect_tcpxd {
 
 #define ASSIGN_OR_RETURN(var, expression)                    \
   auto var_status = expression;                              \
@@ -367,4 +367,4 @@ size_t RxRuleManager::GetFlowHash(const struct FlowSteerNtuple& ntuple) {
 #undef ASSIGN_OR_RETURN
 #undef ASSIGN_VALUE_BY_KEY_IN_MAP_OR_ERROR
 #undef LOG_IF_ERROR
-}  // namespace tcpdirect
+}  // namespace gpudirect_tcpxd

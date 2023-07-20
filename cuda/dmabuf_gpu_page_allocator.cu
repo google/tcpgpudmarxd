@@ -9,7 +9,7 @@
 #include "cuda/common.cuh"
 #include <absl/strings/str_format.h>
 
-namespace tcpdirect {
+namespace gpudirect_tcpxd {
 
 namespace {
 #define GPUMEM_DMA_BUF_CREATE _IOW('c', 'c', struct gpumem_dma_buf_create_info)
@@ -182,4 +182,4 @@ DmabufGpuPageAllocator::~DmabufGpuPageAllocator() {
     FreePage(id);
   }
 }
-}  // namespace tcpdirect
+}  // namespace gpudirect_tcpxd

@@ -23,12 +23,12 @@
 
 #include "include/gpu_rxq_configurator_interface.h"
 
-namespace tcpdirect {
+namespace gpudirect_tcpxd {
 class GpuRxqConfigurationFactory {
  public:
   static GpuRxqConfigurationList FromCmdLine(const std::string& proto_string);
   static GpuRxqConfigurationList BuildPreset(const std::string& name);
   static GpuRxqConfigurationList FromFile(const std::string& filename);
 };
-}  // namespace tcpdirect
+}  // namespace gpudirect_tcpxd
 #endif

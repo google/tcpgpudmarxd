@@ -18,11 +18,11 @@
 
 #include <absl/log/log.h>
 
-namespace tcpdirect {
+namespace gpudirect_tcpxd {
 
 absl::Status DummyEthtoolNicConfigurator::RunSystem(
     const std::string& command) {
   LOG(INFO) << "Run system: " << command;
   return absl::OkStatus();
 }
-}  // namespace tcpdirect
+}  // namespace gpudirect_tcpxd

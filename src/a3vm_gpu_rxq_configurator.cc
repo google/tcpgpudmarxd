@@ -18,7 +18,7 @@
 #include <utility>
 #include <vector>
 
-namespace tcpdirect {
+namespace gpudirect_tcpxd {
 namespace {}
 GpuRxqConfigurationList A3VmGpuRxqConfigurator::GetConfigurations() {
   GpuRxqConfigurationList config_list;
@@ -167,4 +167,4 @@ GpuRxqConfigurationList A3VmGpuRxqConfigurator4GPU4NIC::GetConfigurations() {
   config_list.set_max_rx_rules(256);
   return config_list;
 }
-}  // namespace tcpdirect
+}  // namespace gpudirect_tcpxd

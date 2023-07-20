@@ -29,7 +29,7 @@
 #include <string>
 #include <vector>
 
-namespace tcpdirect {
+namespace gpudirect_tcpxd {
 
 namespace {
 static const std::string kIpv6LinkLocalPrefix = "fe80::";
@@ -309,4 +309,4 @@ void DiscoverNetif(std::vector<NetifInfo>& nic_info) {
   };
   DiscoverNetif(nic_info, ifname_filter);
 }
-}  // namespace tcpdirect
+}  // namespace gpudirect_tcpxd

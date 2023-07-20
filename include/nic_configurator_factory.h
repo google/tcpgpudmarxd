@@ -22,11 +22,11 @@
 
 #include "include/nic_configurator_interface.h"
 
-namespace tcpdirect {
+namespace gpudirect_tcpxd {
 class NicConfiguratorFactory {
  public:
   static std::unique_ptr<NicConfiguratorInterface> Build(
       const std::string& name);
 };
-}  // namespace tcpdirect
+}  // namespace gpudirect_tcpxd
 #endif

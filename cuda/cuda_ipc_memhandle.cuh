@@ -7,7 +7,7 @@
 
 #include "cuda/gpu_page_handle_interface.cuh"
 
-namespace tcpdirect {
+namespace gpudirect_tcpxd {
 class CudaIpcMemhandle : public GpuPageHandleInterface {
  public:
   CudaIpcMemhandle(const std::string& handle);
@@ -18,6 +18,6 @@ class CudaIpcMemhandle : public GpuPageHandleInterface {
   CUipcMemHandle mem_handle_;
   CUdeviceptr ptr_;
 };
-}  // namespace tcpdirect
+}  // namespace gpudirect_tcpxd
 
 #endif

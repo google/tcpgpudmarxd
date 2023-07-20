@@ -10,11 +10,11 @@
 #include <absl/container/flat_hash_set.h>
 
 
-namespace tcpdirect {
+namespace gpudirect_tcpxd {
 class A3GpuRxqConfigurator : public GpuRxqConfiguratorInterface {
  public:
   GpuRxqConfigurationList GetConfigurations() override;
 };
-}  // namespace tcpdirect
+}  // namespace gpudirect_tcpxd
 
 #endif  // EXPERIMENTAL_USERS_CHECHENGLIN_TCPGPUDMAD_INCLUDE_A3_GPU_RXQ_CONFIGURATOR_CU_H_

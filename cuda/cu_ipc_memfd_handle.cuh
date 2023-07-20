@@ -7,7 +7,7 @@
 
 #include "cuda/gpu_page_handle_interface.cuh"
 
-namespace tcpdirect {
+namespace gpudirect_tcpxd {
 // Note: Users are responsibile for initializing the CUDA Primary Context of
 // the device.
 class CuIpcMemfdHandle : public GpuPageHandleInterface {
@@ -23,6 +23,6 @@ class CuIpcMemfdHandle : public GpuPageHandleInterface {
   CUdeviceptr ptr_;
   size_t size_;
 };
-}  // namespace tcpdirect
+}  // namespace gpudirect_tcpxd
 
 #endif

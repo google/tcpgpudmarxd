@@ -30,7 +30,7 @@
 #include "include/predvt_gpu_rxq_configurator.h"
 #include "proto/gpu_rxq_configuration.pb.h"
 
-namespace tcpdirect {
+namespace gpudirect_tcpxd {
 
 namespace {
 using google::protobuf::TextFormat;
@@ -83,4 +83,4 @@ GpuRxqConfigurationList GpuRxqConfigurationFactory::FromCmdLine(
   }
   return gpu_configuration_list;
 }
-}  // namespace tcpdirect
+}  // namespace gpudirect_tcpxd

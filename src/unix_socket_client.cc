@@ -28,7 +28,7 @@
 #include <absl/status/statusor.h>
 #include <absl/strings/str_format.h>
 
-namespace tcpdirect {
+namespace gpudirect_tcpxd {
 absl::Status UnixSocketClient::Connect() {
   if (path_.empty())
     return absl::InvalidArgumentError("Missing file path to domain socket.");
@@ -76,4 +76,4 @@ void UnixSocketClient::Send(UnixSocketMessage msg) {
   }
 }
 
-}  // namespace tcpdirect
+}  // namespace gpudirect_tcpxd

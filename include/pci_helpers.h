@@ -23,7 +23,7 @@
 #include <string>
 #include <vector>
 
-namespace tcpdirect {
+namespace gpudirect_tcpxd {
 
 // Get PCI address of a netwok if
 int read_nic_pci_addr(const char* ifname, uint16_t* domain, uint16_t* bus,
@@ -38,6 +38,6 @@ int list_vendor_devices(const char* parent_dir_path,
 
 int parse_pci_addr(const char* pci_addr, uint16_t* domain, uint16_t* bus,
                    uint16_t* device, uint16_t* function);
-}  // namespace tcpdirect
+}  // namespace gpudirect_tcpxd
 
 #endif  // EXPERIMENTAL_USERS_CHECHENGLIN_TCPGPUDMAD_INCLUDE_PCI_HELPERS_H_

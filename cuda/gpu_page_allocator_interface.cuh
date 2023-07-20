@@ -3,7 +3,7 @@
 
 #include <cuda.h>
 
-namespace tcpdirect {
+namespace gpudirect_tcpxd {
 class GpuPageAllocatorInterface {
  public:
   virtual void AllocatePage(size_t pool_size, unsigned long *id,
@@ -14,6 +14,6 @@ class GpuPageAllocatorInterface {
   virtual void Reset() = 0;
   virtual ~GpuPageAllocatorInterface() {}
 };
-}  // namespace tcpdirect
+}  // namespace gpudirect_tcpxd
 
 #endif

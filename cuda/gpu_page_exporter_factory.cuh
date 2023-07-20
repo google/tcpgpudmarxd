@@ -6,12 +6,12 @@
 
 #include "include/gpu_page_exporter_interface.h"
 
-namespace tcpdirect {
+namespace gpudirect_tcpxd {
 
 class GpuPageExporterFactory {
  public:
   static std::unique_ptr<GpuPageExporterInterface> Build(
       const std::string& type);
 };
-}  // namespace tcpdirect
+}  // namespace gpudirect_tcpxd
 #endif

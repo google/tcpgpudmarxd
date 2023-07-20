@@ -40,13 +40,13 @@
 
 namespace {
 
-using tcpdirect::FlowSteerNtuple;
-using tcpdirect::FlowSteerRuleRequest;
-using tcpdirect::RxRuleClient;
-using tcpdirect::SocketAddress;
-using tcpdirect::UnixSocketMessage;
-using tcpdirect::UnixSocketProto;
-using tcpdirect::UnixSocketServer;
+using gpudirect_tcpxd::FlowSteerNtuple;
+using gpudirect_tcpxd::FlowSteerRuleRequest;
+using gpudirect_tcpxd::RxRuleClient;
+using gpudirect_tcpxd::SocketAddress;
+using gpudirect_tcpxd::UnixSocketMessage;
+using gpudirect_tcpxd::UnixSocketProto;
+using gpudirect_tcpxd::UnixSocketServer;
 
 class RxRuleClientTest : public ::testing::Test {
  protected:
@@ -76,13 +76,13 @@ TEST_F(RxRuleClientTest, UpdateFlowSteerRuleSuccess) {
   std::string prefix = "/tmp";
   RxRuleClient rx_rule_client(prefix);
 
-  tcpdirect::FlowSteerRuleOp op = tcpdirect::CREATE;
+  gpudirect_tcpxd::FlowSteerRuleOp op = gpudirect_tcpxd::CREATE;
   FlowSteerNtuple flow_steer_ntuple;
-  flow_steer_ntuple.src_sin = tcpdirect::AddressFromStr("1.2.3.4").sin;
-  flow_steer_ntuple.dst_sin = tcpdirect::AddressFromStr("5.6.7.8").sin;
-  tcpdirect::SetAddressPort((union SocketAddress *)&flow_steer_ntuple.src_sin,
+  flow_steer_ntuple.src_sin = gpudirect_tcpxd::AddressFromStr("1.2.3.4").sin;
+  flow_steer_ntuple.dst_sin = gpudirect_tcpxd::AddressFromStr("5.6.7.8").sin;
+  gpudirect_tcpxd::SetAddressPort((union SocketAddress *)&flow_steer_ntuple.src_sin,
                             1234);
-  tcpdirect::SetAddressPort((union SocketAddress *)&flow_steer_ntuple.dst_sin,
+  gpudirect_tcpxd::SetAddressPort((union SocketAddress *)&flow_steer_ntuple.dst_sin,
                             5678);
   flow_steer_ntuple.flow_type = 1;
 
@@ -101,13 +101,13 @@ TEST_F(RxRuleClientTest, UpdateFlowSteerRuleFailed) {
   std::string prefix = "/tmp";
   RxRuleClient rx_rule_client(prefix);
 
-  tcpdirect::FlowSteerRuleOp op = tcpdirect::CREATE;
+  gpudirect_tcpxd::FlowSteerRuleOp op = gpudirect_tcpxd::CREATE;
   FlowSteerNtuple flow_steer_ntuple;
-  flow_steer_ntuple.src_sin = tcpdirect::AddressFromStr("1.2.3.4").sin;
-  flow_steer_ntuple.dst_sin = tcpdirect::AddressFromStr("5.6.7.8").sin;
-  tcpdirect::SetAddressPort((union SocketAddress *)&flow_steer_ntuple.src_sin,
+  flow_steer_ntuple.src_sin = gpudirect_tcpxd::AddressFromStr("1.2.3.4").sin;
+  flow_steer_ntuple.dst_sin = gpudirect_tcpxd::AddressFromStr("5.6.7.8").sin;
+  gpudirect_tcpxd::SetAddressPort((union SocketAddress *)&flow_steer_ntuple.src_sin,
                             1234);
-  tcpdirect::SetAddressPort((union SocketAddress *)&flow_steer_ntuple.dst_sin,
+  gpudirect_tcpxd::SetAddressPort((union SocketAddress *)&flow_steer_ntuple.dst_sin,
                             5678);
   flow_steer_ntuple.flow_type = 1;
 
@@ -128,13 +128,13 @@ TEST_F(RxRuleClientTest, PopBackSuccess) {
   std::string prefix = "/tmp/";
   RxRuleClient rx_rule_client(prefix);
 
-  tcpdirect::FlowSteerRuleOp op = tcpdirect::CREATE;
+  gpudirect_tcpxd::FlowSteerRuleOp op = gpudirect_tcpxd::CREATE;
   FlowSteerNtuple flow_steer_ntuple;
-  flow_steer_ntuple.src_sin = tcpdirect::AddressFromStr("1.2.3.4").sin;
-  flow_steer_ntuple.dst_sin = tcpdirect::AddressFromStr("5.6.7.8").sin;
-  tcpdirect::SetAddressPort((union SocketAddress *)&flow_steer_ntuple.src_sin,
+  flow_steer_ntuple.src_sin = gpudirect_tcpxd::AddressFromStr("1.2.3.4").sin;
+  flow_steer_ntuple.dst_sin = gpudirect_tcpxd::AddressFromStr("5.6.7.8").sin;
+  gpudirect_tcpxd::SetAddressPort((union SocketAddress *)&flow_steer_ntuple.src_sin,
                             1234);
-  tcpdirect::SetAddressPort((union SocketAddress *)&flow_steer_ntuple.dst_sin,
+  gpudirect_tcpxd::SetAddressPort((union SocketAddress *)&flow_steer_ntuple.dst_sin,
                             5678);
   flow_steer_ntuple.flow_type = 1;
 
@@ -150,13 +150,13 @@ TEST_F(RxRuleClientTest, NoServer) {
   std::string prefix = "/tmp";
   RxRuleClient rx_rule_client(prefix);
 
-  tcpdirect::FlowSteerRuleOp op = tcpdirect::CREATE;
+  gpudirect_tcpxd::FlowSteerRuleOp op = gpudirect_tcpxd::CREATE;
   FlowSteerNtuple flow_steer_ntuple;
-  flow_steer_ntuple.src_sin = tcpdirect::AddressFromStr("1.2.3.4").sin;
-  flow_steer_ntuple.dst_sin = tcpdirect::AddressFromStr("5.6.7.8").sin;
-  tcpdirect::SetAddressPort((union SocketAddress *)&flow_steer_ntuple.src_sin,
+  flow_steer_ntuple.src_sin = gpudirect_tcpxd::AddressFromStr("1.2.3.4").sin;
+  flow_steer_ntuple.dst_sin = gpudirect_tcpxd::AddressFromStr("5.6.7.8").sin;
+  gpudirect_tcpxd::SetAddressPort((union SocketAddress *)&flow_steer_ntuple.src_sin,
                             1234);
-  tcpdirect::SetAddressPort((union SocketAddress *)&flow_steer_ntuple.dst_sin,
+  gpudirect_tcpxd::SetAddressPort((union SocketAddress *)&flow_steer_ntuple.dst_sin,
                             5678);
   flow_steer_ntuple.flow_type = 1;
 

@@ -3,7 +3,7 @@
 #include <absl/log/log.h>
 #include "cuda/common.cuh"
 
-namespace tcpdirect {
+namespace gpudirect_tcpxd {
 
 CudaIpcMemhandle::CudaIpcMemhandle(const std::string& handle) {
   memcpy(&mem_handle_, handle.data(), handle.size());
@@ -13,4 +13,4 @@ CudaIpcMemhandle::CudaIpcMemhandle(const std::string& handle) {
 
 CudaIpcMemhandle::~CudaIpcMemhandle() { cuIpcCloseMemHandle(ptr_); }
 
-}  // namespace tcpdirect
+}  // namespace gpudirect_tcpxd

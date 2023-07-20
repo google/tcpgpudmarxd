@@ -14,7 +14,7 @@
 
 syntax = "proto2";
 
-package tcpdirect;
+package gpudirect_tcpxd;
 
 import "unix_socket_proto.proto";
 

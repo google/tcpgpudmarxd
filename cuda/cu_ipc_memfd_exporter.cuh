@@ -13,7 +13,7 @@
 #include "include/unix_socket_server.h"
 #include "proto/gpu_rxq_configuration.pb.h"
 
-namespace tcpdirect {
+namespace gpudirect_tcpxd {
 
 class CuIpcMemfdExporter : public GpuPageExporterInterface {
  public:
@@ -39,6 +39,6 @@ class CuIpcMemfdExporter : public GpuPageExporterInterface {
   std::vector<std::unique_ptr<UnixSocketServer>> us_servers_;
 };
 
-}  // namespace tcpdirect
+}  // namespace gpudirect_tcpxd
 
 #endif

@@ -24,7 +24,7 @@
 
 #include "include/flow_steer_ntuple.h"
 #include "include/unix_socket_client.h"
-namespace tcpdirect {
+namespace gpudirect_tcpxd {
 
 enum FlowSteerRuleOp {
   CREATE,
@@ -41,6 +41,6 @@ class RxRuleClient {
  private:
   std::string prefix_;
 };
-}  // namespace tcpdirect
+}  // namespace gpudirect_tcpxd
 
 #endif  // EXPERIMENTAL_USERS_CHECHENGLIN_TCPGPUDMAD_RX_RULE_REQUESTER_H_

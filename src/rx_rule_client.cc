@@ -24,7 +24,7 @@
 #include "include/unix_socket_client.h"
 #include "proto/unix_socket_message.pb.h"
 
-namespace tcpdirect {
+namespace gpudirect_tcpxd {
 
 RxRuleClient::RxRuleClient(const std::string& prefix) {
   prefix_ = prefix;
@@ -89,4 +89,4 @@ absl::Status RxRuleClient::UpdateFlowSteerRule(
   return absl::OkStatus();
 }
 
-}  // namespace tcpdirect
+}  // namespace gpudirect_tcpxd
