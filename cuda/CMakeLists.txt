@@ -85,6 +85,7 @@ target_link_libraries(cuda_ipc_memhandle_importer PRIVATE absl::log absl::absl_c
 target_link_libraries(cuda_ipc_memhandle_importer PUBLIC tcpgpudmarxd_proto)
 target_link_libraries(cuda_ipc_memhandle_importer PUBLIC ${Protobuf_LIBRARIES})
 target_link_libraries(cuda_ipc_memhandle_importer PRIVATE cuda_common)
+target_link_libraries(cuda_ipc_memhandle_importer PRIVATE cuda_ipc_memhandle)
 target_link_libraries(cuda_ipc_memhandle_importer PRIVATE unix_socket_lib)
 set_target_properties(cuda_ipc_memhandle_importer PROPERTIES CUDA_RUNTIME_LIBRARY Shared)
 
@@ -142,6 +143,7 @@ target_link_libraries(cu_ipc_memfd_handle_importer PRIVATE absl::log absl::absl_
 target_link_libraries(cu_ipc_memfd_handle_importer PUBLIC tcpgpudmarxd_proto)
 target_link_libraries(cu_ipc_memfd_handle_importer PUBLIC ${Protobuf_LIBRARIES})
 target_link_libraries(cu_ipc_memfd_handle_importer PRIVATE cuda_common)
+target_link_libraries(cu_ipc_memfd_handle_importer PRIVATE cu_ipc_memfd_handle)
 target_link_libraries(cu_ipc_memfd_handle_importer PRIVATE unix_socket_lib)
 set_target_properties(cu_ipc_memfd_handle_importer PROPERTIES CUDA_RUNTIME_LIBRARY Shared)
 

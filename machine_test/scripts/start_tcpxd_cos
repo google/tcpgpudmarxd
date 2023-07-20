@@ -1,0 +1,42 @@
+#!/bin/bash
+
+set -e
+
+function run_tcpgpudmarxd() {
+  docker run --pull=always --rm \
+    --cap-add=NET_ADMIN --network=host \
+    --volume /var/lib/nvidia/lib64:/usr/local/nvidia/lib64 \
+    --device /dev/nvidia0:/dev/nvidia0 \
+    --device /dev/nvidia1:/dev/nvidia1 \
+    --device /dev/nvidia2:/dev/nvidia2 \
+    --device /dev/nvidia3:/dev/nvidia3 \
+    --device /dev/nvidia4:/dev/nvidia4 \
+    --device /dev/nvidia5:/dev/nvidia5 \
+    --device /dev/nvidia6:/dev/nvidia6 \
+    --device /dev/nvidia7:/dev/nvidia7 \
+    --device /dev/nvidia-uvm:/dev/nvidia-uvm \
+    --device /dev/nvidiactl:/dev/nvidiactl \
+    --env LD_LIBRARY_PATH=/usr/local/nvidia/lib64 \
+    --volume /tmp:/tmp \
+    --entrypoint /tcpgpudmarxd/build/app/tcpgpudmarxd \
+    gcr.io/a3-tcpd-staging-hostpool/$USER/tcpgpudmarxd "$@"
+}
+
+# Remount /var so we can actually load cuda libraries.
+mount -o remount,exec /var && \
+
+echo Tuning networking params
+
+if [[ -z $MTU ]]; then
+  MTU=8244
+fi
+
+SERVER=$SERVER CLIENT=$CLIENT IS_SERVER=$IS_SERVER MTU=$MTU ./tune_params_cos
+
+if [[ -z $GPU_NIC_PRESET ]]; then
+  GPU_NIC_PRESET=a3vm
+fi
+
+run_tcpgpudmarxd --gpu_nic_preset $GPU_NIC_PRESET --gpu_shmem_type fd "$@" &
+
+echo 'Please wait until you see "Rx Rule Manager server(s) started ..."'

@@ -63,12 +63,20 @@ void ConnectWithRetry(int fd, struct sockaddr* addr, socklen_t addrlen,
 void ConnectWithRetry(int fd, struct sockaddr_in* addr, int max_retry = 10);
 void ConnectWithRetry(int fd, struct sockaddr_in6* addr, int max_retry = 10);
 
-void AcceptConnectionAndSendHpnAddress(
+void SendMyAddresses(const std::vector<union SocketAddress>& my_addresses,
+                     int fd);
+void ReceivePeerAddresses(std::vector<union SocketAddress>* peer_addresses,
+                          int fd);
+
+void ServerAcceptControlChannelConnection(
     union SocketAddress* server_addr,
+    std::vector<union SocketAddress>* client_hpn_addresses,
     const std::vector<union SocketAddress>& server_hpn_addresses);
-void ConnectAndReceiveHpnAddress(
+
+void ClientConnectControlChannel(
     union SocketAddress* server_addr,
-    std::vector<union SocketAddress>* server_hpn_addresses);
+    std::vector<union SocketAddress>* server_hpn_addresses,
+    const std::vector<union SocketAddress>& client_hpn_addresses);
 
 int ReadNicPci(const char* ifname, uint16_t* dbdf);
 

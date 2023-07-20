@@ -166,8 +166,40 @@ void ConnectWithRetry(int fd, struct sockaddr_in6* addr, int max_retry) {
                    max_retry);
 }
 
-void AcceptConnectionAndSendHpnAddress(
+void SendMyAddresses(const std::vector<union SocketAddress>& my_addresses,
+                     int fd) {
+  size_t msg_sz = my_addresses.size() * sizeof(union SocketAddress);
+  ssize_t ret = send(fd, &msg_sz, sizeof(msg_sz), 0);
+  PCHECK(ret == sizeof(msg_sz));
+  size_t bytes_sent = 0;
+  char* ptr = (char*)my_addresses.data();
+  while (bytes_sent < msg_sz) {
+    ssize_t ret = send(fd, &ptr[bytes_sent], msg_sz - bytes_sent, 0);
+    PCHECK(ret >= 0);
+    bytes_sent += ret;
+  }
+}
+
+void ReceivePeerAddresses(std::vector<union SocketAddress>* peer_addresses,
+                          int fd) {
+  size_t msg_sz = 0;
+  ssize_t ret = recv(fd, &msg_sz, sizeof(msg_sz), 0);
+  PCHECK(ret == sizeof(msg_sz));
+  CHECK(msg_sz % sizeof(union SocketAddress) == 0);
+  peer_addresses->resize(msg_sz / sizeof(union SocketAddress));
+
+  size_t bytes_recv = 0;
+  char* ptr = (char*)peer_addresses->data();
+  while (bytes_recv < msg_sz) {
+    ssize_t ret = recv(fd, &ptr[bytes_recv], msg_sz - bytes_recv, 0);
+    PCHECK(ret >= 0);
+    bytes_recv += ret;
+  }
+}
+
+void ServerAcceptControlChannelConnection(
     union SocketAddress* server_addr,
+    std::vector<union SocketAddress>* client_hpn_addresses,
     const std::vector<union SocketAddress>& server_hpn_addresses) {
   int listen_fd = CreateTcpSocket(server_addr->sa.sa_family);
   SetReuseAddr(listen_fd);
@@ -177,39 +209,23 @@ void AcceptConnectionAndSendHpnAddress(
   socklen_t client_addr_len = sizeof(client_addr);
   int fd = accept(listen_fd, &client_addr.sa, &client_addr_len);
 
-  size_t msg_sz = server_hpn_addresses.size() * sizeof(union SocketAddress);
-  ssize_t ret = send(fd, &msg_sz, sizeof(msg_sz), 0);
-  PCHECK(ret == sizeof(msg_sz));
-  size_t bytes_sent = 0;
-  char* ptr = (char*)server_hpn_addresses.data();
-  while (bytes_sent < msg_sz) {
-    ssize_t ret = send(fd, &ptr[bytes_sent], msg_sz - bytes_sent, 0);
-    PCHECK(ret >= 0);
-    bytes_sent += ret;
-  }
+  SendMyAddresses(server_hpn_addresses, fd);
+  ReceivePeerAddresses(client_hpn_addresses, fd);
+
   close(fd);
   close(listen_fd);
 }
 
-void ConnectAndReceiveHpnAddress(
+void ClientConnectControlChannel(
     union SocketAddress* server_addr,
-    std::vector<union SocketAddress>* server_hpn_addresses) {
+    std::vector<union SocketAddress>* server_hpn_addresses,
+    const std::vector<union SocketAddress>& client_hpn_addresses) {
   int fd = CreateTcpSocket(server_addr->sa.sa_family);
   ConnectWithRetry(fd, server_addr);
 
-  size_t msg_sz = 0;
-  ssize_t ret = recv(fd, &msg_sz, sizeof(msg_sz), 0);
-  PCHECK(ret == sizeof(msg_sz));
-  CHECK(msg_sz % sizeof(union SocketAddress) == 0);
-  server_hpn_addresses->resize(msg_sz / sizeof(union SocketAddress));
+  ReceivePeerAddresses(server_hpn_addresses, fd);
+  SendMyAddresses(client_hpn_addresses, fd);
 
-  size_t bytes_recv = 0;
-  char* ptr = (char*)server_hpn_addresses->data();
-  while (bytes_recv < msg_sz) {
-    ssize_t ret = recv(fd, &ptr[bytes_recv], msg_sz - bytes_recv, 0);
-    PCHECK(ret >= 0);
-    bytes_recv += ret;
-  }
   close(fd);
 }
 

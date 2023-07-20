@@ -1,0 +1,36 @@
+#!/bin/sh
+
+set -ex
+
+alias staging_gcloud="CLOUDSDK_API_CLIENT_OVERRIDES_COMPUTE=staging_v1 /google/data/ro/teams/cloud-sdk/gcloud"
+
+pids=()
+while true; do
+  instance=$1
+  if [ -z $instance ]; then
+    break
+  fi
+
+  farray=$(ls ./scripts | grep -v copy-test-cos)
+
+  for f in $farray; do
+    staging_gcloud compute scp \
+      ./scripts/$f $instance:~/ &
+    pids+=("$!")
+  done
+
+  staging_gcloud compute ssh $instance -- \
+    "sudo mount -o remount,exec /home/ && \
+     cd ~/ && \
+     sudo docker-credential-gcr configure-docker && \
+     sudo iptables -I INPUT -p tcp -m tcp -j ACCEPT"
+
+  shift || break
+done
+
+wait "${pids[@]}"
+echo
+echo
+echo
+echo
+echo done copying...
