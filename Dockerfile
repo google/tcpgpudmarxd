@@ -42,7 +42,7 @@ WORKDIR /tcpgpudmarxd
 RUN rm -rf build docker-build
 WORKDIR build
 RUN cmake -DCMAKE_CUDA_ARCHITECTURES=90 -DCMAKE_BUILD_TYPE=Release ..
-RUN make -j
+RUN make -j && make install
 WORKDIR test
 RUN ctest
 

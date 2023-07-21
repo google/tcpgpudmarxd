@@ -31,12 +31,14 @@
 #include <string>
 #include <utility>
 
+#include "code.pb.h"
 #include "gmock/gmock.h"
 #include "include/flow_steer_ntuple.h"
 #include "include/nic_configurator_interface.h"
 #include "include/rx_rule_manager.h"
 #include "include/socket_helper.h"
 #include "proto/unix_socket_message.pb.h"
+#include "status.pb.h"
 
 namespace {
 
@@ -53,13 +55,12 @@ class RxRuleClientTest : public ::testing::Test {
   void SetUp() override {}
 
   void AddMockFlowSteerRuleServer(const std::string &server_addr,
-                                  const std::string &reply) {
+                                  const google::rpc::Status &status) {
     auto mock_server = std::make_unique<UnixSocketServer>(
-        server_addr, [reply](UnixSocketMessage &&request,
-                             UnixSocketMessage *response, bool *fin) {
+        server_addr, [status](UnixSocketMessage &&request,
+                              UnixSocketMessage *response, bool *fin) {
           UnixSocketProto *proto = response->mutable_proto();
-          std::string *buffer = proto->mutable_raw_bytes();
-          buffer->append(reply.c_str());
+          *proto->mutable_status() = status;
         });
 
     CHECK_OK(mock_server->Start());
@@ -70,8 +71,8 @@ class RxRuleClientTest : public ::testing::Test {
 };
 
 TEST_F(RxRuleClientTest, UpdateFlowSteerRuleSuccess) {
-  std::string reply = "Ok.";
-  AddMockFlowSteerRuleServer("/tmp/rx_rule_manager", reply);
+  google::rpc::Status status;
+  AddMockFlowSteerRuleServer("/tmp/rx_rule_manager", status);
 
   std::string prefix = "/tmp";
   RxRuleClient rx_rule_client(prefix);
@@ -80,10 +81,10 @@ TEST_F(RxRuleClientTest, UpdateFlowSteerRuleSuccess) {
   FlowSteerNtuple flow_steer_ntuple;
   flow_steer_ntuple.src_sin = gpudirect_tcpxd::AddressFromStr("1.2.3.4").sin;
   flow_steer_ntuple.dst_sin = gpudirect_tcpxd::AddressFromStr("5.6.7.8").sin;
-  gpudirect_tcpxd::SetAddressPort((union SocketAddress *)&flow_steer_ntuple.src_sin,
-                            1234);
-  gpudirect_tcpxd::SetAddressPort((union SocketAddress *)&flow_steer_ntuple.dst_sin,
-                            5678);
+  gpudirect_tcpxd::SetAddressPort(
+      (union SocketAddress *)&flow_steer_ntuple.src_sin, 1234);
+  gpudirect_tcpxd::SetAddressPort(
+      (union SocketAddress *)&flow_steer_ntuple.dst_sin, 5678);
   flow_steer_ntuple.flow_type = 1;
 
   std::string gpu_pci_addr = "addr";
@@ -95,8 +96,10 @@ TEST_F(RxRuleClientTest, UpdateFlowSteerRuleSuccess) {
 }
 
 TEST_F(RxRuleClientTest, UpdateFlowSteerRuleFailed) {
-  std::string reply = "Not Ok.";
-  AddMockFlowSteerRuleServer("/tmp/rx_rule_manager", reply);
+  google::rpc::Status mock_status;
+  mock_status.set_code(google::rpc::INTERNAL);
+  mock_status.set_message("Updating FlowSteerRule Failed: Internal error");
+  AddMockFlowSteerRuleServer("/tmp/rx_rule_manager", mock_status);
 
   std::string prefix = "/tmp";
   RxRuleClient rx_rule_client(prefix);
@@ -105,10 +108,10 @@ TEST_F(RxRuleClientTest, UpdateFlowSteerRuleFailed) {
   FlowSteerNtuple flow_steer_ntuple;
   flow_steer_ntuple.src_sin = gpudirect_tcpxd::AddressFromStr("1.2.3.4").sin;
   flow_steer_ntuple.dst_sin = gpudirect_tcpxd::AddressFromStr("5.6.7.8").sin;
-  gpudirect_tcpxd::SetAddressPort((union SocketAddress *)&flow_steer_ntuple.src_sin,
-                            1234);
-  gpudirect_tcpxd::SetAddressPort((union SocketAddress *)&flow_steer_ntuple.dst_sin,
-                            5678);
+  gpudirect_tcpxd::SetAddressPort(
+      (union SocketAddress *)&flow_steer_ntuple.src_sin, 1234);
+  gpudirect_tcpxd::SetAddressPort(
+      (union SocketAddress *)&flow_steer_ntuple.dst_sin, 5678);
   flow_steer_ntuple.flow_type = 1;
 
   std::string gpu_pci_addr = "addr";
@@ -122,8 +125,8 @@ TEST_F(RxRuleClientTest, UpdateFlowSteerRuleFailed) {
 }
 
 TEST_F(RxRuleClientTest, PopBackSuccess) {
-  std::string reply = "Ok.";
-  AddMockFlowSteerRuleServer("/tmp/rx_rule_manager", reply);
+  google::rpc::Status status;
+  AddMockFlowSteerRuleServer("/tmp/rx_rule_manager", status);
 
   std::string prefix = "/tmp/";
   RxRuleClient rx_rule_client(prefix);
@@ -132,10 +135,10 @@ TEST_F(RxRuleClientTest, PopBackSuccess) {
   FlowSteerNtuple flow_steer_ntuple;
   flow_steer_ntuple.src_sin = gpudirect_tcpxd::AddressFromStr("1.2.3.4").sin;
   flow_steer_ntuple.dst_sin = gpudirect_tcpxd::AddressFromStr("5.6.7.8").sin;
-  gpudirect_tcpxd::SetAddressPort((union SocketAddress *)&flow_steer_ntuple.src_sin,
-                            1234);
-  gpudirect_tcpxd::SetAddressPort((union SocketAddress *)&flow_steer_ntuple.dst_sin,
-                            5678);
+  gpudirect_tcpxd::SetAddressPort(
+      (union SocketAddress *)&flow_steer_ntuple.src_sin, 1234);
+  gpudirect_tcpxd::SetAddressPort(
+      (union SocketAddress *)&flow_steer_ntuple.dst_sin, 5678);
   flow_steer_ntuple.flow_type = 1;
 
   std::string gpu_pci_addr = "addr";
@@ -154,10 +157,10 @@ TEST_F(RxRuleClientTest, NoServer) {
   FlowSteerNtuple flow_steer_ntuple;
   flow_steer_ntuple.src_sin = gpudirect_tcpxd::AddressFromStr("1.2.3.4").sin;
   flow_steer_ntuple.dst_sin = gpudirect_tcpxd::AddressFromStr("5.6.7.8").sin;
-  gpudirect_tcpxd::SetAddressPort((union SocketAddress *)&flow_steer_ntuple.src_sin,
-                            1234);
-  gpudirect_tcpxd::SetAddressPort((union SocketAddress *)&flow_steer_ntuple.dst_sin,
-                            5678);
+  gpudirect_tcpxd::SetAddressPort(
+      (union SocketAddress *)&flow_steer_ntuple.src_sin, 1234);
+  gpudirect_tcpxd::SetAddressPort(
+      (union SocketAddress *)&flow_steer_ntuple.dst_sin, 5678);
   flow_steer_ntuple.flow_type = 1;
 
   std::string gpu_pci_addr = "addr";

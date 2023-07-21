@@ -70,7 +70,7 @@ target_link_libraries(cuda_ipc_memhandle_exporter PUBLIC ${Protobuf_LIBRARIES})
 target_link_libraries(cuda_ipc_memhandle_exporter PRIVATE cuda_common)
 target_link_libraries(cuda_ipc_memhandle_exporter PRIVATE dmabuf_gpu_page_allocator)
 target_link_libraries(cuda_ipc_memhandle_exporter PRIVATE gpu_page_exporter_interface)
-target_link_libraries(cuda_ipc_memhandle_exporter PRIVATE unix_socket_lib)
+target_link_libraries(cuda_ipc_memhandle_exporter PRIVATE unix_socket_server_lib)
 set_target_properties(cuda_ipc_memhandle_exporter PROPERTIES CUDA_RUNTIME_LIBRARY Shared)
 
 # cuda ipc memhandle importer
@@ -86,7 +86,7 @@ target_link_libraries(cuda_ipc_memhandle_importer PUBLIC tcpgpudmarxd_proto)
 target_link_libraries(cuda_ipc_memhandle_importer PUBLIC ${Protobuf_LIBRARIES})
 target_link_libraries(cuda_ipc_memhandle_importer PRIVATE cuda_common)
 target_link_libraries(cuda_ipc_memhandle_importer PRIVATE cuda_ipc_memhandle)
-target_link_libraries(cuda_ipc_memhandle_importer PRIVATE unix_socket_lib)
+target_link_libraries(cuda_ipc_memhandle_importer PRIVATE unix_socket_client_lib)
 set_target_properties(cuda_ipc_memhandle_importer PROPERTIES CUDA_RUNTIME_LIBRARY Shared)
 
 
@@ -128,7 +128,7 @@ target_link_libraries(cu_ipc_memfd_handle_exporter PUBLIC ${Protobuf_LIBRARIES})
 target_link_libraries(cu_ipc_memfd_handle_exporter PRIVATE cuda_common)
 target_link_libraries(cu_ipc_memfd_handle_exporter PRIVATE cu_dmabuf_gpu_page_allocator)
 target_link_libraries(cu_ipc_memfd_handle_exporter PRIVATE gpu_page_exporter_interface)
-target_link_libraries(cu_ipc_memfd_handle_exporter PRIVATE unix_socket_lib)
+target_link_libraries(cu_ipc_memfd_handle_exporter PRIVATE unix_socket_server_lib)
 set_target_properties(cu_ipc_memfd_handle_exporter PROPERTIES CUDA_RUNTIME_LIBRARY Shared)
 
 # cu ipc memfd handle importer
@@ -144,7 +144,7 @@ target_link_libraries(cu_ipc_memfd_handle_importer PUBLIC tcpgpudmarxd_proto)
 target_link_libraries(cu_ipc_memfd_handle_importer PUBLIC ${Protobuf_LIBRARIES})
 target_link_libraries(cu_ipc_memfd_handle_importer PRIVATE cuda_common)
 target_link_libraries(cu_ipc_memfd_handle_importer PRIVATE cu_ipc_memfd_handle)
-target_link_libraries(cu_ipc_memfd_handle_importer PRIVATE unix_socket_lib)
+target_link_libraries(cu_ipc_memfd_handle_importer PRIVATE unix_socket_client_lib)
 set_target_properties(cu_ipc_memfd_handle_importer PROPERTIES CUDA_RUNTIME_LIBRARY Shared)
 
 # gpu page exporter factory

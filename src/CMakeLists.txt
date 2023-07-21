@@ -65,43 +65,60 @@ target_link_libraries(gpu_page_exporter_interface PUBLIC ${Protobuf_LIBRARIES})
 
 # unix socket lib
 
-set(UNIX_SOCKET_LIB_SRC
+set(UNIX_SOCKET_CLIENT_LIB_SRC
 	unix_socket_client.cc
+	unix_socket_connection.cc
+)
+
+set(UNIX_SOCKET_SERVER_LIB_SRC
 	unix_socket_connection.cc
 	unix_socket_server.cc
 )
 
-add_library(unix_socket_lib STATIC ${UNIX_SOCKET_LIB_SRC})
-target_include_directories(unix_socket_lib PUBLIC ${CMAKE_SOURCE_DIR})
-target_include_directories(unix_socket_lib PRIVATE ${CMAKE_BINARY_DIR} ${Protobuf_INCLUDE_DIRS})
-target_link_libraries(unix_socket_lib PRIVATE absl::flat_hash_map absl::log absl::status absl::statusor absl::str_format)
-target_link_libraries(unix_socket_lib PUBLIC tcpgpudmarxd_proto)
-target_link_libraries(unix_socket_lib PUBLIC ${Protobuf_LIBRARIES})
+add_library(unix_socket_server_lib STATIC ${UNIX_SOCKET_SERVER_LIB_SRC})
+target_include_directories(unix_socket_server_lib PUBLIC ${CMAKE_SOURCE_DIR} )
+target_include_directories(unix_socket_server_lib PRIVATE ${CMAKE_BINARY_DIR} ${CMAKE_BINARY_DIR}/third_party ${Protobuf_INCLUDE_DIRS})
+target_link_libraries(unix_socket_server_lib PRIVATE absl::flat_hash_map absl::log absl::status absl::statusor absl::str_format)
+target_link_libraries(unix_socket_server_lib PUBLIC ${Protobuf_LIBRARIES})
+target_link_libraries(unix_socket_server_lib PUBLIC tcpgpudmarxd_proto)
+
+add_library(unix_socket_client_lib STATIC ${UNIX_SOCKET_CLIENT_LIB_SRC})
+target_include_directories(unix_socket_client_lib PUBLIC $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}> $<INSTALL_INTERFACE:${TCPGPUDMARXD_INCLUDE_DIR}>)
+target_include_directories(unix_socket_client_lib PRIVATE $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}> $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/third_party> $<BUILD_INTERFACE:${Protobuf_INCLUDE_DIRS}>)
+target_link_libraries(unix_socket_client_lib PRIVATE absl::flat_hash_map absl::log absl::status absl::statusor absl::str_format)
+target_link_libraries(unix_socket_client_lib PUBLIC ${Protobuf_LIBRARIES})
+add_dependencies(unix_socket_client_lib tcpgpudmarxd_proto)
+
 
 # socket helper
 
 add_library(socket_helper STATIC socket_helper.cc)
-target_include_directories(socket_helper PUBLIC ${CMAKE_SOURCE_DIR})
+target_include_directories(socket_helper PUBLIC $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}>)
 target_link_libraries(socket_helper PRIVATE absl::absl_check absl::log)
 
 # proto utils
 
 add_library(proto_utils STATIC proto_utils.cc)
-target_include_directories(proto_utils PUBLIC ${CMAKE_SOURCE_DIR})
-target_include_directories(proto_utils PRIVATE ${CMAKE_BINARY_DIR} ${Protobuf_INCLUDE_DIRS})
+target_include_directories(proto_utils PUBLIC $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}>)
+target_include_directories(proto_utils PRIVATE $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}> $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/third_party> $<BUILD_INTERFACE:${Protobuf_INCLUDE_DIRS}>)
 target_link_libraries(proto_utils PRIVATE absl::absl_check absl::log)
 target_link_libraries(proto_utils PUBLIC socket_helper)
-target_link_libraries(proto_utils PUBLIC tcpgpudmarxd_proto)
 target_link_libraries(proto_utils PUBLIC ${Protobuf_LIBRARIES})
+add_dependencies(proto_utils tcpgpudmarxd_proto)
 
 # rx rule client
 add_library(rx_rule_client STATIC rx_rule_client.cc)
-target_include_directories(rx_rule_client PUBLIC ${CMAKE_SOURCE_DIR})
-target_include_directories(rx_rule_client PRIVATE ${CMAKE_BINARY_DIR} ${Protobuf_INCLUDE_DIRS})
+target_include_directories(
+	rx_rule_client
+	PUBLIC
+	$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}>
+	$<INSTALL_INTERFACE:${TCPGPUDMARXD_INCLUDE_DIR}>
+)
+target_include_directories(rx_rule_client PRIVATE $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}> $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/third_party>  ${Protobuf_INCLUDE_DIRS})
 target_link_libraries(rx_rule_client PRIVATE absl::log absl::status absl::str_format)
-target_link_libraries(rx_rule_client PUBLIC tcpgpudmarxd_proto)
 target_link_libraries(rx_rule_client PUBLIC proto_utils)
 target_link_libraries(rx_rule_client PUBLIC ${Protobuf_LIBRARIES})
+add_dependencies(rx_rule_client tcpgpudmarxd_proto)
 
 
 # rx rule manager
@@ -113,3 +130,22 @@ target_link_libraries(rx_rule_manager PUBLIC tcpgpudmarxd_proto)
 target_link_libraries(rx_rule_manager PUBLIC proto_utils)
 target_link_libraries(rx_rule_manager PUBLIC ${Protobuf_LIBRARIES})
 target_link_libraries(rx_rule_manager PUBLIC GTest::gtest_main)
+
+set(client_headers
+	${CMAKE_SOURCE_DIR}/include/rx_rule_client.h
+	${CMAKE_SOURCE_DIR}/include/proto_utils.h
+	${CMAKE_SOURCE_DIR}/include/socket_helper.h
+
+	${CMAKE_SOURCE_DIR}/include/flow_steer_ntuple.h
+	${CMAKE_SOURCE_DIR}/include/unix_socket_client.h
+	${CMAKE_SOURCE_DIR}/include/unix_socket_connection.h
+)
+install(FILES ${client_headers} DESTINATION "${TCPGPUDMARXD_INCLUDE_DIR}")
+
+set(client_libs
+	rx_rule_client
+	unix_socket_client_lib
+	proto_utils
+	socket_helper
+)
+install(TARGETS ${client_libs} EXPORT gpudirect_tcpxd DESTINATION "${TCPGPUDMARXD_LIB_DIR}")

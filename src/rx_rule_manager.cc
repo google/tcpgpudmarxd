@@ -31,6 +31,7 @@
 #include <string>
 #include <vector>
 
+#include "code.pb.h"
 #include "include/flow_steer_ntuple.h"
 #include "include/nic_configurator_interface.h"
 #include "include/proto_utils.h"
@@ -218,12 +219,18 @@ void RxRuleManager::AddFlowSteerRuleServer(const std::string& suffix) {
               absl::StrFormat("Invalid Argument: %s\n", request.DebugString());
           LOG(ERROR) << err;
           buffer->append(err);
+          proto->mutable_status()->set_code(
+              google::rpc::Code::INVALID_ARGUMENT);
+          proto->mutable_status()->set_message(err);
           *fin = true;
           return;
         }
 
         if (auto status = operation(request.proto().flow_steer_rule_request());
             !status.ok()) {
+          LOG(ERROR) << status;
+          proto->mutable_status()->set_code(status.raw_code());
+          proto->mutable_status()->set_message(status.ToString());
           *fin = true;
           buffer->append(
               absl::StrFormat("Failed to set flow steering rule, error: %s.",
@@ -247,8 +254,11 @@ void RxRuleManager::AddGpuQueueIdsServer() {
               absl::StrFormat("Invalid Argument: %s\n", request.DebugString());
           LOG(ERROR) << err;
           std::string* buffer = proto->mutable_raw_bytes();
-          buffer->append(err);
+          proto->mutable_status()->set_code(
+              google::rpc::Code::INVALID_ARGUMENT);
+          proto->mutable_status()->set_message(err);
           *fin = true;
+          buffer->append(err);
           return;
         }
         QueueIdQuery query = request.proto().queue_id_query();
@@ -258,8 +268,10 @@ void RxRuleManager::AddGpuQueueIdsServer() {
               absl::StrFormat("GPU Not Found: %s\n", query.gpu_pci_addr());
           LOG(ERROR) << err;
           std::string* buffer = proto->mutable_raw_bytes();
-          buffer->append(err);
+          proto->mutable_status()->set_code(google::rpc::Code::NOT_FOUND);
+          proto->mutable_status()->set_message(err);
           *fin = true;
+          buffer->append(err);
           return;
         }
         QueueIdResponse* qid_resp = proto->mutable_queue_id_response();

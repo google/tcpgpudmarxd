@@ -7,6 +7,7 @@
 #include <thread>
 #include <vector>
 
+#include "code.pb.h"
 #include "cuda/cu_dmabuf_gpu_page_allocator.cuh"
 #include "cuda/cu_ipc_memfd_exporter.cuh"
 #include "cuda/cuda_context_manager.cuh"
@@ -14,6 +15,7 @@
 #include "include/ipc_gpumem_fd_metadata.h"
 #include "include/unix_socket_server.h"
 #include "proto/gpu_rxq_configuration.pb.h"
+#include "proto/unix_socket_proto.pb.h"
 
 namespace gpudirect_tcpxd {
 
@@ -110,6 +112,7 @@ absl::Status CuIpcMemfdExporter::Initialize(
         /*service_handler=*/
         [&](UnixSocketMessage &&request, UnixSocketMessage *response,
             bool *fin) {
+          UnixSocketProto *proto = response->mutable_proto();
           std::string *buffer = response->mutable_proto()->mutable_raw_bytes();
           if (request.has_proto() &&
               request.proto().raw_bytes() == gpu_pci_addr) {
@@ -117,6 +120,10 @@ absl::Status CuIpcMemfdExporter::Initialize(
               buffer->push_back(*((char *)&gpumem_fd_metadata + i));
             }
           } else {
+            proto->mutable_status()->set_code(
+                google::rpc::Code::INVALID_ARGUMENT);
+            proto->mutable_status()->set_message(
+                "Requested GPU PCI Addr not found.");
             *buffer = "Not found.";
           }
         },

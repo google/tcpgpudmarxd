@@ -6,6 +6,7 @@
 #include <numeric>
 #include <vector>
 
+#include "code.pb.h"
 #include "cuda/cuda_context_manager.cuh"
 #include "cuda/cuda_ipc_memhandle_exporter.cuh"
 #include "cuda/dmabuf_gpu_page_allocator.cuh"
@@ -99,6 +100,10 @@ absl::Status CudaIpcMemhandleExporter::Export() {
         UnixSocketProto *mutable_proto = response->mutable_proto();
         std::string *buffer = mutable_proto->mutable_raw_bytes();
         if (!request.has_proto() || !request.proto().has_raw_bytes()) {
+          mutable_proto->mutable_status()->set_code(
+              google::rpc::Code::INVALID_ARGUMENT);
+          mutable_proto->mutable_status()->set_message(
+              "Expecting text format request.");
           buffer->append("Error.\n\nExpecting text format request.\n");
           *fin = true;
           return;

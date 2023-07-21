@@ -14,13 +14,13 @@
 
 include(FindProtobuf)
 find_package(Protobuf REQUIRED)
-set(Protobuf_IMPORT_DIRS ${CMAKE_BINARY_DIR}/third_party)
+include_directories(${PROTOBUF_INCLUDE_DIR})
+
+file(DOWNLOAD https://raw.githubusercontent.com/googleapis/googleapis/master/google/rpc/code.proto ${CMAKE_CURRENT_BINARY_DIR}/code.proto)
+file(DOWNLOAD https://raw.githubusercontent.com/googleapis/googleapis/master/google/rpc/status.proto ${CMAKE_CURRENT_BINARY_DIR}/status.proto)
 
 protobuf_generate_cpp(PROTO_SRC PROTO_HEADER
-	unix_socket_proto.proto
-	unix_socket_message.proto
-	gpu_rxq_configuration.proto
+    ${CMAKE_CURRENT_BINARY_DIR}/code.proto
+    ${CMAKE_CURRENT_BINARY_DIR}/status.proto
 )
-add_library(tcpgpudmarxd_proto ${PROTO_HEADER} ${PROTO_SRC})
-target_include_directories(tcpgpudmarxd_proto PUBLIC ${CMAKE_BINARY_DIR}/third_party)
-target_link_libraries(tcpgpudmarxd_proto google_status_proto)
+add_library(google_status_proto ${PROTO_HEADER} ${PROTO_SRC})

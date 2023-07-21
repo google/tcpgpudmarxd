@@ -27,6 +27,10 @@ target_link_libraries(tcpgpudmarxd gpu_rxq_configurator)
 target_link_libraries(tcpgpudmarxd nic_configurator)
 target_link_libraries(tcpgpudmarxd rx_rule_manager)
 target_link_libraries(tcpgpudmarxd gpu_page_exporter_factory)
-target_link_libraries(tcpgpudmarxd absl::absl_check absl::flags absl::flags_parse absl::log absl::str_format)
 target_link_libraries(tcpgpudmarxd tcpgpudmarxd_proto)
+target_link_libraries(tcpgpudmarxd google_status_proto)
 target_link_libraries(tcpgpudmarxd ${Protobuf_LIBRARIES})
+target_link_libraries(tcpgpudmarxd absl::absl_check absl::flags absl::flags_parse absl::log absl::str_format)
+
+
+install(TARGETS tcpgpudmarxd DESTINATION "${app_dest}")

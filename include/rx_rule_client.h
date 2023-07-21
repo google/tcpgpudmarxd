@@ -23,7 +23,6 @@
 #include <string>
 
 #include "include/flow_steer_ntuple.h"
-#include "include/unix_socket_client.h"
 namespace gpudirect_tcpxd {
 
 enum FlowSteerRuleOp {

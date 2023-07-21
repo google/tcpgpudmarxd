@@ -19,14 +19,16 @@
 
 #include <memory>
 
+#include "code.pb.h"
 #include "include/flow_steer_ntuple.h"
 #include "include/proto_utils.h"
 #include "include/unix_socket_client.h"
 #include "proto/unix_socket_message.pb.h"
+#include "proto/unix_socket_proto.pb.h"
 
 namespace gpudirect_tcpxd {
 
-RxRuleClient::RxRuleClient(const std::string& prefix) {
+RxRuleClient::RxRuleClient(const std::string &prefix) {
   prefix_ = prefix;
   if (prefix_.back() == '/') {
     prefix_.pop_back();
@@ -34,8 +36,8 @@ RxRuleClient::RxRuleClient(const std::string& prefix) {
 }
 
 absl::Status ConnectAndSendMessage(UnixSocketMessage message,
-                                   UnixSocketMessage* response,
-                                   UnixSocketClient* client) {
+                                   UnixSocketMessage *response,
+                                   UnixSocketClient *client) {
   auto status = client->Connect();
   if (!status.ok()) return status;
 
@@ -51,7 +53,7 @@ absl::Status ConnectAndSendMessage(UnixSocketMessage message,
 }
 
 absl::Status RxRuleClient::UpdateFlowSteerRule(
-    FlowSteerRuleOp op, const FlowSteerNtuple& flow_steer_ntuple,
+    FlowSteerRuleOp op, const FlowSteerNtuple &flow_steer_ntuple,
     std::string gpu_pci_addr, int qid) {
   std::string server_addr =
       (op == CREATE) ? "rx_rule_manager" : "rx_rule_uninstall";
@@ -61,8 +63,8 @@ absl::Status RxRuleClient::UpdateFlowSteerRule(
 
   UnixSocketMessage message;
 
-  UnixSocketProto* proto = message.mutable_proto();
-  FlowSteerRuleRequest* fsr = proto->mutable_flow_steer_rule_request();
+  UnixSocketProto *proto = message.mutable_proto();
+  FlowSteerRuleRequest *fsr = proto->mutable_flow_steer_rule_request();
   *fsr->mutable_flow_steer_ntuple() = ConvertStructToProto(flow_steer_ntuple);
 
   if (!gpu_pci_addr.empty()) {
@@ -80,12 +82,10 @@ absl::Status RxRuleClient::UpdateFlowSteerRule(
     return status;
   }
 
-  if (!response.has_proto() || !response.proto().has_raw_bytes() ||
-      response.proto().raw_bytes() != "Ok.") {
-    return absl::InternalError(absl::StrFormat(
-        "Updating FlowSteerRule Failed: %s", response.DebugString()));
+  if (response.proto().status().code() != google::rpc::Code::OK) {
+    return absl::Status(absl::StatusCode(response.proto().status().code()),
+                        response.proto().status().message());
   }
-
   return absl::OkStatus();
 }
 

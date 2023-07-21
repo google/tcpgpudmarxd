@@ -16,6 +16,8 @@ syntax = "proto2";
 
 package gpudirect_tcpxd;
 
+import "status.proto";
+
 message UnixSocketProto {
   // Update the "last_modified" comment below after you add your message type
   // last_modified: queue_id_response, index: 4.
@@ -30,6 +32,8 @@ message UnixSocketProto {
     QueueIdQuery queue_id_query = 3;
     QueueIdResponse queue_id_response = 4;
   }
+
+  optional google.rpc.Status status = 5;
 }
 
 message QueueIdQuery {

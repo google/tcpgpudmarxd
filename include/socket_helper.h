@@ -25,6 +25,8 @@
 #include <cstdint>
 #include <cstring>
 #include <string>
+#include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 namespace gpudirect_tcpxd {
@@ -43,13 +45,22 @@ struct NetifInfo {
 };
 
 int CreateTcpSocket(int address_family);
+int GetIncomingCpu(int fd);
+int GetSockNapiID(int fd);
 void SetReuseAddr(int fd);
 void EnableTcpZeroCopy(int fd);
+void SetTcpNoDelay(int sock);
+void GetNicNumaCores(cpu_set_t* cpuset, const std::string& ifname);
+using NicCoreBinding = std::unordered_map<std::string, std::unordered_set<int>>;
+void ParseNicCoreBinding(const std::string& s, NicCoreBinding& binding);
 
 void SetAddressPort(union SocketAddress* addr, uint16_t port);
 uint16_t GetAddressPort(const union SocketAddress* addr);
 union SocketAddress AddressFromStr(const std::string& str);
 std::string AddressToStr(const union SocketAddress* addr);
+
+void SetPortnum(union SocketAddress* addr, uint16_t port);
+uint16_t GetPortnum(const union SocketAddress* addr);
 
 void BindAndListen(int fd, union SocketAddress* addr, int backlog);
 void BindAndListen(int fd, struct sockaddr* addr, socklen_t addrlen,
@@ -62,6 +73,9 @@ void ConnectWithRetry(int fd, struct sockaddr* addr, socklen_t addrlen,
                       int max_retry = 10);
 void ConnectWithRetry(int fd, struct sockaddr_in* addr, int max_retry = 10);
 void ConnectWithRetry(int fd, struct sockaddr_in6* addr, int max_retry = 10);
+void ConnectWithRetry(int fd, const union SocketAddress* addr,
+                      const union SocketAddress* local_addr = nullptr,
+                      int max_retry = 10);
 
 void SendMyAddresses(const std::vector<union SocketAddress>& my_addresses,
                      int fd);

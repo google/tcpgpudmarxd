@@ -12,15 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-include(FindProtobuf)
-find_package(Protobuf REQUIRED)
-set(Protobuf_IMPORT_DIRS ${CMAKE_BINARY_DIR}/third_party)
+get_filename_component(SELF_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+get_filename_component(PARENT_DIR ${SELF_DIR} DIRECTORY)
 
-protobuf_generate_cpp(PROTO_SRC PROTO_HEADER
-	unix_socket_proto.proto
-	unix_socket_message.proto
-	gpu_rxq_configuration.proto
-)
-add_library(tcpgpudmarxd_proto ${PROTO_HEADER} ${PROTO_SRC})
-target_include_directories(tcpgpudmarxd_proto PUBLIC ${CMAKE_BINARY_DIR}/third_party)
-target_link_libraries(tcpgpudmarxd_proto google_status_proto)
+include(${SELF_DIR}/gpudirect_tcpxd.cmake)
+
+set(gpudirect_tcpxd_LIB_DIR ${SELF_DIR}/lib)
+set(gpudirect_tcpxd_INCLUDE_DIR ${SELF_DIR} ${PARENT_DIR})
+set(gpudirect_tcpxd_LIBRARIES rx_rule_client unix_socket_client_lib proto_utils socket_helper)

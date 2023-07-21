@@ -24,6 +24,10 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 option(CHECK_COVERAGE "Check test coverage" OFF)
 option(MACHINE_TEST "Build Machine Test" OFF)
 
+set(TCPGPUDMARXD_INSTALL_DIR "tcpgpudmarxd")
+set(TCPGPUDMARXD_INCLUDE_DIR "${TCPGPUDMARXD_INSTALL_DIR}/include")
+set(TCPGPUDMARXD_LIB_DIR "${TCPGPUDMARXD_INSTALL_DIR}/lib")
+
 if(CHECK_COVERAGE)
     SET(CMAKE_CXX_FLAGS "-g -O0 --coverage -fprofile-arcs -ftest-coverage")
     SET(CMAKE_C_FLAGS "-g -O0 --coverage -fprofile-arcs -ftest-coverage")
@@ -36,6 +40,8 @@ find_package(CUDA REQUIRED)
 find_package(absl REQUIRED)
 find_package(Protobuf REQUIRED)
 
+add_subdirectory(third_party)
+
 ADD_SUBDIRECTORY(proto)
 ADD_SUBDIRECTORY(src)
 ADD_SUBDIRECTORY(cuda)
@@ -45,3 +51,5 @@ include(CTest)
 ADD_SUBDIRECTORY(test)
 
 ADD_SUBDIRECTORY(machine_test)
+install(FILES gpudirect_tcpxd-config.cmake DESTINATION "${TCPGPUDMARXD_INSTALL_DIR}")
+install(EXPORT gpudirect_tcpxd DESTINATION "${TCPGPUDMARXD_INSTALL_DIR}")
