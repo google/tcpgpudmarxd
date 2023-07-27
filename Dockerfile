@@ -47,5 +47,6 @@ WORKDIR test
 RUN ctest
 
 WORKDIR /tcpgpudmarxd
+RUN ls | grep -v "build\|LICENSE" | xargs rm -rf
 USER root
 ENTRYPOINT /tcpgpudmarxd/build/app/tcpgpudmarxd

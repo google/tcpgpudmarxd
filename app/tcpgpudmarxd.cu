@@ -62,7 +62,7 @@ ABSL_FLAG(uint32_t, max_rx_rules, 0,
 
 namespace {
 
-constexpr std::string_view kVersion{"1.1.4"};
+constexpr std::string_view kVersion{"1.1.5"};
 
 static std::atomic<bool> gShouldStop(false);
 
@@ -103,7 +103,7 @@ int main(int argc, char **argv) {
   // 0. Version Info
 
   LOG(INFO) << absl::StrFormat(
-      "Running TCPD Receive Data Path Manager, version (%s)", kVersion);
+      "Running GPUDirect-TCPX Receive Data Path Manager, version (%s)", kVersion);
 
   // 1. Collect GPU/NIC pair configurations
   std::string gpu_nic_preset = absl::GetFlag(FLAGS_gpu_nic_preset);
