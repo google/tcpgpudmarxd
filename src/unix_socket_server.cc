@@ -14,6 +14,8 @@
 
 #include "include/unix_socket_server.h"
 
+#include <absl/status/status.h>
+#include <absl/strings/str_format.h>
 #include <errno.h>
 #include <sys/epoll.h>
 #include <sys/socket.h>
@@ -32,8 +34,6 @@
 
 #include "include/unix_socket_connection.h"
 #include "proto/unix_socket_message.pb.h"
-#include <absl/status/status.h>
-#include <absl/strings/str_format.h>
 
 namespace gpudirect_tcpxd {
 
@@ -116,6 +116,8 @@ void UnixSocketServer::Stop() {
   if (event_thread_ && event_thread_->joinable()) {
     event_thread_->join();
   }
+  // Remove all connected clients, closing all existing UDS connections
+  connected_clients_.clear();
   if (listener_socket_ >= 0) {
     close(listener_socket_);
   }

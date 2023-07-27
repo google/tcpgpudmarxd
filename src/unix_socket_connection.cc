@@ -14,6 +14,8 @@
 
 #include "include/unix_socket_connection.h"
 
+#include <absl/status/status.h>
+#include <absl/strings/str_format.h>
 #include <arpa/inet.h>
 #include <errno.h>
 #include <sys/epoll.h>
@@ -28,8 +30,6 @@
 
 #include "proto/unix_socket_message.pb.h"
 #include "proto/unix_socket_proto.pb.h"
-#include <absl/status/status.h>
-#include <absl/strings/str_format.h>
 
 namespace gpudirect_tcpxd {
 
@@ -69,8 +69,9 @@ bool UnixSocketConnection::Receive() {
     return true;
   }
 
-  if (bytes_read < 0) return false;
-  if (bytes_read == 0) return true;
+  // Getting 0 from blocking recvmsg could only mean that the connection
+  // is closed by remote peer.
+  if (bytes_read <= 0) return false;
 
   // Receiving the payload from the in-band channel
   read_offset_ += bytes_read;
