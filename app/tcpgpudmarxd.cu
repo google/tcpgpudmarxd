@@ -55,6 +55,10 @@ ABSL_FLAG(uint64_t, rx_pool_size, 0,
           "Receive buffer size. Default: 0, meaning no override and either the "
           "value from GpuRxqConfigurationList (if present) or the component "
           "level default value will be used.");
+ABSL_FLAG(uint32_t, max_rx_rules, 0,
+          "Default: 0, meaning no override and either the value from the "
+          "config (if present) or the component level default will be used.  "
+          "Maximum number of flow steering rules to use.");
 
 namespace {
 
@@ -137,6 +141,13 @@ int main(int argc, char **argv) {
     size_t rx_pool_size = absl::GetFlag(FLAGS_rx_pool_size);
     LOG(INFO) << absl::StrFormat("Overriding rx_pool_size: %ld", rx_pool_size);
     gpu_rxq_configs.set_rx_pool_size(rx_pool_size);
+  }
+
+  if (absl::GetFlag(FLAGS_max_rx_rules) > 0) {
+    // overrides rx_rule_limit in the configs
+    size_t max_rx_rules = absl::GetFlag(FLAGS_max_rx_rules);
+    LOG(INFO) << absl::StrFormat("Overriding max_rx_rules: %ld", max_rx_rules);
+    gpu_rxq_configs.set_max_rx_rules(max_rx_rules);
   }
 
   CHECK(gpu_rxq_configs.gpu_rxq_configs().size() > 0);
