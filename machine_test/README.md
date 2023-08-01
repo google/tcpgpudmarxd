@@ -113,6 +113,32 @@ Example output:
 server[gpu-send]: https://paste.googleplex.com/5302189747601408
 client[gpu-receive]: https://paste.googleplex.com/4876266430791680
 
+#### 1B to 1GB message size GPU send/receive Test
+
+Server:
+
+```
+# on the server
+sudo -s
+export SERVER=<server ip> CLIENT=<client ip>
+USER=test IS_SERVER ./start_tcpxd_cos
+# Note: wait until you see "Rx Rule Manager server(s) started" before starting the test
+USER=test ./run_message_size_test --server_address $SERVER --server --event_handler gpu_send
+# Note: wait until you see "[Server] Starting Server Control Channel ..." trace
+# before starting the client
+```
+
+Client:
+
+```
+# on the client
+sudo -s
+export SERVER=<server ip> CLIENT=<client ip>
+USER=test ./start_tcpxd_cos
+# Note: wait until you see "Rx Rule Manager server(s) started" before starting the test
+USER=test ./run_message_size_test --server_address $SERVER --event_handler gpu_receive
+```
+
 ##### More TCPX tests variants
 
 Note: Running the TCPX GPU tests, one needs the TCPX Rx manager running in the
