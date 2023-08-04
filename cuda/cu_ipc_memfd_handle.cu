@@ -1,10 +1,10 @@
-#include "cuda/cu_ipc_memfd_handle.cuh"
+#include <absl/log/log.h>
+#include <absl/strings/str_format.h>
 
 #include <string>
 
-#include <absl/log/log.h>
 #include "cuda/common.cuh"
-#include <absl/strings/str_format.h>
+#include "cuda/cu_ipc_memfd_handle.cuh"
 
 namespace gpudirect_tcpxd {
 

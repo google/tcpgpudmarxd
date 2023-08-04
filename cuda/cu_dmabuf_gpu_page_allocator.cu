@@ -1,13 +1,12 @@
-#include "cuda/cu_dmabuf_gpu_page_allocator.cuh"
-
+#include <absl/log/log.h>
+#include <absl/strings/str_format.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <linux/types.h>
 #include <sys/ioctl.h>
 
-#include <absl/log/log.h>
 #include "cuda/common.cuh"
-#include <absl/strings/str_format.h>
+#include "cuda/cu_dmabuf_gpu_page_allocator.cuh"
 
 namespace gpudirect_tcpxd {
 
@@ -46,8 +45,8 @@ CuDmabufGpuPageAllocator::CuDmabufGpuPageAllocator(int dev_id,
       nic_pci_addr_(nic_pci_addr),
       pool_size_(pool_size) {}
 
-void CuDmabufGpuPageAllocator::AllocatePage(size_t size, unsigned long *id,
-                                            bool *success) {
+void CuDmabufGpuPageAllocator::AllocatePage(size_t size, unsigned long* id,
+                                            bool* success) {
   *success = false;
 
   // lazy initialization
@@ -63,11 +62,11 @@ void CuDmabufGpuPageAllocator::AllocatePage(size_t size, unsigned long *id,
   *id = next_id_;
   next_id_++;
 
-  CuGpuDmaBuf &gpu_dma_buf = gpu_dma_buf_map_[*id];
+  CuGpuDmaBuf& gpu_dma_buf = gpu_dma_buf_map_[*id];
   AllocateGpuMem(&gpu_dma_buf, &size);
 
   CU_ASSERT_SUCCESS(cuMemGetHandleForAddressRange(
-      (void *)&gpu_dma_buf.dma_buf_fd, gpu_dma_buf.cu_dev_ptr, size,
+      (void*)&gpu_dma_buf.dma_buf_fd, gpu_dma_buf.cu_dev_ptr, size,
       CU_MEM_RANGE_HANDLE_TYPE_DMA_BUF_FD, 0));
 
   LOG(INFO) << absl::StrFormat("Registered dmabuf region 0x%lx of %lu Bytes",
@@ -107,7 +106,7 @@ void CuDmabufGpuPageAllocator::AllocatePage(size_t size, unsigned long *id,
 void CuDmabufGpuPageAllocator::FreePage(unsigned long id) {
   if (gpu_dma_buf_map_.find(id) == gpu_dma_buf_map_.end()) return;
 
-  auto &gpu_dma_buf = gpu_dma_buf_map_[id];
+  auto& gpu_dma_buf = gpu_dma_buf_map_[id];
 
   if (gpu_dma_buf.dma_buf_fd >= 0) {
     close(gpu_dma_buf.dma_buf_fd);
@@ -136,8 +135,8 @@ int CuDmabufGpuPageAllocator::GetGpuMemFd(unsigned long id) {
   return gpu_dma_buf_map_[id].gpu_mem_fd;
 }
 
-void CuDmabufGpuPageAllocator::AllocateGpuMem(CuGpuDmaBuf *gpu_dma_buf,
-                                              size_t *size) {
+void CuDmabufGpuPageAllocator::AllocateGpuMem(CuGpuDmaBuf* gpu_dma_buf,
+                                              size_t* size) {
   size_t aligned_size = AlignCuMemSize(*size);
   *size = aligned_size;
   CU_ASSERT_SUCCESS(cuMemCreate(&gpu_dma_buf->cu_gen_alloc_handle, *size,
@@ -189,10 +188,10 @@ IpcGpuMemFdMetadata CuDmabufGpuPageAllocator::GetIpcGpuMemFdMetadata(
 }
 
 void CuDmabufGpuPageAllocator::Cleanup() {
-  for (auto &[id, _] : gpu_dma_buf_map_) {
+  for (auto& [id, _] : gpu_dma_buf_map_) {
     FreePage(id);
   }
 }
 
-CuDmabufGpuPageAllocator::~CuDmabufGpuPageAllocator() { }
+CuDmabufGpuPageAllocator::~CuDmabufGpuPageAllocator() {}
 }  // namespace gpudirect_tcpxd

@@ -1,7 +1,7 @@
-#include "cuda/cuda_ipc_memhandle.cuh"
-
 #include <absl/log/log.h>
+
 #include "cuda/common.cuh"
+#include "cuda/cuda_ipc_memhandle.cuh"
 
 namespace gpudirect_tcpxd {
 

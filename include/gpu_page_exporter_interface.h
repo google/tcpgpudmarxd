@@ -17,6 +17,7 @@
 #ifndef _EXPERIMENTAL_USERS_CHECHENGLIN_GPU_PAGE_EXPORTER_INTERFACE_H_
 #define _EXPERIMENTAL_USERS_CHECHENGLIN_GPU_PAGE_EXPORTER_INTERFACE_H_
 
+#include <absl/status/status.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <linux/types.h>
@@ -28,7 +29,6 @@
 #include <vector>
 
 #include "proto/gpu_rxq_configuration.pb.h"
-#include <absl/status/status.h>
 
 namespace gpudirect_tcpxd {
 

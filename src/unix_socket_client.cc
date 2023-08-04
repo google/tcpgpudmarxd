@@ -14,6 +14,9 @@
 
 #include "include/unix_socket_client.h"
 
+#include <absl/status/status.h>
+#include <absl/status/statusor.h>
+#include <absl/strings/str_format.h>
 #include <errno.h>
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -24,9 +27,6 @@
 
 #include "include/unix_socket_connection.h"
 #include "proto/unix_socket_message.pb.h"
-#include <absl/status/status.h>
-#include <absl/status/statusor.h>
-#include <absl/strings/str_format.h>
 
 namespace gpudirect_tcpxd {
 absl::Status UnixSocketClient::Connect() {

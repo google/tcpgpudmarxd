@@ -1,10 +1,9 @@
-#include "cuda/gpu_page_exporter_factory.cuh"
-
 #include <memory>
 #include <string>
 
 #include "cuda/cu_ipc_memfd_exporter.cuh"
 #include "cuda/cuda_ipc_memhandle_exporter.cuh"
+#include "cuda/gpu_page_exporter_factory.cuh"
 #include "include/gpu_page_exporter_interface.h"
 
 namespace gpudirect_tcpxd {

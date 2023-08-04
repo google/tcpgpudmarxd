@@ -17,13 +17,14 @@
 #ifndef _THIRD_PARTY_TCPDIRECT_RX_MANAGER_UNIX_SOCKET_CLIENT_H_
 #define _THIRD_PARTY_TCPDIRECT_RX_MANAGER_UNIX_SOCKET_CLIENT_H_
 
+#include <absl/status/status.h>
+#include <absl/status/statusor.h>
+
 #include <memory>
 #include <string>
 
 #include "include/unix_socket_connection.h"
 #include "proto/unix_socket_message.pb.h"
-#include <absl/status/status.h>
-#include <absl/status/statusor.h>
 
 namespace gpudirect_tcpxd {
 class UnixSocketClient {

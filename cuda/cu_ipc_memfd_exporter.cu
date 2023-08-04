@@ -20,7 +20,7 @@
 namespace gpudirect_tcpxd {
 
 absl::Status CuIpcMemfdExporter::Initialize(
-    const GpuRxqConfigurationList &config_list, const std::string &prefix) {
+    const GpuRxqConfigurationList& config_list, const std::string& prefix) {
   prefix_ = prefix;
   if (prefix_.back() == '/') {
     prefix_.pop_back();
@@ -34,10 +34,10 @@ absl::Status CuIpcMemfdExporter::Initialize(
     rx_pool_size = config_list.rx_pool_size();
   }
 
-  for (const auto &gpu_rxq_config : config_list.gpu_rxq_configs()) {
+  for (const auto& gpu_rxq_config : config_list.gpu_rxq_configs()) {
     std::string ifname = gpu_rxq_config.ifname();
     std::string nic_pci_addr = gpu_rxq_config.nic_pci_addr();
-    for (const auto &gpu_info : gpu_rxq_config.gpu_infos()) {
+    for (const auto& gpu_info : gpu_rxq_config.gpu_infos()) {
       std::string gpu_pci_addr = gpu_info.gpu_pci_addr();
       int dev_id;
 
@@ -61,14 +61,14 @@ absl::Status CuIpcMemfdExporter::Initialize(
       << "Allocating gpu memory, binding rxq, and getting cudaIpcMemHandle ...";
 
   std::vector<std::thread> alloc_threads;
-  for (auto &gpu_rxq_binding : gpu_pci_bindings_) {
-    const auto &gpu_pci_addr = gpu_rxq_binding.gpu_pci_addr;
-    const auto &ifname = gpu_rxq_binding.ifname;
-    const auto &dev_id = gpu_rxq_binding.dev_id;
-    auto &page_allocator = *gpu_rxq_binding.page_allocator;
-    auto &page_id = gpu_rxq_binding.page_id;
-    auto &gpumem_fd_metadata = gpu_rxq_binding.gpumem_fd_metadata;
-    auto &qids = gpu_rxq_binding.queue_ids;
+  for (auto& gpu_rxq_binding : gpu_pci_bindings_) {
+    const auto& gpu_pci_addr = gpu_rxq_binding.gpu_pci_addr;
+    const auto& ifname = gpu_rxq_binding.ifname;
+    const auto& dev_id = gpu_rxq_binding.dev_id;
+    auto& page_allocator = *gpu_rxq_binding.page_allocator;
+    auto& page_id = gpu_rxq_binding.page_id;
+    auto& gpumem_fd_metadata = gpu_rxq_binding.gpumem_fd_metadata;
+    auto& qids = gpu_rxq_binding.queue_ids;
     alloc_threads.emplace_back([&]() {
       CUDA_ASSERT_SUCCESS(cudaSetDevice(dev_id));
       bool allocation_success = false;
@@ -95,8 +95,8 @@ absl::Status CuIpcMemfdExporter::Initialize(
     us_servers_.emplace_back(std::make_unique<UnixSocketServer>(
         absl::StrFormat("%s/get_gpu_fd_%s", prefix_, gpu_pci_addr),
         /*service_handler=*/
-        [&](UnixSocketMessage &&request, UnixSocketMessage *response,
-            bool *fin) {
+        [&](UnixSocketMessage&& request, UnixSocketMessage* response,
+            bool* fin) {
           if (request.has_proto() &&
               request.proto().raw_bytes() == gpu_pci_addr) {
             response->set_fd(gpumem_fd_metadata.fd);
@@ -110,14 +110,14 @@ absl::Status CuIpcMemfdExporter::Initialize(
     us_servers_.emplace_back(std::make_unique<UnixSocketServer>(
         absl::StrFormat("%s/get_gpu_metadata_%s", prefix_, gpu_pci_addr),
         /*service_handler=*/
-        [&](UnixSocketMessage &&request, UnixSocketMessage *response,
-            bool *fin) {
-          UnixSocketProto *proto = response->mutable_proto();
-          std::string *buffer = response->mutable_proto()->mutable_raw_bytes();
+        [&](UnixSocketMessage&& request, UnixSocketMessage* response,
+            bool* fin) {
+          UnixSocketProto* proto = response->mutable_proto();
+          std::string* buffer = response->mutable_proto()->mutable_raw_bytes();
           if (request.has_proto() &&
               request.proto().raw_bytes() == gpu_pci_addr) {
             for (int i = 0; i < sizeof(gpumem_fd_metadata); ++i) {
-              buffer->push_back(*((char *)&gpumem_fd_metadata + i));
+              buffer->push_back(*((char*)&gpumem_fd_metadata + i));
             }
           } else {
             proto->mutable_status()->set_code(
@@ -130,7 +130,7 @@ absl::Status CuIpcMemfdExporter::Initialize(
         /*service_setup=*/
         [&]() { CUDA_ASSERT_SUCCESS(cudaSetDevice(dev_id)); }));
   }
-  for (auto &th : alloc_threads) {
+  for (auto& th : alloc_threads) {
     th.join();
   }
   return absl::OkStatus();
@@ -139,7 +139,7 @@ absl::Status CuIpcMemfdExporter::Initialize(
 absl::Status CuIpcMemfdExporter::Export() {
   LOG(INFO) << "Starting Unix socket servers ...";
 
-  for (auto &server : us_servers_) {
+  for (auto& server : us_servers_) {
     if (auto server_status = server->Start(); !server_status.ok()) {
       return server_status;
     }
@@ -149,10 +149,10 @@ absl::Status CuIpcMemfdExporter::Export() {
   return absl::OkStatus();
 }
 void CuIpcMemfdExporter::Cleanup() {
-  for (auto &server : us_servers_) {
+  for (auto& server : us_servers_) {
     server->Stop();
   }
-  for (auto &gpu_rxq_binding : gpu_pci_bindings_) {
+  for (auto& gpu_rxq_binding : gpu_pci_bindings_) {
     gpu_rxq_binding.page_allocator->Cleanup();
   }
 }

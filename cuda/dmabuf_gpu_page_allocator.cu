@@ -1,13 +1,12 @@
-#include "cuda/dmabuf_gpu_page_allocator.cuh"
-
+#include <absl/log/log.h>
+#include <absl/strings/str_format.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <linux/types.h>
 #include <sys/ioctl.h>
 
-#include <absl/log/log.h>
 #include "cuda/common.cuh"
-#include <absl/strings/str_format.h>
+#include "cuda/dmabuf_gpu_page_allocator.cuh"
 
 namespace gpudirect_tcpxd {
 
@@ -38,9 +37,8 @@ static const std::string kNvp2pDmabufProcfsPrefix =
 
 int get_gpumem_dmabuf_pages_fd(const std::string &gpu_pci_addr,
                                const std::string &nic_pci_addr,
-                               bool create_page_pool,
-                               CUdeviceptr gpu_mem, size_t gpu_mem_sz,
-                               int *dma_buf_fd) {
+                               bool create_page_pool, CUdeviceptr gpu_mem,
+                               size_t gpu_mem_sz, int *dma_buf_fd) {
   std::string path =
       absl::StrFormat("%s/%s/new_fd", kNvp2pDmabufProcfsPrefix, gpu_pci_addr);
 
@@ -108,9 +106,10 @@ DmabufGpuPageAllocator::DmabufGpuPageAllocator(std::string gpu_pci_addr,
   pool_size_ = DEFAULT_POOL_SIZE;
 }
 
-DmabufGpuPageAllocator::DmabufGpuPageAllocator(
-    std::string gpu_pci_addr, std::string nic_pci_addr, bool create_page_pool,
-    size_t pool_size)
+DmabufGpuPageAllocator::DmabufGpuPageAllocator(std::string gpu_pci_addr,
+                                               std::string nic_pci_addr,
+                                               bool create_page_pool,
+                                               size_t pool_size)
     : gpu_pci_addr_(gpu_pci_addr),
       nic_pci_addr_(nic_pci_addr),
       create_page_pool_(create_page_pool),
@@ -138,8 +137,8 @@ void DmabufGpuPageAllocator::AllocatePage(size_t size, unsigned long *id,
 
   // CHECK(gpu_dma_buf.gpu_mem_ptr % PAGE_SIZE == 0);
   gpu_dma_buf.gpu_mem_fd = get_gpumem_dmabuf_pages_fd(
-      gpu_pci_addr_, nic_pci_addr_, create_page_pool_,
-      gpu_dma_buf.gpu_mem_ptr, size, &gpu_dma_buf.dma_buf_fd);
+      gpu_pci_addr_, nic_pci_addr_, create_page_pool_, gpu_dma_buf.gpu_mem_ptr,
+      size, &gpu_dma_buf.dma_buf_fd);
 
   if (gpu_dma_buf.gpu_mem_fd < 0) {
     LOG(WARNING) << "get_gpumem_dmabuf_pages_fd() failed!";

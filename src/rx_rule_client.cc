@@ -28,7 +28,7 @@
 
 namespace gpudirect_tcpxd {
 
-RxRuleClient::RxRuleClient(const std::string &prefix) {
+RxRuleClient::RxRuleClient(const std::string& prefix) {
   prefix_ = prefix;
   if (prefix_.back() == '/') {
     prefix_.pop_back();
@@ -36,8 +36,8 @@ RxRuleClient::RxRuleClient(const std::string &prefix) {
 }
 
 absl::Status ConnectAndSendMessage(UnixSocketMessage message,
-                                   UnixSocketMessage *response,
-                                   UnixSocketClient *client) {
+                                   UnixSocketMessage* response,
+                                   UnixSocketClient* client) {
   auto status = client->Connect();
   if (!status.ok()) return status;
 
@@ -53,7 +53,7 @@ absl::Status ConnectAndSendMessage(UnixSocketMessage message,
 }
 
 absl::Status RxRuleClient::UpdateFlowSteerRule(
-    FlowSteerRuleOp op, const FlowSteerNtuple &flow_steer_ntuple,
+    FlowSteerRuleOp op, const FlowSteerNtuple& flow_steer_ntuple,
     std::string gpu_pci_addr, int qid) {
   std::string server_addr =
       (op == CREATE) ? "rx_rule_manager" : "rx_rule_uninstall";
@@ -63,8 +63,8 @@ absl::Status RxRuleClient::UpdateFlowSteerRule(
 
   UnixSocketMessage message;
 
-  UnixSocketProto *proto = message.mutable_proto();
-  FlowSteerRuleRequest *fsr = proto->mutable_flow_steer_rule_request();
+  UnixSocketProto* proto = message.mutable_proto();
+  FlowSteerRuleRequest* fsr = proto->mutable_flow_steer_rule_request();
   *fsr->mutable_flow_steer_ntuple() = ConvertStructToProto(flow_steer_ntuple);
 
   if (!gpu_pci_addr.empty()) {

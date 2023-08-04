@@ -17,6 +17,8 @@
 #ifndef _THIRD_PARTY_TCPDIRECT_RX_MANAGER_UNIX_SOCKET_SERVER_H_
 #define _THIRD_PARTY_TCPDIRECT_RX_MANAGER_UNIX_SOCKET_SERVER_H_
 
+#include <absl/container/flat_hash_map.h>
+#include <absl/status/status.h>
 #include <sys/epoll.h>
 #include <sys/types.h>
 #include <sys/un.h>
@@ -31,8 +33,6 @@
 
 #include "include/unix_socket_connection.h"
 #include "proto/unix_socket_message.pb.h"
-#include <absl/container/flat_hash_map.h>
-#include <absl/status/status.h>
 
 namespace gpudirect_tcpxd {
 

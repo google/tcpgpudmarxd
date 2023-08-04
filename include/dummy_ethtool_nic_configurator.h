@@ -17,10 +17,11 @@
 #ifndef _EXPERIMENTAL_USERS_CHECHENGLIN_TCPGPUDMAD_INCLUDE_DUMMY_ETHTOOL_NIC_CONFIGURATOR_H_
 #define _EXPERIMENTAL_USERS_CHECHENGLIN_TCPGPUDMAD_INCLUDE_DUMMY_ETHTOOL_NIC_CONFIGURATOR_H_
 
+#include <absl/status/status.h>
+
 #include <string>
 
 #include "include/ethtool_nic_configurator.h"
-#include <absl/status/status.h>
 
 namespace gpudirect_tcpxd {
 class DummyEthtoolNicConfigurator : public EthtoolNicConfigurator {

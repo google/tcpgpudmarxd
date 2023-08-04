@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "include/rx_rule_client.h"
+#include "include/socket_helper.h"
 
 #include <absl/functional/bind_front.h>
 #include <absl/log/check.h>
@@ -21,27 +21,27 @@
 #include <absl/status/statusor.h>
 #include <absl/strings/str_format.h>
 #include <arpa/inet.h>
-#include <cstring>
 #include <gmock/gmock.h>
+#include <google/protobuf/text_format.h>
 #include <gtest/gtest.h>
-#include <iterator>
 #include <sys/un.h>
 #include <unistd.h>
 
 #include <cmath>
+#include <cstring>
 #include <fstream>
 #include <iostream>
+#include <iterator>
 #include <string>
 #include <utility>
 
+#include "gmock/gmock.h"
 #include "include/flow_steer_ntuple.h"
 #include "include/gpu_rxq_configuration_factory.h"
 #include "include/nic_configurator_interface.h"
+#include "include/rx_rule_client.h"
 #include "include/rx_rule_manager.h"
-#include "include/socket_helper.h"
 #include "proto/unix_socket_message.pb.h"
-#include "gmock/gmock.h"
-#include <google/protobuf/text_format.h>
 
 namespace {
 using gpudirect_tcpxd::SocketAddress;
@@ -82,7 +82,7 @@ TEST(SocketHelperTest, AddressFromStrIpv4) {
   int ret = inet_pton(sa_family, address_str.c_str(), dst);
 
   auto addr = gpudirect_tcpxd::AddressFromStr(address_str);
-  EXPECT_EQ(memcmp(&addr.sin.sin_addr, dst, sizeof(struct in_addr )), 0);
+  EXPECT_EQ(memcmp(&addr.sin.sin_addr, dst, sizeof(struct in_addr)), 0);
 }
 
 TEST(SocketHelperTest, AddressFromStrIpv6) {
@@ -93,11 +93,10 @@ TEST(SocketHelperTest, AddressFromStrIpv6) {
   int ret = inet_pton(sa_family, address_str.c_str(), dst);
 
   auto addr = gpudirect_tcpxd::AddressFromStr(address_str);
-  EXPECT_EQ(memcmp(&addr.sin6.sin6_addr, dst, sizeof(struct in_addr )), 0);
+  EXPECT_EQ(memcmp(&addr.sin6.sin6_addr, dst, sizeof(struct in_addr)), 0);
 }
 
-
-TEST(SocketHelperTest, AddressToStrIpv4){
+TEST(SocketHelperTest, AddressToStrIpv4) {
   std::string addr_str_1 = "1.2.3.4";
   SocketAddress socket_address;
   int sa_family = AF_INET;
@@ -120,4 +119,4 @@ TEST(SocketHelperTest, AddressToStrIpv6) {
   auto addr_str_2 = gpudirect_tcpxd::AddressToStr(&socket_address);
   EXPECT_EQ(addr_str_2, addr_str_1);
 }
-} // namespace
+}  // namespace

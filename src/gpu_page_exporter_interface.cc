@@ -14,10 +14,10 @@
 
 #include "include/gpu_page_exporter_interface.h"
 
-#include <string>
-
 #include <absl/log/log.h>
 #include <absl/strings/str_format.h>
+
+#include <string>
 
 namespace gpudirect_tcpxd {
 int GpuPageExporterInterface::gpumem_bind_rxq(int fd, const std::string& ifname,

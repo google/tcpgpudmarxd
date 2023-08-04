@@ -14,6 +14,7 @@
 
 #include "include/pci_helpers.h"
 
+#include <absl/log/log.h>
 #include <dirent.h>
 #include <fcntl.h>
 #include <ifaddrs.h>
@@ -24,8 +25,6 @@
 #include <memory>
 #include <string>
 #include <vector>
-
-#include <absl/log/log.h>
 
 namespace gpudirect_tcpxd {
 
@@ -43,7 +42,6 @@ int parse_pci_addr(const char* pci_addr, uint16_t* domain, uint16_t* bus,
   *function = tmp_function;
   return 0;
 }
-
 
 int read_nic_pci_addr(const char* ifname, uint16_t* domain, uint16_t* bus,
                       uint16_t* device) {
@@ -114,14 +112,14 @@ int read_nic_pci_addr(const char* ifname, uint16_t* domain, uint16_t* bus,
 int list_vendor_devices(const char* parent_dir_path,
                         std::vector<std::string>* candidates,
                         const char* vendor_id) {
-  DIR *root_dir = opendir(parent_dir_path);
+  DIR* root_dir = opendir(parent_dir_path);
   if (root_dir == nullptr) {
     LOG(ERROR) << "Failed to open parent directory: " << parent_dir_path;
     return -1;
   }
   struct dirent* dir_entry;
   char subdir_path[PATH_MAX];
-  char vendor[PCI_VENDOR_LEN + 1] = { 0 };
+  char vendor[PCI_VENDOR_LEN + 1] = {0};
   uint16_t domain, bus, device, function;
   while ((dir_entry = readdir(root_dir)) != nullptr) {
     if (parse_pci_addr(dir_entry->d_name, &domain, &bus, &device, &function))

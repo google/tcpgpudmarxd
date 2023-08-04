@@ -15,15 +15,15 @@
 
 namespace gpudirect_tcpxd {
 absl::StatusOr<std::unique_ptr<GpuPageHandleInterface>>
-CuIpcMemfdHandleImporter::Import(const std::string &prefix,
-                                 const std::string &gpu_pci_addr) {
+CuIpcMemfdHandleImporter::Import(const std::string& prefix,
+                                 const std::string& gpu_pci_addr) {
   IpcGpuMemFdMetadata gpumem_fd_metadata;
   // fetch ipc shareable fd
   UnixSocketClient gpumem_fd_by_gpu_pci_client(
       absl::StrFormat("%s/get_gpu_fd_%s", prefix, gpu_pci_addr));
   PCHECK(gpumem_fd_by_gpu_pci_client.Connect().ok());
   UnixSocketMessage req;
-  UnixSocketProto *req_mutable_proto = req.mutable_proto();
+  UnixSocketProto* req_mutable_proto = req.mutable_proto();
   req_mutable_proto->set_raw_bytes(gpu_pci_addr);
   gpumem_fd_by_gpu_pci_client.Send(req);
   absl::StatusOr<UnixSocketMessage> resp =
@@ -38,7 +38,7 @@ CuIpcMemfdHandleImporter::Import(const std::string &prefix,
       absl::StrFormat("%s/get_gpu_metadata_%s", prefix, gpu_pci_addr));
   PCHECK(gpumem_metadata_by_gpu_pci_client.Connect().ok());
   UnixSocketMessage req_metadata;
-  UnixSocketProto *md_mutable_proto = req_metadata.mutable_proto();
+  UnixSocketProto* md_mutable_proto = req_metadata.mutable_proto();
   md_mutable_proto->set_raw_bytes(gpu_pci_addr);
   gpumem_metadata_by_gpu_pci_client.Send(req_metadata);
   absl::StatusOr<UnixSocketMessage> resp_metadata =
@@ -59,8 +59,8 @@ CuIpcMemfdHandleImporter::Import(const std::string &prefix,
     return absl::NotFoundError("Memhandle not found in response proto");
   }
 
-  memcpy((void *)&gpumem_fd_metadata,
-         (void *)resp_metadata.value().proto().raw_bytes().data(),
+  memcpy((void*)&gpumem_fd_metadata,
+         (void*)resp_metadata.value().proto().raw_bytes().data(),
          resp_metadata.value().proto().raw_bytes().size());
 
   int dev_id;

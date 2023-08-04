@@ -12,7 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <absl/status/statusor.h>
+#include <absl/strings/str_format.h>
 #include <errno.h>
+#include <gtest/gtest.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/un.h>
@@ -26,9 +29,6 @@
 #include "include/unix_socket_client.h"
 #include "include/unix_socket_server.h"
 #include "proto/unix_socket_message.pb.h"
-#include <gtest/gtest.h>
-#include <absl/status/statusor.h>
-#include <absl/strings/str_format.h>
 
 namespace {
 

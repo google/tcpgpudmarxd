@@ -25,7 +25,7 @@ class CuDmabufGpuPageAllocator : public GpuPageAllocatorInterface {
  public:
   CuDmabufGpuPageAllocator(int dev_id, std::string gpu_pci_addr,
                            std::string nic_pci_addr, size_t pool_size);
-  void AllocatePage(size_t size, unsigned long *id, bool *success) override;
+  void AllocatePage(size_t size, unsigned long* id, bool* success) override;
   void FreePage(unsigned long id) override;
   CUdeviceptr GetGpuMem(unsigned long id) override;
   int GetGpuMemFd(unsigned long id) override;
@@ -36,7 +36,7 @@ class CuDmabufGpuPageAllocator : public GpuPageAllocatorInterface {
   IpcGpuMemFdMetadata GetIpcGpuMemFdMetadata(unsigned long id);
 
  private:
-  void AllocateGpuMem(CuGpuDmaBuf *gpu_dma_buf, size_t *size);
+  void AllocateGpuMem(CuGpuDmaBuf* gpu_dma_buf, size_t* size);
   void InitCuMemAllocationSettings();
   size_t AlignCuMemSize(size_t size);
   bool initialized_{false};
@@ -55,8 +55,8 @@ class CuDmabufGpuPageAllocator : public GpuPageAllocatorInterface {
       CU_MEM_HANDLE_TYPE_POSIX_FILE_DESCRIPTOR};
   size_t cu_mem_alloc_align_{1UL << 21};
   // disallow copy and assign
-  CuDmabufGpuPageAllocator(const CuDmabufGpuPageAllocator &);
-  void operator=(const CuDmabufGpuPageAllocator &);
+  CuDmabufGpuPageAllocator(const CuDmabufGpuPageAllocator&);
+  void operator=(const CuDmabufGpuPageAllocator&);
 };
 }  // namespace gpudirect_tcpxd
 #endif

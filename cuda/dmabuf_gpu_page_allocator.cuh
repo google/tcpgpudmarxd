@@ -22,8 +22,7 @@ class DmabufGpuPageAllocator : public GpuPageAllocatorInterface {
  public:
   DmabufGpuPageAllocator(std::string gpu_pci_addr, std::string nic_pci_addr);
   DmabufGpuPageAllocator(std::string gpu_pci_addr, std::string nic_pci_addr,
-                         bool create_page_pool,
-                         size_t pool_size);
+                         bool create_page_pool, size_t pool_size);
   void AllocatePage(size_t size, unsigned long *id, bool *success) override;
   void FreePage(unsigned long id) override;
   CUdeviceptr GetGpuMem(unsigned long id) override;

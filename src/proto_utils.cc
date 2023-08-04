@@ -18,8 +18,9 @@
 #include <absl/log/log.h>
 #include <arpa/inet.h>
 #include <linux/ethtool.h>
-#include <string>
 #include <sys/socket.h>
+
+#include <string>
 
 #include "include/flow_steer_ntuple.h"
 #include "include/socket_helper.h"

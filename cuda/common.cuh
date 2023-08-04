@@ -1,12 +1,11 @@
 #ifndef _THIRD_PARTY_TCPDIRECT_RX_MANAGER_COMMON_H_
 #define _THIRD_PARTY_TCPDIRECT_RX_MANAGER_COMMON_H_
 
-#include <unordered_map>
-
 #include <absl/log/log.h>
 #include <absl/strings/str_format.h>
 #include <cuda.h>
 
+#include <unordered_map>
 
 namespace gpudirect_tcpxd {
 

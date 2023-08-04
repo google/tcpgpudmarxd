@@ -14,9 +14,9 @@
 
 #include "include/dummy_ethtool_nic_configurator.h"
 
-#include <string>
-
 #include <absl/log/log.h>
+
+#include <string>
 
 namespace gpudirect_tcpxd {
 
