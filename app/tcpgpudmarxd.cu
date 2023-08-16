@@ -27,6 +27,8 @@
 #include "include/nic_configurator_factory.h"
 #include "include/nic_configurator_interface.h"
 #include "include/rx_rule_manager.h"
+#include <absl/debugging/failure_signal_handler.h>
+#include <absl/debugging/symbolize.h>
 
 using gpudirect_tcpxd::GpuPageExporterFactory;
 using gpudirect_tcpxd::GpuPageExporterInterface;
@@ -75,6 +77,11 @@ void sig_handler(int signum) {
 }  // namespace
 
 int main(int argc, char **argv) {
+  absl::InitializeSymbolizer(argv[0]);
+  absl::FailureSignalHandlerOptions options;
+
+  absl::InstallFailureSignalHandler(options);
+
   int ret_code = 0;
 #define RETURN_IF_ERROR(x)               \
   if (auto status = (x); !status.ok()) { \
