@@ -1,3 +1,5 @@
+#include <absl/debugging/failure_signal_handler.h>
+#include <absl/debugging/symbolize.h>
 #include <absl/flags/flag.h>
 #include <absl/flags/parse.h>
 #include <absl/log/check.h>
@@ -27,8 +29,6 @@
 #include "include/nic_configurator_factory.h"
 #include "include/nic_configurator_interface.h"
 #include "include/rx_rule_manager.h"
-#include <absl/debugging/failure_signal_handler.h>
-#include <absl/debugging/symbolize.h>
 
 using gpudirect_tcpxd::GpuPageExporterFactory;
 using gpudirect_tcpxd::GpuPageExporterInterface;
@@ -76,7 +76,7 @@ void sig_handler(int signum) {
 
 }  // namespace
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   absl::InitializeSymbolizer(argv[0]);
   absl::FailureSignalHandlerOptions options;
 
@@ -110,7 +110,8 @@ int main(int argc, char **argv) {
   // 0. Version Info
 
   LOG(INFO) << absl::StrFormat(
-      "Running GPUDirect-TCPX Receive Data Path Manager, version (%s)", kVersion);
+      "Running GPUDirect-TCPX Receive Data Path Manager, version (%s)",
+      kVersion);
 
   // 1. Collect GPU/NIC pair configurations
   std::string gpu_nic_preset = absl::GetFlag(FLAGS_gpu_nic_preset);
@@ -154,7 +155,12 @@ int main(int argc, char **argv) {
     // overrides rx_rule_limit in the configs
     size_t max_rx_rules = absl::GetFlag(FLAGS_max_rx_rules);
     LOG(INFO) << absl::StrFormat("Overriding max_rx_rules: %ld", max_rx_rules);
-    gpu_rxq_configs.set_max_rx_rules(max_rx_rules);
+    if (gpu_nic_preset == "a3vm") {
+      LOG(WARNING) << "Ignore max_rx_rules override for 'a3vm', using "
+                      "component level default value: " << gpu_rxq_configs.max_rx_rules();
+    } else {
+      gpu_rxq_configs.set_max_rx_rules(max_rx_rules);
+    }
   }
 
   CHECK(gpu_rxq_configs.gpu_rxq_configs().size() > 0);
@@ -196,7 +202,7 @@ int main(int argc, char **argv) {
   // 4. Configure NIC for TCPDirect
   LOG(INFO) << "Priming the NICs for GPU-RXQ use case ...";
 
-  for (auto &gpu_rxq_config : gpu_rxq_configs.gpu_rxq_configs()) {
+  for (auto& gpu_rxq_config : gpu_rxq_configs.gpu_rxq_configs()) {
     // Resetting header-split here to ensure that the subsequent enablement will
     // trigger re-initializing the receive buffer pool.
     LOG_IF_ERROR(nic_configurator->TogglePrivateFeature(
@@ -220,7 +226,7 @@ int main(int argc, char **argv) {
   RETURN_IF_ERROR(gpu_page_exporter->Initialize(gpu_rxq_configs, uds_path));
   RETURN_IF_ERROR(gpu_page_exporter->Export());
 
-  for (auto &gpu_rxq_config : gpu_rxq_configs.gpu_rxq_configs()) {
+  for (auto& gpu_rxq_config : gpu_rxq_configs.gpu_rxq_configs()) {
     RETURN_IF_ERROR(nic_configurator->TogglePrivateFeature(
         gpu_rxq_config.ifname(), "enable-header-split", true));
   }
@@ -254,7 +260,7 @@ CLEANUP:
       gpu_rxq_configs.rss_set_size() + gpu_rxq_configs.tcpd_queue_size();
 
   LOG(INFO) << "Recovering NIC configurations ...";
-  for (auto &gpu_rxq_config : gpu_rxq_configs.gpu_rxq_configs()) {
+  for (auto& gpu_rxq_config : gpu_rxq_configs.gpu_rxq_configs()) {
     LOG_IF_ERROR(nic_configurator->TogglePrivateFeature(
         gpu_rxq_config.ifname(), "enable-header-split", true));
     LOG_IF_ERROR(nic_configurator->TogglePrivateFeature(

@@ -108,7 +108,7 @@ GpuRxqConfigurationList A3VmGpuRxqConfigurator::GetConfigurations() {
   }
   config_list.set_rss_set_size(8);
   config_list.set_tcpd_queue_size(8);
-  config_list.set_max_rx_rules(256);
+  config_list.set_max_rx_rules(100000);
   return config_list;
 }
 
@@ -164,7 +164,7 @@ GpuRxqConfigurationList A3VmGpuRxqConfigurator4GPU4NIC::GetConfigurations() {
   }
   config_list.set_rss_set_size(8);
   config_list.set_tcpd_queue_size(8);
-  config_list.set_max_rx_rules(256);
+  config_list.set_max_rx_rules(100000);
   return config_list;
 }
 }  // namespace gpudirect_tcpxd
