@@ -64,7 +64,7 @@ ABSL_FLAG(uint32_t, max_rx_rules, 0,
 
 namespace {
 
-constexpr std::string_view kVersion{"1.1.5"};
+constexpr std::string_view kVersion{"v2.0.1"};
 
 static std::atomic<bool> gShouldStop(false);
 
