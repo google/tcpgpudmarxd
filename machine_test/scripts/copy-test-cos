@@ -2,7 +2,19 @@
 
 set -ex
 
-alias staging_gcloud="CLOUDSDK_API_CLIENT_OVERRIDES_COMPUTE=staging_v1 /google/data/ro/teams/cloud-sdk/gcloud"
+alias gcloud_command='/google/data/ro/teams/cloud-sdk/gcloud alpha'
+
+while true; do
+  case "$1" in
+    -s)
+      alias gcloud_command='CLOUDSDK_API_CLIENT_OVERRIDES_COMPUTE=staging_v1 /google/data/ro/teams/cloud-sdk/gcloud'
+      shift 1
+      ;;
+    *)
+      break;
+      ;;
+  esac
+done
 
 pids=()
 while true; do
@@ -14,12 +26,12 @@ while true; do
   farray=$(ls ./scripts | grep -v copy-test-cos)
 
   for f in $farray; do
-    staging_gcloud compute scp \
+    gcloud_command compute scp \
       ./scripts/$f $instance:~/ &
     pids+=("$!")
   done
 
-  staging_gcloud compute ssh $instance -- \
+  gcloud_command compute ssh $instance -- \
     "sudo mount -o remount,exec /home/ && \
      cd ~/ && \
      sudo docker-credential-gcr configure-docker && \

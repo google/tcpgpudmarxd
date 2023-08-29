@@ -10,7 +10,8 @@ https://source.corp.google.com/piper///depot/google3/experimental/users/almasrym
 
 ```
 # on your cloudtop/desktop
-./scripts/copy-test-cos <vm1_name> <vm2_name> ...
+./scripts/copy-test-cos <vm1_name> <vm2_name> ... # for prod
+./scripts/copy-test-cos -s <vm1_name> <vm2_name> ... # for staging
 ```
 
 ### Run single machine ioctl tests
