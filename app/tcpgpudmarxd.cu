@@ -4,6 +4,7 @@
 #include <absl/flags/parse.h>
 #include <absl/log/check.h>
 #include <absl/log/log.h>
+#include <absl/status/status.h>
 #include <absl/strings/str_format.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -64,7 +65,7 @@ ABSL_FLAG(uint32_t, max_rx_rules, 0,
 
 namespace {
 
-constexpr std::string_view kVersion{"v2.0.1"};
+constexpr std::string_view kVersion{"v2.0.2"};
 
 static std::atomic<bool> gShouldStop(false);
 
@@ -72,6 +73,17 @@ void sig_handler(int signum) {
   if (signum == SIGINT || signum == SIGTERM) {
     gShouldStop.store(true, std::memory_order_release);
   }
+}
+
+absl::Status DisableMtuProbing() {
+  auto ret = system("sysctl -w net.ipv4.tcp_mtu_probing=0");
+  if (ret != 0) {
+    std::string error_msg =
+        absl::StrFormat("Disable Mtu Probing Failed. Ret: %d", ret);
+    return absl::InternalError(error_msg);
+  }
+  LOG(INFO) << "Disable Mtu Probing Succeeded.";
+  return absl::OkStatus();
 }
 
 }  // namespace
@@ -98,6 +110,8 @@ int main(int argc, char** argv) {
   if (auto status = (x); !status.ok()) { \
     LOG(ERROR) << status;                \
   }
+
+  RETURN_IF_ERROR(DisableMtuProbing());
 
   umask(0);
   absl::ParseCommandLine(argc, argv);
@@ -157,7 +171,8 @@ int main(int argc, char** argv) {
     LOG(INFO) << absl::StrFormat("Overriding max_rx_rules: %ld", max_rx_rules);
     if (gpu_nic_preset == "a3vm") {
       LOG(WARNING) << "Ignore max_rx_rules override for 'a3vm', using "
-                      "component level default value: " << gpu_rxq_configs.max_rx_rules();
+                      "component level default value: "
+                   << gpu_rxq_configs.max_rx_rules();
     } else {
       gpu_rxq_configs.set_max_rx_rules(max_rx_rules);
     }
