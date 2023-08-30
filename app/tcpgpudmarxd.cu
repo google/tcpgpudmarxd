@@ -65,7 +65,7 @@ ABSL_FLAG(uint32_t, max_rx_rules, 0,
 
 namespace {
 
-constexpr std::string_view kVersion{"v2.0.2"};
+constexpr std::string_view kVersion{"v2.0.3"};
 
 static std::atomic<bool> gShouldStop(false);
 
@@ -221,6 +221,8 @@ int main(int argc, char** argv) {
     // Resetting header-split here to ensure that the subsequent enablement will
     // trigger re-initializing the receive buffer pool.
     LOG_IF_ERROR(nic_configurator->TogglePrivateFeature(
+        gpu_rxq_config.ifname(), "enable-strict-header-split", false));
+    LOG_IF_ERROR(nic_configurator->TogglePrivateFeature(
         gpu_rxq_config.ifname(), "enable-header-split", false));
     // Resetting Ntuple here to flush all stale flow steering rules.
     LOG_IF_ERROR(nic_configurator->ToggleFeature(gpu_rxq_config.ifname(),
@@ -243,7 +245,7 @@ int main(int argc, char** argv) {
 
   for (auto& gpu_rxq_config : gpu_rxq_configs.gpu_rxq_configs()) {
     RETURN_IF_ERROR(nic_configurator->TogglePrivateFeature(
-        gpu_rxq_config.ifname(), "enable-header-split", true));
+        gpu_rxq_config.ifname(), "enable-strict-header-split", true));
   }
 
   // 6. Start Rx Rule Manager
@@ -277,7 +279,9 @@ CLEANUP:
   LOG(INFO) << "Recovering NIC configurations ...";
   for (auto& gpu_rxq_config : gpu_rxq_configs.gpu_rxq_configs()) {
     LOG_IF_ERROR(nic_configurator->TogglePrivateFeature(
-        gpu_rxq_config.ifname(), "enable-header-split", true));
+        gpu_rxq_config.ifname(), "enable-strict-header-split", true));
+    LOG_IF_ERROR(nic_configurator->TogglePrivateFeature(
+        gpu_rxq_config.ifname(), "enable-strict-header-split", false));
     LOG_IF_ERROR(nic_configurator->TogglePrivateFeature(
         gpu_rxq_config.ifname(), "enable-header-split", false));
     LOG_IF_ERROR(nic_configurator->SetRss(gpu_rxq_config.ifname(),
