@@ -19,4 +19,14 @@ include(${SELF_DIR}/gpudirect_tcpxd.cmake)
 
 set(gpudirect_tcpxd_LIB_DIR ${SELF_DIR}/lib)
 set(gpudirect_tcpxd_INCLUDE_DIR ${SELF_DIR} ${PARENT_DIR})
-set(gpudirect_tcpxd_LIBRARIES rx_rule_client unix_socket_client_lib proto_utils socket_helper)
+set(gpudirect_tcpxd_LIBRARIES
+    rx_rule_client
+    unix_socket_client_lib
+    proto_utils
+    socket_helper
+    cuda_common
+    cuda_ipc_memhandle
+    cu_ipc_memfd_handle
+    cuda_ipc_memhandle_importer
+    cu_ipc_memfd_handle_importer
+)
