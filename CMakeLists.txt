@@ -49,7 +49,7 @@ ADD_SUBDIRECTORY(app)
 
 include(CTest)
 ADD_SUBDIRECTORY(test)
-
 ADD_SUBDIRECTORY(machine_test)
+ADD_SUBDIRECTORY(telemetry)
 install(FILES gpudirect_tcpxd-config.cmake DESTINATION "${TCPGPUDMARXD_INSTALL_DIR}")
 install(EXPORT gpudirect_tcpxd DESTINATION "${TCPGPUDMARXD_INSTALL_DIR}")

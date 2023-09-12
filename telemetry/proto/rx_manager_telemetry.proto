@@ -1,0 +1,194 @@
+// Copyright 2023 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+syntax = "proto2";
+
+package gpudirect_tcpxd;
+// A proxy service that report telemetry to cloud monitoring on behalf of rx
+service RxBufferTelemetryProxy {
+  // Report rx rule client telemetry
+  rpc ReportFlowSteerRuleClientMetrics(FlowSteerRuleClientTelemetryProto)
+      returns (ReportStatus) {}
+  // Report rx rule manager telemetry
+  rpc ReportRxRuleManagerMetrics(FlowSteerRuleManagerTelemetryProto)
+      returns (ReportStatus) {}
+  // Report Gpu memory exporter telemetry
+  rpc ReportGpuMemExporterMetrics(GpuMemExporterTelemetryProto)
+      returns (ReportStatus) {}
+}
+
+// Messages for Rx Rule Client
+// Record the number of failed rule installation due to the cause on the client
+// side
+message ClientInstallFailureCause {
+  // Required field recording the string of the failure cause
+  optional string install_failure_cause = 1;
+  // Required field recording how many times each failure cause happens
+  optional int32 count = 2;
+}
+
+// Rx Rule Client side recoreded metrics
+message FlowSteerRuleClientTelemetryProto {
+  // Repeated field recording the number of failed rule installation due to the
+  // cause
+  repeated ClientInstallFailureCause client_install_failure_cause = 1;
+  // Required field recording the number of successful rule installation
+  optional int32 install_success = 2;
+  // Required field recording the number of failed rule installation
+  optional int32 install_failure = 3;
+  // Required field recording the average latency in-between rule installation
+  // request and response
+  optional double avg_latency_ms = 4;
+  // Required field recording the max latency in-between rule installation
+  // request and response
+  optional double max_latency_ms = 5;
+}
+
+// Messages for Rx Rule Manager
+// Record the number of failed rule installation due to the cause on the server
+// side
+message ManagerInstallFailureCause {
+  // Required field recording the string of the failure cause
+  optional string install_failure_cause = 1;
+  // Required field recording how many times each failure cause happens
+  optional int32 count = 2;
+}
+
+// Record the number of rules being installed per queue
+message RulesInQueues {
+  // Required field recording the number of installed rules
+  optional int32 rules_installed = 1;
+  // Required field recording the queue id
+  optional int32 queue = 2;
+}
+
+// Rx Rule Manager side recoreded metrics
+message FlowSteerRuleManagerTelemetryProto {
+  // Repeated field recording the number of failed rule installation due to the
+  // cause
+  repeated ManagerInstallFailureCause manager_install_failure_cause = 1;
+  // Repeated field recording the number of rules being installed per queue
+  repeated RulesInQueues rules_in_queues = 2;
+  // Required field recording the number of successful rule installation
+  optional int32 install_success = 3;
+  // Required field recording the number of failed rule installation
+  optional int32 install_failure = 4;
+  // Required field recording the average latency in-between rule installation
+  // request and response
+  optional double avg_latency_ms = 5;
+  // Required field recording the max latency in-between rule installation
+  // request and response
+  optional double max_latency_ms = 6;
+  // Required field recording the number of rules being used currently
+  optional int32 rules_in_use = 7;
+  // Required field recording the average requests processed per second
+  optional double avg_rps = 8;
+  // Required field recording the max requests processed per second
+  optional int32 max_rps = 9;
+}
+
+// Messages for Gpu Importer
+// Record the number of failed ipc handshake due to the cause on gpu importer
+// side
+message ImporterIpcInstallFailureCause {
+  // Required field recording the string of the ipc handshake failure cause
+  optional string importer_ipc_install_failure_cause = 1;
+  // Required field recording how many times each failure cause happens
+  optional int32 count = 2;
+}
+
+// Record the number of failed gpu mem import from fd due to the cause on gpu
+// importer side
+message ImporterImportInstallFailureCause {
+  // Required field recording the string of the gpu mem import failure cause
+  optional string import_install_failure_cause = 1;
+  // Required field recording how many times each failure cause happens
+  optional int32 count = 2;
+}
+
+// Record the type and the number of importer in-use
+message ImporterType {
+  // Required field recording the string of the type of importer
+  optional string importer_type = 1;
+  // Required field recording how many times this importer type is being in-used
+  optional int32 count = 2;
+}
+
+// Gpu Importer side recoreded metrics
+message GpuMemImporterTelemetryProto {
+  // Repeated field recording the number of failed ipc handshake due to the
+  // cause on gpu importer side
+  repeated ImporterIpcInstallFailureCause importer_ipc_install_failure_cause =
+      1;
+  // Repeated field recording the number of failed gpu mem import from fd due to
+  // the cause on gpu importer side
+  repeated ImporterImportInstallFailureCause
+      importer_import_install_failure_cause = 2;
+  // Required field recording the number of successful ipc request for getting
+  // the shareable fd
+  optional int32 ipc_success = 3;
+  // Required field recording the number of failed ipc request for getting the
+  // shareable fd
+  optional int32 ipc_failure = 4;
+  // Required field recording the number of successful gpu mem import from the
+  // shareable fd
+  optional int32 import_success = 5;
+  // Required field recording the number of failed gpu mem import from the
+  // shareable fd
+  optional int32 import_failure = 6;
+  // Repeated field recording the type and the number of importer in-use
+  repeated ImporterType import_type = 7;
+  // Required field recording the average latency in-between rule installation
+  // request and response
+  optional double avg_latency_ms = 8;
+  // Required field recording the max latency in-between rule installation
+  // request and response
+  optional double max_latency_ms = 9;
+}
+
+// Messages for Gpu Exporter
+// Record the number of failed ipc handshake due to the cause on gpu exporter
+// side
+message ExporterIpcInstallFailureCause {
+  // Required field recording the string of the ipc handshake failure cause
+  optional string exporter_ipc_install_failure_cause = 1;
+  // Required field recording how many times each failure cause happens
+  optional int32 count = 2;
+}
+
+// Gpu Exporter side recoreded metrics
+message GpuMemExporterTelemetryProto {
+  // Repeated field recording the number of failed ipc handshake due to the
+  // cause on gpu exporter side
+  repeated ExporterIpcInstallFailureCause exporter_ipc_install_failure_cause =
+      1;
+  // Required field recording the number of successful ipc request for getting
+  // the shareable fd
+  optional int32 ipc_success = 2;
+  // Required field recording the number of failed ipc request for getting the
+  // shareable fd
+  optional int32 ipc_failure = 3;
+  // Required field recording the average latency in-between rule installation
+  // request and response
+  optional double avg_latency_ms = 4;
+  // Required field recording the max latency in-between rule installation
+  // request and response
+  optional double max_latency_ms = 5;
+  // Required field recording the average requests processed per second
+  optional double avg_rps = 6;
+  // Required field recording the max requests processed per second
+  optional int32 max_rps = 7;
+}
+
+message ReportStatus {}

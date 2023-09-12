@@ -12,6 +12,7 @@
 #include "include/ipc_gpumem_fd_metadata.h"
 #include "include/unix_socket_server.h"
 #include "proto/gpu_rxq_configuration.pb.h"
+#include "telemetry/gpu_mem_exporter_telemetry.h"
 
 namespace gpudirect_tcpxd {
 
@@ -37,6 +38,8 @@ class CuIpcMemfdExporter : public GpuPageExporterInterface {
   std::string prefix_;
   std::vector<GpuRxqBinding> gpu_pci_bindings_;
   std::vector<std::unique_ptr<UnixSocketServer>> us_servers_;
+  GpuMemExporterTelemetry gpu_fd_telemetry_;
+  GpuMemExporterTelemetry gpu_metadata_telemetry_;
 };
 
 }  // namespace gpudirect_tcpxd

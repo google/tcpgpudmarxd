@@ -19,7 +19,7 @@ ENV DEBIAN_FRONTEND='noninteractive'
 RUN apt update \
   && apt-get install -y --no-install-recommends \
         git openssh-server wget iproute2 vim build-essential cmake gdb \
-	protobuf-compiler libprotobuf-dev rsync ethtool \
+        protobuf-compiler libprotobuf-dev libprotoc-dev rsync ethtool libssl-dev \
   && rm -rf /var/lib/apt/lists/*
 
 # build absl
@@ -32,12 +32,30 @@ WORKDIR build
 RUN cmake -DCMAKE_CXX_STANDARD=17 -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DABSL_USE_GOOGLETEST_HEAD=ON ..
 RUN cmake --build . -j 8 --target all && cmake --install .
 
+# build gRPC
+WORKDIR /third_party
+RUN git clone -b v1.32.0 https://github.com/grpc/grpc
+WORKDIR grpc
+RUN git submodule update --init
+WORKDIR build
+RUN cmake \
+    -DgRPC_PROTOBUF_PROVIDER=package \
+    -DgRPC_ABSL_PROVIDER=package \
+    -DgRPC_SSL_PROVIDER=package \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_SHARED_LIBS=ON \
+    -DCMAKE_CXX_STANDARD=17 \
+    -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+    -DgRPC_INSTALL=ON .. \
+    && make -j && make install
+
 # copy all license files
 WORKDIR /third_party/licenses
 RUN cp ../abseil-cpp/LICENSE license_absl.txt
 
 COPY . /tcpgpudmarxd
 
+ENV LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:/usr/local/lib"
 WORKDIR /tcpgpudmarxd
 RUN rm -rf build docker-build
 WORKDIR build
