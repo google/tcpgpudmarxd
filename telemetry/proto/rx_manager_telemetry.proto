@@ -15,6 +15,7 @@
 syntax = "proto2";
 
 package gpudirect_tcpxd;
+
 // A proxy service that report telemetry to cloud monitoring on behalf of rx
 service RxBufferTelemetryProxy {
   // Report rx rule client telemetry
@@ -25,6 +26,9 @@ service RxBufferTelemetryProxy {
       returns (ReportStatus) {}
   // Report Gpu memory exporter telemetry
   rpc ReportGpuMemExporterMetrics(GpuMemExporterTelemetryProto)
+      returns (ReportStatus) {}
+  // Report Gpu memory importer telemetry
+  rpc ReportGpuMemImporterMetrics(GpuMemImporterTelemetryProto)
       returns (ReportStatus) {}
 }
 
@@ -173,11 +177,9 @@ message GpuMemExporterTelemetryProto {
   // cause on gpu exporter side
   repeated ExporterIpcInstallFailureCause exporter_ipc_install_failure_cause =
       1;
-  // Required field recording the number of successful ipc request for getting
-  // the shareable fd
+  // Required field recording the number of successful ipc request handled
   optional int32 ipc_success = 2;
-  // Required field recording the number of failed ipc request for getting the
-  // shareable fd
+  // Required field recording the number of failed ipc request
   optional int32 ipc_failure = 3;
   // Required field recording the average latency in-between rule installation
   // request and response

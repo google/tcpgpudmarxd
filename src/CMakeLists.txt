@@ -117,6 +117,7 @@ target_include_directories(
 target_include_directories(rx_rule_client PRIVATE $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}> $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/third_party>  ${Protobuf_INCLUDE_DIRS})
 target_link_libraries(rx_rule_client PRIVATE absl::log absl::status absl::str_format)
 target_link_libraries(rx_rule_client PUBLIC proto_utils)
+target_link_libraries(rx_rule_client PUBLIC rx_rule_client_telemetry)
 target_link_libraries(rx_rule_client PUBLIC ${Protobuf_LIBRARIES})
 add_dependencies(rx_rule_client tcpgpudmarxd_proto)
 

@@ -25,6 +25,7 @@
 #include "include/unix_socket_client.h"
 #include "proto/unix_socket_message.pb.h"
 #include "proto/unix_socket_proto.pb.h"
+#include "telemetry/rx_rule_client_telemetry.h"
 
 namespace gpudirect_tcpxd {
 
@@ -55,6 +56,9 @@ absl::Status ConnectAndSendMessage(UnixSocketMessage message,
 absl::Status RxRuleClient::UpdateFlowSteerRule(
     FlowSteerRuleOp op, const FlowSteerNtuple& flow_steer_ntuple,
     std::string gpu_pci_addr, int qid) {
+  static FlowSteerRuleClientTelemetry telemetry;
+  telemetry.Start();  // No-op if started
+
   std::string server_addr =
       (op == CREATE) ? "rx_rule_manager" : "rx_rule_uninstall";
 
@@ -77,15 +81,23 @@ absl::Status RxRuleClient::UpdateFlowSteerRule(
 
   UnixSocketMessage response;
 
-  if (auto status = ConnectAndSendMessage(message, &response, us_client.get());
-      !status.ok()) {
+  absl::Time start = absl::Now();
+  auto status = ConnectAndSendMessage(message, &response, us_client.get());
+  telemetry.AddLatency(absl::Now() - start);
+
+  if (!status.ok()) {
+    telemetry.IncrementInstallFailure();
+    telemetry.IncrementFailureAndCause(status.ToString());
     return status;
   }
 
   if (response.proto().status().code() != google::rpc::Code::OK) {
+    telemetry.IncrementInstallFailure();
+    telemetry.IncrementFailureAndCause(response.proto().status().message());
     return absl::Status(absl::StatusCode(response.proto().status().code()),
                         response.proto().status().message());
   }
+  telemetry.IncrementInstallSuccess();
   return absl::OkStatus();
 }
 

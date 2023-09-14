@@ -16,12 +16,14 @@
 
 #include "telemetry/rx_rule_client_telemetry.h"
 
+#include <absl/log/log.h>
 #include <absl/time/time.h>
 #include <grpc/grpc.h>
 #include <grpcpp/create_channel.h>
 
 #include <iterator>
 
+#include "include/unix_socket_connection.h"
 #include "telemetry/proto/rx_manager_telemetry.grpc.pb.h"
 #include "telemetry/proto/rx_manager_telemetry.pb.h"
 
@@ -56,17 +58,30 @@ void FlowSteerRuleClientTelemetry::AddLatency(absl::Duration latency) {
 
 void FlowSteerRuleClientTelemetry::ReportTelemetry() {
   FlowSteerRuleClientTelemetryProto proto;
-  auto client_install_failure_cause = proto.add_client_install_failure_cause();
-  for (auto i : failure_cause_map_) {
-    client_install_failure_cause->set_install_failure_cause(i.first);
-    client_install_failure_cause->set_count(i.second);
+  {
+    absl::MutexLock lock(&mu_);
+    auto client_install_failure_cause =
+        proto.add_client_install_failure_cause();
+    for (auto i : failure_cause_map_) {
+      client_install_failure_cause->set_install_failure_cause(i.first);
+      client_install_failure_cause->set_count(i.second);
+    }
+    proto.set_install_failure(install_failure_);
+    proto.set_install_success(install_success_);
+    proto.set_avg_latency_ms(
+        absl::ToDoubleMilliseconds(sum_latency_ / total_latency_sample_));
+    proto.set_max_latency_ms(absl::ToDoubleMilliseconds(max_latency_));
   }
-  proto.set_install_failure(install_failure_);
-  proto.set_install_success(install_success_);
-  proto.set_avg_latency_ms(
-      absl::ToDoubleMilliseconds(sum_latency_ / total_latency_sample_));
-  proto.set_max_latency_ms(absl::ToDoubleMilliseconds(max_latency_));
 
-  // TODO(wwchao): add codes to report client side metrics
+  if (!stub_) {
+    LOG(ERROR) << "Telemetry stub is not initialized";
+    return;
+  }
+  grpc::ClientContext context;
+  gpudirect_tcpxd::ReportStatus response;
+  auto status = stub_->ReportFlowSteerRuleClientMetrics(&context, proto, &response);
+  if (!status.ok()) {
+    LOG(ERROR) << "Report failed " << status.error_message();
+  }
 }
 }  // namespace gpudirect_tcpxd

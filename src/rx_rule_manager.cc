@@ -230,7 +230,7 @@ void RxRuleManager::AddFlowSteerRuleServer(const std::string& suffix) {
           *fin = true;
           if (suffix == "rx_rule_manager") {
             telemetry_.IncrementInstallFailure();
-            telemetry_.IncrementFailureAndCause(err);
+            telemetry_.IncrementFailureAndCause("Invalid Argument.");
           }
           return;
         }

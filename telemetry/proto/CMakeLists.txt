@@ -28,7 +28,6 @@ target_link_libraries(tcpgpudmarxd_telemetry_proto
         gRPC::grpc++
 
 )
-target_include_directories(tcpgpudmarxd_telemetry_proto PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 
 get_target_property(grpc_cpp_plugin_location gRPC::grpc_cpp_plugin LOCATION)
 protobuf_generate(TARGET tcpgpudmarxd_telemetry_proto LANGUAGE cpp)
