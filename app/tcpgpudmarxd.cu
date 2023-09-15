@@ -8,6 +8,8 @@
 #include <absl/strings/str_format.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <linux/netlink.h>
+#include <linux/rtnetlink.h>
 #include <linux/types.h>
 #include <net/if.h>
 #include <signal.h>
@@ -20,6 +22,7 @@
 #include <memory>
 #include <string>
 #include <string_view>
+#include <thread>
 #include <unordered_map>
 #include <vector>
 
@@ -88,6 +91,77 @@ absl::Status DisableMtuProbing() {
 
 }  // namespace
 
+int init_netlink() {
+  struct sockaddr_nl addr;
+  int nl_socket = socket(AF_NETLINK, SOCK_RAW, NETLINK_ROUTE);
+
+  if (nl_socket < 0) {
+    LOG(ERROR) << "Netlink socket open";
+    return nl_socket;
+  }
+
+  memset((void*)&addr, 0, sizeof(addr));
+
+  addr.nl_family = AF_NETLINK;
+  addr.nl_groups = RTMGRP_LINK;
+
+  if (bind(nl_socket, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
+    LOG(ERROR) << "Netlink socket bind";
+    return -1;
+  }
+  return nl_socket;
+}
+
+void* handle_netlink_event(void* main_thread) {
+  int status;
+  char buf[4096];
+  struct iovec iov = {buf, sizeof(buf)};
+  struct sockaddr_nl snl;
+  struct msghdr msg = {(void*)&snl, sizeof(snl), &iov, 1, NULL, 0, 0};
+  struct nlmsghdr* h;
+  struct ifinfomsg* ifi;
+  int nl_socket = init_netlink();
+  unsigned int ifindices[4] = {if_nametoindex("eth1"), if_nametoindex("eth2"),
+                               if_nametoindex("eth3"), if_nametoindex("eth4")};
+  int main_id = *(int*)main_thread;
+  bool tracked_netdev = false;
+
+  if (nl_socket < 0) return NULL;
+
+  while (1) {
+    status = recvmsg(nl_socket, &msg, 0);
+
+    if (status < 0) {
+      if (errno == EWOULDBLOCK || errno == EAGAIN)
+        LOG(ERROR) << "read_netlink: Error recvmsg: " << status;
+      pthread_kill((pthread_t)main_id, SIGTERM);
+      return NULL;
+    }
+
+    /* We need to handle more than one message per 'recvmsg' */
+    for (h = (struct nlmsghdr*)buf; NLMSG_OK(h, (unsigned int)status);
+         h = NLMSG_NEXT(h, status)) {
+      /* Message is some kind of error */
+      if (h->nlmsg_type == NLMSG_ERROR) {
+        LOG(ERROR) << "read_netlink: Message is an error";
+        pthread_kill((pthread_t)main_id, SIGTERM);
+        return NULL;
+      }
+      ifi = (struct ifinfomsg*)NLMSG_DATA(h);
+      tracked_netdev = std::find(std::begin(ifindices), std::end(ifindices),
+                                 ifi->ifi_index) != std::end(ifindices);
+      if (tracked_netdev) {
+        if (h->nlmsg_type == RTM_DELLINK ||
+            (ifi->ifi_change & IFF_UP) && !(ifi->ifi_flags & IFF_UP)) {
+          LOG(ERROR) << "DEBUG: read_netlink: device down received ";
+          pthread_kill((pthread_t)main_id, SIGTERM);
+          return NULL;
+        }
+      }
+    }
+  }
+}
+
 int main(int argc, char** argv) {
   absl::InitializeSymbolizer(argv[0]);
   absl::FailureSignalHandlerOptions options;
@@ -126,6 +200,10 @@ int main(int argc, char** argv) {
   LOG(INFO) << absl::StrFormat(
       "Running GPUDirect-TCPX Receive Data Path Manager, version (%s)",
       kVersion);
+
+  pthread_t netdev_status;
+  int main_id = pthread_self();
+  pthread_create(&netdev_status, NULL, handle_netlink_event, &main_id);
 
   // 1. Collect GPU/NIC pair configurations
   std::string gpu_nic_preset = absl::GetFlag(FLAGS_gpu_nic_preset);
@@ -265,6 +343,8 @@ int main(int argc, char** argv) {
   // Stopping the servers.
 CLEANUP:
   LOG(INFO) << "Program terminates, starting clean-up procedure ...";
+
+  pthread_join(netdev_status, NULL);
 
   LOG(INFO) << "Stopping Rx Rule Manager, recyling stale rules ...";
   rx_rule_manager.Cleanup();
