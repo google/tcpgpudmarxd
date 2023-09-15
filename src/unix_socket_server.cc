@@ -14,6 +14,7 @@
 
 #include "include/unix_socket_server.h"
 
+#include <absl/log/log.h>
 #include <absl/status/status.h>
 #include <absl/strings/str_format.h>
 #include <errno.h>
@@ -164,11 +165,16 @@ void UnixSocketServer::HandleListener(uint32_t events) {
   }
   if (events & EPOLLIN) {
     struct sockaddr_un peer_addr;
-    unsigned int peer_addr_len;
+    unsigned int peer_addr_len = sizeof(peer_addr);
     int socket = accept4(listener_socket_, (struct sockaddr*)&peer_addr,
                          &peer_addr_len, 0);
-    connected_clients_[socket] = std::make_unique<UnixSocketConnection>(socket);
-    RegisterEvents(socket, EPOLLIN | EPOLLOUT);
+    if (socket < 0) {
+      PLOG(ERROR) << absl::StrFormat("accept4 error: %d, errno: ", socket);
+    } else {
+      connected_clients_[socket] =
+          std::make_unique<UnixSocketConnection>(socket);
+      RegisterEvents(socket, EPOLLIN | EPOLLOUT);
+    }
   }
 }
 
@@ -183,15 +189,26 @@ void UnixSocketServer::HandleClient(int client, uint32_t events) {
         connection.AddMessageToSend(std::move(response));
       }
     } else {
+      if (errno) {
+        PLOG(ERROR) << absl::StrFormat("Receive error on client %d, errno: ",
+                                       client);
+      }
       fin = true;
     }
   }
   if (events & EPOLLOUT) {
     if (!connection.Send()) {
+      if (errno) {
+        PLOG(ERROR) << absl::StrFormat("Send failure on client %d, errno: ",
+                                       client);
+      }
       fin = true;
     }
   }
   if ((events & (EPOLLERR | EPOLLHUP | EPOLLRDHUP)) || fin) {
+    if (events & EPOLLERR) {
+      LOG(ERROR) << absl::StrFormat("EPOLLERR on client %d", client);
+    }
     RemoveClient(client);
     return;
   }

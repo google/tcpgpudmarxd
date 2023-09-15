@@ -14,6 +14,7 @@
 
 #include "include/unix_socket_connection.h"
 
+#include <absl/log/log.h>
 #include <absl/status/status.h>
 #include <absl/strings/str_format.h>
 #include <arpa/inet.h>
@@ -123,7 +124,10 @@ void UnixSocketConnection::SendFd(int fd, SendStatus* status) {
   send_msg_.msg_iovlen = 1;
 
   if (sendmsg(fd_, &send_msg_, 0) < 0) {
+    PLOG(ERROR) << absl::StrFormat(
+        "Sending FD failed on socket: %d, fd: %d, errno:", fd_, fd);
     *status = ERROR;
+    return;
   }
   *status = DONE;
 }
@@ -147,6 +151,7 @@ void UnixSocketConnection::SendProto(const UnixSocketProto& proto,
   int bytes_sent = sendmsg(fd_, &send_msg_, 0);
 
   if (bytes_sent < 0) {
+    PLOG(ERROR) << absl::StrFormat("Sending Proto failed: %d, errno:", fd_);
     *status = ERROR;
     return;
   }
