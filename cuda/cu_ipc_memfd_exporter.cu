@@ -26,9 +26,6 @@ absl::Status CuIpcMemfdExporter::Initialize(
     prefix_.pop_back();
   }
 
-  gpu_fd_telemetry_.Start();
-  gpu_metadata_telemetry_.Start();
-
   // Setup CUDA context and DmabufPageAllocator
   LOG(INFO) << "Setting up CUDA context and dmabuf page allocator ...";
 
@@ -100,18 +97,12 @@ absl::Status CuIpcMemfdExporter::Initialize(
         /*service_handler=*/
         [&](UnixSocketMessage&& request, UnixSocketMessage* response,
             bool* fin) {
-          absl::Time start = absl::Now();
-          gpu_fd_telemetry_.IncrementRequests();
           if (request.has_proto() &&
               request.proto().raw_bytes() == gpu_pci_addr) {
             response->set_fd(gpumem_fd_metadata.fd);
-            gpu_fd_telemetry_.IncrementIpcSuccess();
           } else {
             response->set_fd(-1);
-            gpu_fd_telemetry_.IncrementIpcFailure();
-            gpu_fd_telemetry_.IncrementIpcFailureAndCause("Fd Not Found");
           }
-          gpu_fd_telemetry_.AddLatency(absl::Now() - start);
         },
         /*service_setup=*/
         [&]() { CUDA_ASSERT_SUCCESS(cudaSetDevice(dev_id)); }));
@@ -121,8 +112,6 @@ absl::Status CuIpcMemfdExporter::Initialize(
         /*service_handler=*/
         [&](UnixSocketMessage&& request, UnixSocketMessage* response,
             bool* fin) {
-          absl::Time start = absl::Now();
-          gpu_metadata_telemetry_.IncrementRequests();
           UnixSocketProto* proto = response->mutable_proto();
           std::string* buffer = response->mutable_proto()->mutable_raw_bytes();
           if (request.has_proto() &&
@@ -130,18 +119,13 @@ absl::Status CuIpcMemfdExporter::Initialize(
             for (int i = 0; i < sizeof(gpumem_fd_metadata); ++i) {
               buffer->push_back(*((char*)&gpumem_fd_metadata + i));
             }
-            gpu_metadata_telemetry_.IncrementIpcSuccess();
           } else {
             proto->mutable_status()->set_code(
                 google::rpc::Code::INVALID_ARGUMENT);
             proto->mutable_status()->set_message(
                 "Requested GPU PCI Addr not found.");
             *buffer = "Not found.";
-            gpu_metadata_telemetry_.IncrementIpcFailure();
-            gpu_metadata_telemetry_.IncrementIpcFailureAndCause(
-                proto->mutable_status()->message());
           }
-          gpu_metadata_telemetry_.AddLatency(absl::Now() - start);
         },
         /*service_setup=*/
         [&]() { CUDA_ASSERT_SUCCESS(cudaSetDevice(dev_id)); }));

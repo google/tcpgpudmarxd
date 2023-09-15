@@ -22,8 +22,8 @@ FetchContent_MakeAvailable(googletest)
 enable_testing()
 
 add_executable(
-        unix_socket_test
-        unix_socket_server_client_test.cc
+	unix_socket_test
+	unix_socket_server_client_test.cc
 )
 target_include_directories(unix_socket_test PUBLIC ${CMAKE_SOURCE_DIR})
 target_include_directories(unix_socket_test PRIVATE ${CMAKE_BINARY_DIR} ${Protobuf_INCLUDE_DIRS})
@@ -41,7 +41,6 @@ add_executable(
 target_include_directories(rx_rule_manager_test PUBLIC ${CMAKE_SOURCE_DIR})
 target_include_directories(rx_rule_manager_test PRIVATE ${CMAKE_BINARY_DIR} ${Protobuf_INCLUDE_DIRS})
 target_link_libraries(rx_rule_manager_test PUBLIC rx_rule_manager)
-target_link_libraries(rx_rule_manager_test PUBLIC rx_rule_manager_telemetry)
 target_link_libraries(rx_rule_manager_test PUBLIC ${Protobuf_LIBRARIES})
 target_link_libraries(rx_rule_manager_test PRIVATE absl::log absl::status absl::statusor absl::str_format)
 target_link_libraries(rx_rule_manager_test PUBLIC tcpgpudmarxd_proto)
@@ -116,3 +115,7 @@ gtest_discover_tests(rx_rule_client_test)
 gtest_discover_tests(gpu_rxq_configuration_factory_test)
 gtest_discover_tests(proto_utils_test)
 gtest_discover_tests(socket_helper_test)
+
+
+
+

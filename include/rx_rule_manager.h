@@ -34,7 +34,6 @@
 #include "include/unix_socket_server.h"
 #include "proto/gpu_rxq_configuration.pb.h"
 #include "proto/unix_socket_message.pb.h"
-#include "telemetry/rx_rule_manager_telemetry.h"
 
 namespace gpudirect_tcpxd {
 
@@ -50,7 +49,7 @@ enum RxRuleServerType {
 
 class NicRulesBank {
  public:
-  NicRulesBank(const std::string& ifname, int max_rx_rules);
+  NicRulesBank(const std::string &ifname, int max_rx_rules);
   bool Availble() const { return unused_locations_.size() > 0; }
   bool RuleExists(size_t flow_hash) {
     return flow_hash_to_location_map_.find(flow_hash) !=
@@ -69,8 +68,8 @@ class NicRulesBank {
 
 class GpuRxqScaler {
  public:
-  GpuRxqScaler(const std::string& gpu_pci_addr,
-               const std::vector<int>& queue_ids);
+  GpuRxqScaler(const std::string &gpu_pci_addr,
+               const std::vector<int> &queue_ids);
   int AddFlow(int location_id);
   void AddFlow(int location_id, int queue_id);
   void RemoveFlow(int location_id);
@@ -100,24 +99,24 @@ class GpuRxqScaler {
 
 class RxRuleManager {
  public:
-  explicit RxRuleManager(const GpuRxqConfigurationList& config_list,
-                         const std::string& prefix,
-                         NicConfiguratorInterface* nic_configurator);
+  explicit RxRuleManager(const GpuRxqConfigurationList &config_list,
+                         const std::string &prefix,
+                         NicConfiguratorInterface *nic_configurator);
   ~RxRuleManager() { Cleanup(); }
   absl::Status Init();
   void Cleanup();
 
  private:
   FRIEND_TEST(RxRuleManagerConstructorTest, InitGpuRxqConfigSuccess);
-  void AddFlowSteerRuleServer(const std::string& suffix);
+  void AddFlowSteerRuleServer(const std::string &suffix);
   void AddGpuQueueIdsServer();
   absl::StatusOr<std::string> GetGpuFromFlowSteerRuleRequest(
-      const FlowSteerRuleRequest& fsr);
-  absl::Status ConfigFlowSteering(const FlowSteerRuleRequest& fsr);
-  absl::Status DeleteFlowSteering(const FlowSteerRuleRequest& fsr);
-  size_t GetFlowHash(const struct FlowSteerNtuple& ntuple);
+      const FlowSteerRuleRequest &fsr);
+  absl::Status ConfigFlowSteering(const FlowSteerRuleRequest &fsr);
+  absl::Status DeleteFlowSteering(const FlowSteerRuleRequest &fsr);
+  size_t GetFlowHash(const struct FlowSteerNtuple &ntuple);
   std::string prefix_;
-  NicConfiguratorInterface* nic_configurator_;
+  NicConfiguratorInterface *nic_configurator_;
   std::unordered_map<std::string, std::unique_ptr<NicRulesBank>>
       ifname_to_rules_bank_map_;
   std::unordered_map<std::string, std::string> ifname_to_first_gpu_map_;
@@ -126,7 +125,6 @@ class RxRuleManager {
       gpu_to_rxq_scaler_map_;
   std::unordered_map<std::string, std::string> ip_to_ifname_map_;
   std::vector<std::unique_ptr<UnixSocketServer>> us_servers_;
-  FlowSteerRuleManagerTelemetry telemetry_;
 };
 }  // namespace gpudirect_tcpxd
 #endif

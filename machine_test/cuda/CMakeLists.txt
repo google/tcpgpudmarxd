@@ -3,8 +3,6 @@ find_package(CUDAToolkit REQUIRED)
 find_package(absl REQUIRED)
 find_package(Protobuf REQUIRED)
 
-link_libraries(tcpgpudmarxd_telemetry_proto)
-
 add_library(connection_worker STATIC connection_worker.cu)
 target_include_directories(connection_worker PRIVATE ${CMAKE_BINARY_DIR} ${Protobuf_INCLUDE_DIRS})
 target_include_directories(connection_worker PUBLIC ${CMAKE_SOURCE_DIR})
@@ -54,7 +52,7 @@ set(GPU_TCP_EVENT_HANDLERS_SRC
 )
 
 add_library(gpu_tcp_event_handlers STATIC ${GPU_TCP_EVENT_HANDLERS_SRC})
-target_include_directories(gpu_tcp_event_handlers PUBLIC ${CMAKE_SOURCE_DIR} ${CMAKE_BINARY_DIR})
+target_include_directories(gpu_tcp_event_handlers PUBLIC ${CMAKE_SOURCE_DIR})
 target_link_libraries(gpu_tcp_event_handlers PRIVATE CUDA::cuda_driver)
 target_link_libraries(gpu_tcp_event_handlers PRIVATE absl::log absl::status absl::str_format)
 target_link_libraries(gpu_tcp_event_handlers PRIVATE cuda_common)
@@ -65,7 +63,7 @@ target_link_libraries(gpu_tcp_event_handlers PRIVATE cu_ipc_memfd_handle_importe
 set_target_properties(gpu_tcp_event_handlers PROPERTIES CUDA_RUNTIME_LIBRARY Shared)
 
 add_library(event_handler_factory STATIC event_handler_factory.cu)
-target_include_directories(event_handler_factory PUBLIC ${CMAKE_SOURCE_DIR} ${CMAKE_BINARY_DIR})
+target_include_directories(event_handler_factory PUBLIC ${CMAKE_SOURCE_DIR})
 target_link_libraries(event_handler_factory PRIVATE CUDA::cuda_driver)
 target_link_libraries(event_handler_factory PRIVATE absl::log absl::status absl::str_format)
 target_link_libraries(event_handler_factory PRIVATE cuda_common)

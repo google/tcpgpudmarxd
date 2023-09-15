@@ -22,9 +22,6 @@ absl::Status CudaIpcMemhandleExporter::Initialize(
   if (prefix_.back() == '/') {
     prefix_.pop_back();
   }
-
-  telemetry_.Start();
-
   // Setup CUDA context and DmabufPageAllocator
   LOG(INFO) << "Setting up CUDA context and dmabuf page allocator ...";
 
@@ -100,8 +97,6 @@ absl::Status CudaIpcMemhandleExporter::Export() {
       absl::StrFormat("%s/get_gpu_by_gpu_pci", prefix_),
       [this](UnixSocketMessage&& request, UnixSocketMessage* response,
              bool* fin) {
-        absl::Time start = absl::Now();
-        telemetry_.IncrementRequests();
         UnixSocketProto* mutable_proto = response->mutable_proto();
         std::string* buffer = mutable_proto->mutable_raw_bytes();
         if (!request.has_proto() || !request.proto().has_raw_bytes()) {
@@ -111,9 +106,6 @@ absl::Status CudaIpcMemhandleExporter::Export() {
               "Expecting text format request.");
           buffer->append("Error.\n\nExpecting text format request.\n");
           *fin = true;
-          telemetry_.IncrementIpcFailure();
-          telemetry_.IncrementIpcFailureAndCause(
-              mutable_proto->mutable_status()->message());
           return;
         }
         const std::string& gpu_pci = request.proto().raw_bytes();
@@ -121,8 +113,6 @@ absl::Status CudaIpcMemhandleExporter::Export() {
         for (int i = 0; i < sizeof(binding.mem_handle); ++i) {
           buffer->push_back(*((char*)&binding.mem_handle + i));
         }
-        telemetry_.IncrementIpcSuccess();
-        telemetry_.AddLatency(absl::Now() - start);
       }));
 
   for (auto& server : us_servers_) {
