@@ -18,6 +18,7 @@
 #include <absl/hash/hash.h>
 #include <absl/log/log.h>
 #include <absl/strings/str_format.h>
+#include <absl/time/clock.h>
 #include <linux/ethtool.h>
 #include <linux/netlink.h>
 #include <net/if.h>
@@ -146,6 +147,7 @@ RxRuleManager::RxRuleManager(const GpuRxqConfigurationList& config_list,
   }
 
   nic_configurator_ = nic_configurator;
+  telemetry_.Start();
 
   for (const auto& gpu_rxq_config : config_list.gpu_rxq_configs()) {
     const auto& ifname = gpu_rxq_config.ifname();
@@ -209,8 +211,11 @@ void RxRuleManager::AddFlowSteerRuleServer(const std::string& suffix) {
       "Starting FlowSteerRule %s server at %s",
       (suffix == "rx_rule_manager" ? "Install" : "Uninstall"), server_addr);
   us_servers_.emplace_back(std::make_unique<UnixSocketServer>(
-      server_addr, [operation](UnixSocketMessage&& request,
-                               UnixSocketMessage* response, bool* fin) {
+      server_addr,
+      [operation, suffix, this](UnixSocketMessage&& request,
+                                UnixSocketMessage* response, bool* fin) {
+        absl::Time start = absl::Now();
+        telemetry_.IncrementRequests();
         UnixSocketProto* proto = response->mutable_proto();
         std::string* buffer = proto->mutable_raw_bytes();
         if (!request.has_proto() ||
@@ -223,6 +228,10 @@ void RxRuleManager::AddFlowSteerRuleServer(const std::string& suffix) {
               google::rpc::Code::INVALID_ARGUMENT);
           proto->mutable_status()->set_message(err);
           *fin = true;
+          if (suffix == "rx_rule_manager") {
+            telemetry_.IncrementInstallFailure();
+            telemetry_.IncrementFailureAndCause(err);
+          }
           return;
         }
 
@@ -232,12 +241,23 @@ void RxRuleManager::AddFlowSteerRuleServer(const std::string& suffix) {
           proto->mutable_status()->set_code(status.raw_code());
           proto->mutable_status()->set_message(status.ToString());
           *fin = true;
-          buffer->append(
+          std::string err =
               absl::StrFormat("Failed to set flow steering rule, error: %s.",
-                              status.ToString()));
+                              status.ToString());
+          buffer->append(err);
+          if (suffix == "rx_rule_manager") {
+            telemetry_.IncrementInstallFailure();
+            telemetry_.IncrementFailureAndCause(err);
+          }
           return;
         }
+        if (suffix == "rx_rule_manager") {
+          telemetry_.IncrementInstallSuccess();
+        } else {
+          telemetry_.IncrementUninstallSuccess();
+        }
         buffer->append("Ok.");
+        telemetry_.AddLatency(absl::Now() - start);
       }));
 }
 
@@ -327,6 +347,8 @@ absl::Status RxRuleManager::ConfigFlowSteering(
   } else {
     queue_id = rxq_scaler->AddFlow(location_id);
   }
+
+  telemetry_.IncrementRulesInstalledOnQueues(queue_id);
 
   if (auto status =
           nic_configurator_->AddFlow(ifname, ntuple, queue_id, location_id);
