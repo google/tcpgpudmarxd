@@ -344,7 +344,9 @@ int main(int argc, char** argv) {
 CLEANUP:
   LOG(INFO) << "Program terminates, starting clean-up procedure ...";
 
+  pthread_cancel(netdev_status);
   pthread_join(netdev_status, NULL);
+  LOG(INFO) << "Canceling netdev monitoring thread";
 
   LOG(INFO) << "Stopping Rx Rule Manager, recyling stale rules ...";
   rx_rule_manager.Cleanup();
