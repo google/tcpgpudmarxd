@@ -366,6 +366,8 @@ CLEANUP:
         gpu_rxq_config.ifname(), "enable-strict-header-split", false));
     LOG_IF_ERROR(nic_configurator->TogglePrivateFeature(
         gpu_rxq_config.ifname(), "enable-header-split", false));
+    LOG_IF_ERROR(nic_configurator->TogglePrivateFeature(
+        gpu_rxq_config.ifname(), "enable-max-rx-buffer-size", false));
     LOG_IF_ERROR(nic_configurator->SetRss(gpu_rxq_config.ifname(),
                                           /*num_queues=*/total_queue));
     LOG_IF_ERROR(nic_configurator->ToggleFeature(gpu_rxq_config.ifname(),
