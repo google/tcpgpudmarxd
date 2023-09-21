@@ -70,6 +70,45 @@ absl::Status EthtoolNicConfigurator::RemoveFlow(const std::string& ifname,
       absl::StrFormat("ethtool -N %s delete %d", ifname, location_id));
 }
 
+absl::Status EthtoolNicConfigurator::SetIpRoute(const std::string& ifname,
+                                                int min_rto, bool quickack) {
+  if (!min_rto && !quickack)
+    return RunSystem(absl::StrFormat("ip route replace %s", prev_route_[ifname]));
+
+  std::array<char, 128> buffer;
+  std::string cur_route, suffix;
+  std::string command = absl::StrFormat("ip route show dev %s | grep mtu", ifname);
+  std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(command.c_str(), "r"), pclose);
+
+  if (!pipe) {
+      return absl::InternalError("popen() failed!");
+  }
+
+  while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
+      cur_route += buffer.data();
+  }
+  prev_route_[ifname] = cur_route.c_str();
+
+  cur_route.erase(std::remove(cur_route.begin(), cur_route.end(), '\n'), cur_route.cend());
+
+  size_t ind = cur_route.find("quickack");
+  if (ind != std::string::npos) {
+    cur_route = cur_route.substr(0, ind);
+  }
+
+  ind = cur_route.find("rto_min");
+  if (ind != std::string::npos) {
+    cur_route = cur_route.substr(0, ind);
+  }
+
+  if (min_rto)
+    suffix = absl::StrFormat("rto_min %dms", min_rto).c_str();
+  if (quickack)
+    suffix = absl::StrFormat("%s quickack 1", suffix).c_str();
+
+  return RunSystem(absl::StrFormat("ip route replace %s %s", cur_route, suffix));
+}
+
 absl::Status EthtoolNicConfigurator::RunSystem(const std::string& command) {
   LOG(INFO) << "Run system: " << command;
   if (auto ret = system(command.c_str()); ret != 0) {

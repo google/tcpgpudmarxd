@@ -61,6 +61,9 @@ class MockNicConfigurator : public gpudirect_tcpxd::NicConfiguratorInterface {
               (override));
   MOCK_METHOD(absl::Status, RemoveFlow,
               (const std::string &ifname, int location_id), (override));
+  MOCK_METHOD(absl::Status, SetIpRoute,
+              (const std::string &ifname, int min_rto, bool quickack),
+              (override));
 };
 
 TEST(RxRuleManagerInitTest, InitSuccess) {

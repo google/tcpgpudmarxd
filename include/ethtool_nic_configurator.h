@@ -18,6 +18,7 @@
 #define _EXPERIMENTAL_USERS_CHECHENGLIN_TCPGPUDMAD_INCLUDE_ETHTOOL_NIC_CONFIGURATOR_H_
 
 #include <absl/status/status.h>
+#include <absl/container/flat_hash_map.h>
 
 #include <string>
 
@@ -41,7 +42,13 @@ class EthtoolNicConfigurator : public NicConfiguratorInterface {
                        const struct FlowSteerNtuple& ntuple, int queue_id,
                        int location_id) override;
   absl::Status RemoveFlow(const std::string& ifname, int location_id) override;
+  // TODO(b/301104835): this is technically not ethtool function, but RunSystem
+  // in the class doesn't hardcode ethtool. In process of removing the class
+  // in favor of netbase-like tuning. Or rename class to nettools
+  absl::Status SetIpRoute(const std::string& ifname, int min_rto, bool quickack) override;
   virtual absl::Status RunSystem(const std::string& command);
+  private:
+    absl::flat_hash_map<std::string, std::string> prev_route_;
 };
 }  // namespace gpudirect_tcpxd
 #endif

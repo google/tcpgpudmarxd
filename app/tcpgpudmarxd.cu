@@ -65,6 +65,8 @@ ABSL_FLAG(uint32_t, max_rx_rules, 0,
           "Default: 0, meaning no override and either the value from the "
           "config (if present) or the component level default will be used.  "
           "Maximum number of flow steering rules to use.");
+ABSL_FLAG(bool, enable_quickack, false,
+          "Default: 0, meaning quickack is not added to route");
 
 namespace {
 
@@ -324,6 +326,9 @@ int main(int argc, char** argv) {
   for (auto& gpu_rxq_config : gpu_rxq_configs.gpu_rxq_configs()) {
     RETURN_IF_ERROR(nic_configurator->TogglePrivateFeature(
         gpu_rxq_config.ifname(), "enable-strict-header-split", true));
+    CLEANUP_IF_ERROR(nic_configurator->SetIpRoute(
+        gpu_rxq_config.ifname(), /*min_rto=*/5 /*ms*/,
+        /* quickack = */ absl::GetFlag(FLAGS_enable_quickack)));
   }
 
   // 6. Start Rx Rule Manager
@@ -372,6 +377,9 @@ CLEANUP:
                                           /*num_queues=*/total_queue));
     LOG_IF_ERROR(nic_configurator->ToggleFeature(gpu_rxq_config.ifname(),
                                                  "ntuple", false));
+    LOG_IF_ERROR(nic_configurator->SetIpRoute(gpu_rxq_config.ifname(),
+                                              /*min_rto=*/0 /*ms*/,
+                                              /* quickack = */ false));
   }
 
   LOG(INFO) << "Clean-up procedure finishes.";
