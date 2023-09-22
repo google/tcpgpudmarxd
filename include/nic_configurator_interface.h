@@ -43,6 +43,7 @@ class NicConfiguratorInterface {
                                   int location_id) = 0;
   virtual absl::Status SetIpRoute(const std::string& ifname,
                                  int min_rto, bool quickack) = 0;
+  virtual  absl::Status RunSystem(const std::string& command) = 0;
 };
 }  // namespace gpudirect_tcpxd
 #endif

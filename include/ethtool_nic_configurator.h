@@ -46,7 +46,7 @@ class EthtoolNicConfigurator : public NicConfiguratorInterface {
   // in the class doesn't hardcode ethtool. In process of removing the class
   // in favor of netbase-like tuning. Or rename class to nettools
   absl::Status SetIpRoute(const std::string& ifname, int min_rto, bool quickack) override;
-  virtual absl::Status RunSystem(const std::string& command);
+  absl::Status RunSystem(const std::string& command) override;
   private:
     absl::flat_hash_map<std::string, std::string> prev_route_;
 };

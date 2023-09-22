@@ -67,6 +67,9 @@ ABSL_FLAG(uint32_t, max_rx_rules, 0,
           "Maximum number of flow steering rules to use.");
 ABSL_FLAG(bool, enable_quickack, false,
           "Default: 0, meaning quickack is not added to route");
+ABSL_FLAG(std::string, tuning_script_path, "/a3-tuning-scripts",
+          "The path where networking tuning script is kept, "
+          "updated separately from this binary. ");
 
 namespace {
 
@@ -330,6 +333,7 @@ int main(int argc, char** argv) {
         gpu_rxq_config.ifname(), /*min_rto=*/5 /*ms*/,
         /* quickack = */ absl::GetFlag(FLAGS_enable_quickack)));
   }
+  CLEANUP_IF_ERROR(nic_configurator->RunSystem(absl::StrFormat("%s/setup.sh", absl::GetFlag(FLAGS_tuning_script_path))));
 
   // 6. Start Rx Rule Manager
 
@@ -381,6 +385,7 @@ CLEANUP:
                                               /*min_rto=*/0 /*ms*/,
                                               /* quickack = */ false));
   }
+  LOG_IF_ERROR(nic_configurator->RunSystem(absl::StrFormat("%s/teardown.sh", absl::GetFlag(FLAGS_tuning_script_path))));
 
   LOG(INFO) << "Clean-up procedure finishes.";
 #undef CLEANUP_IF_ERROR
