@@ -67,13 +67,14 @@ ABSL_FLAG(uint32_t, max_rx_rules, 0,
           "Maximum number of flow steering rules to use.");
 ABSL_FLAG(bool, disable_quickack, false,
           "Default: 0, meaning quickack is added to route");
+ABSL_FLAG(uint32_t, min_rto, 5, "Default: 5, meaning set min_rto to 5 ms");
 ABSL_FLAG(std::string, tuning_script_path, "/a3-tuning-scripts",
           "The path where networking tuning script is kept, "
           "updated separately from this binary. ");
 
 namespace {
 
-constexpr std::string_view kVersion{"v2.0.5"};
+constexpr std::string_view kVersion{"v2.0.6"};
 
 static std::atomic<bool> gShouldStop(false);
 
@@ -329,11 +330,12 @@ int main(int argc, char** argv) {
   for (auto& gpu_rxq_config : gpu_rxq_configs.gpu_rxq_configs()) {
     RETURN_IF_ERROR(nic_configurator->TogglePrivateFeature(
         gpu_rxq_config.ifname(), "enable-strict-header-split", true));
-    CLEANUP_IF_ERROR(nic_configurator->SetIpRoute(
-        gpu_rxq_config.ifname(), /*min_rto=*/5 /*ms*/,
-        /* quickack = */ !absl::GetFlag(FLAGS_disable_quickack)));
   }
-  CLEANUP_IF_ERROR(nic_configurator->RunSystem(absl::StrFormat("%s/setup.sh", absl::GetFlag(FLAGS_tuning_script_path))));
+
+  CLEANUP_IF_ERROR(nic_configurator->RunSystem(absl::StrFormat(
+      "%s/setup.sh %u %d", absl::GetFlag(FLAGS_tuning_script_path),
+      absl::GetFlag(FLAGS_min_rto),
+      (int)!absl::GetFlag(FLAGS_disable_quickack))));
 
   // 6. Start Rx Rule Manager
 
@@ -381,11 +383,9 @@ CLEANUP:
                                           /*num_queues=*/total_queue));
     LOG_IF_ERROR(nic_configurator->ToggleFeature(gpu_rxq_config.ifname(),
                                                  "ntuple", false));
-    LOG_IF_ERROR(nic_configurator->SetIpRoute(gpu_rxq_config.ifname(),
-                                              /*min_rto=*/0 /*ms*/,
-                                              /* quickack = */ false));
   }
-  LOG_IF_ERROR(nic_configurator->RunSystem(absl::StrFormat("%s/teardown.sh", absl::GetFlag(FLAGS_tuning_script_path))));
+  LOG_IF_ERROR(nic_configurator->RunSystem(absl::StrFormat(
+      "%s/teardown.sh", absl::GetFlag(FLAGS_tuning_script_path))));
 
   LOG(INFO) << "Clean-up procedure finishes.";
 #undef CLEANUP_IF_ERROR
