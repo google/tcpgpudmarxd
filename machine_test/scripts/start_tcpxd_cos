@@ -4,6 +4,7 @@ set -e
 
 function run_tcpgpudmarxd() {
   docker run --pull=always --rm \
+    --privileged \
     --cap-add=NET_ADMIN --network=host \
     --volume /var/lib/nvidia/lib64:/usr/local/nvidia/lib64 \
     --device /dev/nvidia0:/dev/nvidia0 \
