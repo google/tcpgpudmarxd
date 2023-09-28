@@ -73,7 +73,7 @@ ABSL_FLAG(std::string, tuning_script_path, "/a3-tuning-scripts",
 
 namespace {
 
-constexpr std::string_view kVersion{"v2.0.6"};
+constexpr std::string_view kVersion{"v2.0.7"};
 
 static std::atomic<bool> gShouldStop(false);
 
