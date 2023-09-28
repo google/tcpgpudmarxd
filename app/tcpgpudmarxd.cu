@@ -65,9 +65,8 @@ ABSL_FLAG(uint32_t, max_rx_rules, 0,
           "Default: 0, meaning no override and either the value from the "
           "config (if present) or the component level default will be used.  "
           "Maximum number of flow steering rules to use.");
-ABSL_FLAG(bool, disable_quickack, false,
-          "Default: 0, meaning quickack is added to route");
-ABSL_FLAG(uint32_t, min_rto, 5, "Default: 5, meaning set min_rto to 5 ms");
+ABSL_FLAG(std::string, setup_param, "--verbose 1048576 5 0",
+          "All params required for setup.sh in a3 tuning scripts");
 ABSL_FLAG(std::string, tuning_script_path, "/a3-tuning-scripts",
           "The path where networking tuning script is kept, "
           "updated separately from this binary. ");
@@ -333,9 +332,8 @@ int main(int argc, char** argv) {
   }
 
   CLEANUP_IF_ERROR(nic_configurator->RunSystem(absl::StrFormat(
-      "%s/setup.sh %u %d", absl::GetFlag(FLAGS_tuning_script_path),
-      absl::GetFlag(FLAGS_min_rto),
-      (int)!absl::GetFlag(FLAGS_disable_quickack))));
+      "%s/setup.sh %s", absl::GetFlag(FLAGS_tuning_script_path),
+      absl::GetFlag(FLAGS_setup_param))));
 
   // 6. Start Rx Rule Manager
 
