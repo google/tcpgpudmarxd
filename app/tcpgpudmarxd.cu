@@ -65,7 +65,7 @@ ABSL_FLAG(uint32_t, max_rx_rules, 0,
           "Default: 0, meaning no override and either the value from the "
           "config (if present) or the component level default will be used.  "
           "Maximum number of flow steering rules to use.");
-ABSL_FLAG(std::string, setup_param, "--verbose 1048576 5 0",
+ABSL_FLAG(std::string, setup_param, "--verbose 128 5 0",
           "All params required for setup.sh in a3 tuning scripts");
 ABSL_FLAG(std::string, tuning_script_path, "/a3-tuning-scripts",
           "The path where networking tuning script is kept, "
@@ -73,7 +73,7 @@ ABSL_FLAG(std::string, tuning_script_path, "/a3-tuning-scripts",
 
 namespace {
 
-constexpr std::string_view kVersion{"v2.0.7"};
+constexpr std::string_view kVersion{"v2.0.8"};
 
 static std::atomic<bool> gShouldStop(false);
 
