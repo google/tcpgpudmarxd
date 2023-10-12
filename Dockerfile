@@ -19,7 +19,8 @@ ENV DEBIAN_FRONTEND='noninteractive'
 RUN apt update \
   && apt-get install -y --no-install-recommends \
         git openssh-server wget iproute2 vim build-essential cmake gdb \
-        protobuf-compiler libprotobuf-dev libprotoc-dev rsync ethtool libssl-dev \
+        protobuf-compiler libprotobuf-dev libprotoc-dev rsync libssl-dev \
+        pkg-config libmnl-dev \
   && rm -rf /var/lib/apt/lists/*
 
 # build absl
@@ -49,9 +50,17 @@ RUN cmake \
     -DgRPC_INSTALL=ON .. \
     && make -j && make install
 
+# build ethtool
+WORKDIR /third_party
+RUN wget https://mirrors.edge.kernel.org/pub/software/network/ethtool/ethtool-6.3.tar.gz
+RUN tar -xvf ethtool-6.3.tar.gz
+WORKDIR ethtool-6.3
+RUN ./configure && make && make install
+
 # copy all license files
 WORKDIR /third_party/licenses
 RUN cp ../abseil-cpp/LICENSE license_absl.txt
+RUN cp ../ethtool-6.3/LICENSE license_ethtool.txt
 
 COPY . /tcpgpudmarxd
 

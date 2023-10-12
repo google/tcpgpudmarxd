@@ -301,6 +301,8 @@ int main(int argc, char** argv) {
   // 4. Configure NIC for TCPDirect
   LOG(INFO) << "Priming the NICs for GPU-RXQ use case ...";
 
+  LOG_IF_ERROR(nic_configurator->RunSystem("ethtool --version"));
+
   for (auto& gpu_rxq_config : gpu_rxq_configs.gpu_rxq_configs()) {
     // Resetting header-split here to ensure that the subsequent enablement will
     // trigger re-initializing the receive buffer pool.
@@ -336,6 +338,8 @@ int main(int argc, char** argv) {
       absl::StrFormat("%s/setup.sh %s", absl::GetFlag(FLAGS_tuning_script_path),
                       absl::GetFlag(FLAGS_setup_param))));
 
+  // b(304329680) GVE driver returns cached view of the rules, OOB checking is
+  // futile
   // 6. Start Rx Rule Manager
 
   LOG(INFO) << "Starting Rx Rule Manager ...";
