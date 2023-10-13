@@ -67,7 +67,8 @@ ABSL_FLAG(uint32_t, max_rx_rules, 0,
           "Maximum number of flow steering rules to use.");
 ABSL_FLAG(std::string, setup_param, "--verbose 128 5 0",
           "All params required for setup.sh in a3 tuning scripts");
-ABSL_FLAG(std::string, tuning_script_path, "/a3-tuning-scripts",
+ABSL_FLAG(std::string, tuning_script_path,
+          "/tcpgpudmarxd/build/a3-tuning-scripts",
           "The path where networking tuning script is kept, "
           "updated separately from this binary. ");
 
@@ -331,9 +332,9 @@ int main(int argc, char** argv) {
         gpu_rxq_config.ifname(), "enable-strict-header-split", true));
   }
 
-  CLEANUP_IF_ERROR(nic_configurator->RunSystem(absl::StrFormat(
-      "%s/setup.sh %s", absl::GetFlag(FLAGS_tuning_script_path),
-      absl::GetFlag(FLAGS_setup_param))));
+  CLEANUP_IF_ERROR(nic_configurator->RunSystem(
+      absl::StrFormat("%s/setup.sh %s", absl::GetFlag(FLAGS_tuning_script_path),
+                      absl::GetFlag(FLAGS_setup_param))));
 
   // 6. Start Rx Rule Manager
 

@@ -55,15 +55,13 @@ RUN cp ../abseil-cpp/LICENSE license_absl.txt
 
 COPY . /tcpgpudmarxd
 
-COPY --from=us-docker.pkg.dev/gce-ai-infra/gpudirect-tcpx/a3-tuning-scripts:latest /a3-tuning-scripts/setup.sh /a3-tuning-scripts/setup.sh
-COPY --from=us-docker.pkg.dev/gce-ai-infra/gpudirect-tcpx/a3-tuning-scripts:latest /a3-tuning-scripts/teardown.sh /a3-tuning-scripts/teardown.sh
-
 ENV LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:/usr/local/lib"
 WORKDIR /tcpgpudmarxd
 RUN rm -rf build docker-build
 WORKDIR build
 RUN cmake -DCMAKE_CUDA_ARCHITECTURES=90 -DCMAKE_BUILD_TYPE=Release ..
 RUN make -j && make install
+RUN cp -r ../scripts/a3-tuning-scripts .
 WORKDIR test
 RUN ctest
 
