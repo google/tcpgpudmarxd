@@ -1,5 +1,8 @@
 #!/bin/bash
 
+source "/tcpgpudmarxd/build/a3-tuning-scripts/sysctl_helper.sh"
+GLOBAL_NETBASE_ERROR_COUNTER=0
+
 # Please use verbose as the first param
 if [[ $* == *"--verbose"* ]]; then
   shift
@@ -44,19 +47,28 @@ set_route_param() {
   ip route show
 }
 
-set_route_param $1 $2 $3
-echo 0 > /proc/sys/net/ipv4/tcp_mtu_probing
-echo 0 > /proc/sys/net/ipv4/tcp_slow_start_after_idle
-echo 1 > /proc/sys/net/ipv4/tcp_no_metrics_save
-echo "4096 1048576 15728640" > /proc/sys/net/ipv4/tcp_rmem
-echo "4096 1048576 67108864" > /proc/sys/net/ipv4/tcp_wmem
-echo 131072 > /proc/sys/net/core/optmem_max
-echo 4096 > /proc/sys/net/core/somaxconn
-echo 4096 > /proc/sys/net/ipv4/tcp_max_syn_backlog
+main() {
+  set_route_param $1 $2 $3
+  set_and_verify "/proc/sys/net/ipv4/tcp_mtu_probing" "0"
+  set_and_verify "/proc/sys/net/ipv4/tcp_slow_start_after_idle" "0"
+  set_and_verify "/proc/sys/net/ipv4/tcp_rmem" "4096	1048576	15728640"
+  set_and_verify "/proc/sys/net/ipv4/tcp_wmem" "4096	1048576	67108864"
+  set_and_verify "/proc/sys/net/ipv4/tcp_no_metrics_save" "1"
+  set_and_verify "/proc/sys/net/core/optmem_max" "131072"
+  set_and_verify "/proc/sys/net/core/somaxconn" "4096"
+  set_and_verify "/proc/sys/net/ipv4/tcp_max_syn_backlog" "4096"
 
-# For TCP CUBIC Hystart just use: HYSTART_DELAY (0x2).
-# The HYSTART_ACK_TRAIN (0x1) mechanism has signiificant false positive risk;
-# particularly when pacing is enabled, but potentially in other cases, too.
-echo 2 > /sys/module/tcp_cubic/parameters/hystart_detect
+  # For TCP CUBIC Hystart just use: HYSTART_DELAY (0x2).
+  # The HYSTART_ACK_TRAIN (0x1) mechanism has signiificant false positive risk;
+  # particularly when pacing is enabled, but potentially in other cases, too.
+  set_and_verify "/sys/module/tcp_cubic/parameters/hystart_detect" "2"
 
-echo "A3 network tuning v1.0.4 setup completed"
+  if [[ "${GLOBAL_NETBASE_ERROR_COUNTER}" -ne 0 ]]; then
+    echo "Setup incomplete and incorrect! Number of Errors: ${GLOBAL_NETBASE_ERROR_COUNTER}"
+    exit "${GLOBAL_NETBASE_ERROR_COUNTER}"
+  fi
+
+  echo "A3 network tuning v1.0.5 setup completed"
+}
+
+main $@

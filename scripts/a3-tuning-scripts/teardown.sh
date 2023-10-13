@@ -1,5 +1,8 @@
 #!/bin/bash
 
+source "/tcpgpudmarxd/build/a3-tuning-scripts/sysctl_helper.sh"
+GLOBAL_NETBASE_ERROR_COUNTER=0
+
 # Print commands we're executing, and exit if any commands fail:
 set -x
 
@@ -20,13 +23,28 @@ reset_route_param() {
   done < <(ip route show)
   ip route show
 }
-reset_route_param
-echo 0 > /proc/sys/net/ipv4/tcp_no_metrics_save
-echo "4096 131072 6291456" > /proc/sys/net/ipv4/tcp_rmem
-echo "4096 16384 4194304" > /proc/sys/net/ipv4/tcp_wmem
-echo 20480 > /proc/sys/net/core/optmem_max
 
-# Re-enable default Hystart: HYSTART_ACK_TRAIN (0x1) | HYSTART_DELAY (0x2):
-echo 3 > /sys/module/tcp_cubic/parameters/hystart_detect
+main() {
+  reset_route_param
 
-echo "A3 network tuning teardown completed"
+  set_and_verify "/proc/sys/net/ipv4/tcp_mtu_probing" "0"
+  set_and_verify "/proc/sys/net/ipv4/tcp_slow_start_after_idle" "0"
+  set_and_verify "/proc/sys/net/ipv4/tcp_rmem" "4096	131072	6291456"
+  set_and_verify "/proc/sys/net/ipv4/tcp_wmem" "4096	16384	4194304"
+  set_and_verify "/proc/sys/net/ipv4/tcp_no_metrics_save" "0"
+  set_and_verify "/proc/sys/net/core/optmem_max" "20480"
+  set_and_verify "/proc/sys/net/core/somaxconn" "4096"
+  set_and_verify "/proc/sys/net/ipv4/tcp_max_syn_backlog" "4096"
+
+  # Re-enable default Hystart: HYSTART_ACK_TRAIN (0x1) | HYSTART_DELAY (0x2):
+  set_and_verify "/sys/module/tcp_cubic/parameters/hystart_detect" "3"
+
+  if [[ "${GLOBAL_NETBASE_ERROR_COUNTER}" -ne 0 ]]; then
+    echo "Setup incomplete and incorrect! Number of Errors: ${GLOBAL_NETBASE_ERROR_COUNTER}"
+    exit "${GLOBAL_NETBASE_ERROR_COUNTER}"
+  fi
+
+  echo "A3 network tuning teardown completed"
+}
+
+main
