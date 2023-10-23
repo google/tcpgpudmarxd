@@ -16,9 +16,11 @@
 
 #include <absl/log/log.h>
 #include <absl/status/status.h>
+#include <absl/status/statusor.h>
 #include <absl/strings/str_format.h>
 #include <arpa/inet.h>
 #include <linux/ethtool.h>
+#include <linux/types.h>
 #include <stdlib.h>
 
 #include <string>
@@ -73,23 +75,27 @@ absl::Status EthtoolNicConfigurator::RemoveFlow(const std::string& ifname,
 absl::Status EthtoolNicConfigurator::SetIpRoute(const std::string& ifname,
                                                 int min_rto, bool quickack) {
   if (!min_rto && !quickack)
-    return RunSystem(absl::StrFormat("ip route replace %s", prev_route_[ifname]));
+    return RunSystem(
+        absl::StrFormat("ip route replace %s", prev_route_[ifname]));
 
   std::array<char, 128> buffer;
   std::string cur_route, suffix;
-  std::string command = absl::StrFormat("ip route show dev %s | grep mtu", ifname);
-  std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(command.c_str(), "r"), pclose);
+  std::string command =
+      absl::StrFormat("ip route show dev %s | grep mtu", ifname);
+  std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(command.c_str(), "r"),
+                                                pclose);
 
   if (!pipe) {
-      return absl::InternalError("popen() failed!");
+    return absl::InternalError("popen() failed!");
   }
 
   while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
-      cur_route += buffer.data();
+    cur_route += buffer.data();
   }
   prev_route_[ifname] = cur_route.c_str();
 
-  cur_route.erase(std::remove(cur_route.begin(), cur_route.end(), '\n'), cur_route.cend());
+  cur_route.erase(std::remove(cur_route.begin(), cur_route.end(), '\n'),
+                  cur_route.cend());
 
   size_t ind = cur_route.find("quickack");
   if (ind != std::string::npos) {
@@ -101,12 +107,11 @@ absl::Status EthtoolNicConfigurator::SetIpRoute(const std::string& ifname,
     cur_route = cur_route.substr(0, ind);
   }
 
-  if (min_rto)
-    suffix = absl::StrFormat("rto_min %dms", min_rto).c_str();
-  if (quickack)
-    suffix = absl::StrFormat("%s quickack 1", suffix).c_str();
+  if (min_rto) suffix = absl::StrFormat("rto_min %dms", min_rto).c_str();
+  if (quickack) suffix = absl::StrFormat("%s quickack 1", suffix).c_str();
 
-  return RunSystem(absl::StrFormat("ip route replace %s %s", cur_route, suffix));
+  return RunSystem(
+      absl::StrFormat("ip route replace %s %s", cur_route, suffix));
 }
 
 absl::Status EthtoolNicConfigurator::RunSystem(const std::string& command) {
@@ -117,5 +122,33 @@ absl::Status EthtoolNicConfigurator::RunSystem(const std::string& command) {
     return absl::InternalError(error_msg);
   }
   return absl::OkStatus();
+}
+
+// GetStat("eth1", "reset_cnt") gets a stat from `ethtool -S eth1`
+// and returns it. If it can't find that stat, returns a failed Status
+absl::StatusOr<__u32> EthtoolNicConfigurator::GetStat(
+    const std::string& ifname, const std::string& statname) {
+  __u32 stat_value;
+  int scanned;
+  char path[4096];
+  std::string path_s;
+  std::string command = absl::StrFormat(
+      "ethtool -S %s | grep '%s:' | awk '{print $NF}'", ifname, statname);
+
+  std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(command.c_str(), "r"),
+                                                pclose);
+
+  if (!pipe) {
+    return -1;
+  }
+
+  while (fgets(path, sizeof(path), pipe.get())) {
+    path_s = std::string(path);
+
+    scanned = sscanf(path, "%d", &stat_value);
+    if (scanned == 1) return stat_value;
+  }
+
+  return absl::InvalidArgumentError("bad stat name");
 }
 }  // namespace gpudirect_tcpxd

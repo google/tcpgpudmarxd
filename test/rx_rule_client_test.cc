@@ -70,6 +70,74 @@ class RxRuleClientTest : public ::testing::Test {
   std::vector<std::unique_ptr<UnixSocketServer>> mock_us_servers_;
 };
 
+// Tests that the callback passed to RxRuleClient constructor
+// is called when the Server's UnixDomainSocket is closed.
+TEST_F(RxRuleClientTest, VfResetCallbackOnServerSkClose) {
+  google::rpc::Status status;
+  AddMockFlowSteerRuleServer("/tmp/rx_rule_manager", status);
+  int value = 0; /* callback lambda should set this value */
+  int expected_val = 12345;
+
+  std::string prefix = "/tmp";
+
+  /* callback should set value to expected_val */
+  RxRuleClient rx_rule_client(prefix, [&value, &expected_val]() -> int {
+    value = expected_val;
+    return value;
+  });
+
+  gpudirect_tcpxd::FlowSteerRuleOp op = gpudirect_tcpxd::CREATE;
+  FlowSteerNtuple flow_steer_ntuple;
+  flow_steer_ntuple.src_sin = gpudirect_tcpxd::AddressFromStr("1.2.3.4").sin;
+  flow_steer_ntuple.dst_sin = gpudirect_tcpxd::AddressFromStr("5.6.7.8").sin;
+  gpudirect_tcpxd::SetAddressPort(
+      (union SocketAddress*)&flow_steer_ntuple.src_sin, 1234);
+  gpudirect_tcpxd::SetAddressPort(
+      (union SocketAddress*)&flow_steer_ntuple.dst_sin, 5678);
+  flow_steer_ntuple.flow_type = 1;
+
+  std::string gpu_pci_addr = "addr";
+  int qid = 1;
+
+  /* required to force initial socket connect */
+  EXPECT_EQ(rx_rule_client.UpdateFlowSteerRule(op, flow_steer_ntuple,
+                                               gpu_pci_addr, qid),
+            absl::OkStatus());
+
+  /* close socket on server side to force VF reset detecition flow */
+  mock_us_servers_.back()->Stop();
+
+  /* wait for client's socket to process EPOLLHUP event */
+  sleep(0.5);
+
+  ASSERT_EQ(value, expected_val)
+      << "Callback should've set value to " << expected_val;
+}
+
+TEST_F(RxRuleClientTest, CreateSkIfReqSuccess) {
+  google::rpc::Status status;
+  AddMockFlowSteerRuleServer("/tmp/rx_rule_manager", status);
+
+  std::string prefix = "/tmp";
+  RxRuleClient rx_rule_client(prefix);
+
+  gpudirect_tcpxd::FlowSteerRuleOp op = gpudirect_tcpxd::CREATE;
+  FlowSteerNtuple flow_steer_ntuple;
+  flow_steer_ntuple.src_sin = gpudirect_tcpxd::AddressFromStr("1.2.3.4").sin;
+  flow_steer_ntuple.dst_sin = gpudirect_tcpxd::AddressFromStr("5.6.7.8").sin;
+  gpudirect_tcpxd::SetAddressPort(
+      (union SocketAddress*)&flow_steer_ntuple.src_sin, 1234);
+  gpudirect_tcpxd::SetAddressPort(
+      (union SocketAddress*)&flow_steer_ntuple.dst_sin, 5678);
+  flow_steer_ntuple.flow_type = 1;
+
+  std::string gpu_pci_addr = "addr";
+  int qid = 1;
+
+  ASSERT_TRUE(rx_rule_client.CreateSkIfReq(op).ok());
+  ASSERT_TRUE(rx_rule_client.sk_cli_);
+}
+
 TEST_F(RxRuleClientTest, UpdateFlowSteerRuleSuccess) {
   google::rpc::Status status;
   AddMockFlowSteerRuleServer("/tmp/rx_rule_manager", status);

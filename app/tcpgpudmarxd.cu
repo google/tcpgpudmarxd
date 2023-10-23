@@ -12,6 +12,7 @@
 #include <linux/rtnetlink.h>
 #include <linux/types.h>
 #include <net/if.h>
+#include <pthread.h>
 #include <signal.h>
 #include <stdlib.h>
 #include <sys/ioctl.h>
@@ -33,12 +34,15 @@
 #include "include/nic_configurator_factory.h"
 #include "include/nic_configurator_interface.h"
 #include "include/rx_rule_manager.h"
+#include "include/vf_reset_detector.h"
 
+using gpudirect_tcpxd::CheckVFReset;
 using gpudirect_tcpxd::GpuPageExporterFactory;
 using gpudirect_tcpxd::GpuPageExporterInterface;
 using gpudirect_tcpxd::GpuRxqConfiguration;
 using gpudirect_tcpxd::GpuRxqConfigurationFactory;
 using gpudirect_tcpxd::GpuRxqConfigurationList;
+using gpudirect_tcpxd::netlink_thread;
 using gpudirect_tcpxd::NicConfiguratorFactory;
 using gpudirect_tcpxd::NicConfiguratorInterface;
 using gpudirect_tcpxd::RxRuleManager;
@@ -74,7 +78,7 @@ ABSL_FLAG(std::string, tuning_script_path,
 
 namespace {
 
-constexpr std::string_view kVersion{"v2.0.9"};
+constexpr std::string_view kVersion{"v2.0.10"};
 
 static std::atomic<bool> gShouldStop(false);
 
@@ -129,10 +133,33 @@ void* handle_netlink_event(void* main_thread) {
   int nl_socket = init_netlink();
   unsigned int ifindices[4] = {if_nametoindex("eth1"), if_nametoindex("eth2"),
                                if_nametoindex("eth3"), if_nametoindex("eth4")};
-  int main_id = *(int*)main_thread;
-  bool tracked_netdev = false;
+  struct netlink_thread* nt = (struct netlink_thread*)main_thread;
+  pthread_t main_id = nt->thread_id;
+  unsigned int* netlink_idx;
 
   if (nl_socket < 0) return NULL;
+
+  /* set initial reset_cnt values on RxDM start-up */
+  for (int dev_idx = 0; dev_idx < std::size(ifindices); dev_idx++) {
+    char ifname[IF_NAMESIZE];
+    absl::StatusOr<__u32> initial_reset_cnt;
+
+    if (if_indextoname(ifindices[dev_idx], ifname) == NULL) {
+      PLOG(ERROR) << "can't find ifname";
+      continue;
+    }
+
+    initial_reset_cnt = read_reset_cnt(nt->nic_configurator, ifname);
+
+    if (initial_reset_cnt.ok()) {
+      nt->reset_cnts[dev_idx] = *initial_reset_cnt;
+
+      LOG(INFO) << absl::StrFormat("set %s initial reset_cnt to %i", ifname,
+                                   *initial_reset_cnt);
+    } else
+      LOG(ERROR) << absl::StrFormat("failed to set initial reset_cnt for %s",
+                                    ifname);
+  }
 
   while (1) {
     status = recvmsg(nl_socket, &msg, 0);
@@ -154,14 +181,33 @@ void* handle_netlink_event(void* main_thread) {
         return NULL;
       }
       ifi = (struct ifinfomsg*)NLMSG_DATA(h);
-      tracked_netdev = std::find(std::begin(ifindices), std::end(ifindices),
-                                 ifi->ifi_index) != std::end(ifindices);
-      if (tracked_netdev) {
+      netlink_idx =
+          std::find(std::begin(ifindices), std::end(ifindices), ifi->ifi_index);
+
+      if (netlink_idx != std::end(ifindices)) {
         if (h->nlmsg_type == RTM_DELLINK ||
             (ifi->ifi_change & IFF_UP) && !(ifi->ifi_flags & IFF_UP)) {
           LOG(ERROR) << "DEBUG: read_netlink: device down received ";
           pthread_kill((pthread_t)main_id, SIGTERM);
           return NULL;
+        }
+
+        // This condition will be true for many netlink socket messages
+        // which is why we further check if reset_cnt has been incremented
+        // in CheckVFReset().
+        if (ifi->ifi_flags & (IFF_UP | IFF_LOWER_UP)) {
+          int idx = std::distance(std::begin(ifindices), netlink_idx);
+          char ifname[IF_NAMESIZE];
+          if (if_indextoname(*netlink_idx, ifname) == NULL) {
+            PLOG(ERROR) << "can't find ifname";
+            continue;
+          }
+
+          if (CheckVFReset(nt, ifname, idx)) {
+            LOG(ERROR) << "Killing RxDM, VF reset detected";
+            pthread_kill((pthread_t)main_id, SIGTERM);
+            return NULL;
+          }
         }
       }
     }
@@ -206,10 +252,6 @@ int main(int argc, char** argv) {
   LOG(INFO) << absl::StrFormat(
       "Running GPUDirect-TCPX Receive Data Path Manager, version (%s)",
       kVersion);
-
-  pthread_t netdev_status;
-  int main_id = pthread_self();
-  pthread_create(&netdev_status, NULL, handle_netlink_event, &main_id);
 
   // 1. Collect GPU/NIC pair configurations
   std::string gpu_nic_preset = absl::GetFlag(FLAGS_gpu_nic_preset);
@@ -277,6 +319,21 @@ int main(int argc, char** argv) {
       NicConfiguratorFactory::Build(gpu_nic_preset);
 
   RETURN_IF_ERROR(nic_configurator->Init());
+
+  // 2.5 start thread to listen to netlink events to notify userspace of VF
+  // reset.
+  pthread_t netdev_status;
+  pthread_t main_id = pthread_self();
+  struct netlink_thread* nt =
+      (struct netlink_thread*)calloc(1, sizeof(struct netlink_thread));
+  nt->thread_id = main_id;
+  nt->nic_configurator = nic_configurator.get();
+
+  if (pthread_create(&netdev_status, NULL, handle_netlink_event, nt)) {
+    LOG(ERROR) << "handle_netlink_event thread failed to create: this should "
+                  "never happen";
+    exit(EXIT_FAILURE);
+  }
 
   // 3. Construct rxq_exporters and rx_rule_manager
 
@@ -360,6 +417,7 @@ CLEANUP:
 
   pthread_cancel(netdev_status);
   pthread_join(netdev_status, NULL);
+  free(nt);
   LOG(INFO) << "Canceling netdev monitoring thread";
 
   LOG(INFO) << "Stopping Rx Rule Manager, recyling stale rules ...";

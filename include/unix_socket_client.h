@@ -20,6 +20,7 @@
 #include <absl/status/status.h>
 #include <absl/status/statusor.h>
 
+#include <atomic>
 #include <memory>
 #include <string>
 
@@ -29,7 +30,9 @@
 namespace gpudirect_tcpxd {
 class UnixSocketClient {
  public:
-  explicit UnixSocketClient(std::string path) : path_(path) {}
+  explicit UnixSocketClient(std::string path,
+                            std::function<int()> vf_reset_cb = nullptr);
+  ~UnixSocketClient();
   absl::Status Connect();
   absl::StatusOr<UnixSocketMessage> Receive();
   void Send(UnixSocketMessage msg);
@@ -37,6 +40,10 @@ class UnixSocketClient {
  private:
   std::unique_ptr<UnixSocketConnection> conn_;
   std::string path_;
+  std::atomic_int epoll_fd_{-1};
+  std::function<int()>
+      vf_reset_cb_; /* callback function for when a VF reset occurs */
+  std::thread epoll_thread_;
 };
 }  // namespace gpudirect_tcpxd
 #endif

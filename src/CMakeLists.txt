@@ -44,6 +44,7 @@ set(NIC_CONFIGURATOR_SRC
         ethtool_no_headersplit_nic_configurator.cc
         ethtool_nic_configurator.cc
         nic_configurator_factory.cc
+        vf_reset_detector.cc
 )
 
 add_library(nic_configurator STATIC ${NIC_CONFIGURATOR_SRC})

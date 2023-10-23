@@ -78,6 +78,7 @@ Use the following script to launch the container on VMs:
 
 function run_tcpgpudmarxd() {
   docker run --pull=always -it --rm \
+    --privileged \
     --cap-add=NET_ADMIN --network=host \
     --volume /var/lib/nvidia/lib64:/usr/local/nvidia/lib64 \
     --device /dev/nvidia0:/dev/nvidia0 \
@@ -96,6 +97,7 @@ function run_tcpgpudmarxd() {
     <artifact-registry path> "$@"
 }
 ```
+NOTE: the most recent launch command can be found in the [GPUDirect-TCPX Guide Public Candidate](https://docs.google.com/document/d/1HTKaky8CDDx-8er4PLzBEqAmxY3r7MMrNYhpHNfOGNY/edit#bookmark=kix.h9k6ki45wde) doc.
 
 The source code could be found in `/tcpgpudmarxd`, while the built binary could be found in `/tcpgpudmarxd/build`
 

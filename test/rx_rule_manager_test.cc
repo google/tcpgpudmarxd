@@ -25,6 +25,7 @@
 #include <absl/time/time.h>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <linux/types.h>
 #include <sys/un.h>
 #include <unistd.h>
 
@@ -82,6 +83,9 @@ class MockNicConfigurator : public gpudirect_tcpxd::NicConfiguratorInterface {
               (const std::string& ifname, int min_rto, bool quickack),
               (override));
   MOCK_METHOD(absl::Status, RunSystem, (const std::string& command),
+              (override));
+  MOCK_METHOD(absl::StatusOr<__u32>, GetStat,
+              ((const std::string& command), (const std::string& statname)),
               (override));
 };
 

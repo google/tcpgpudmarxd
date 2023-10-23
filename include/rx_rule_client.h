@@ -23,6 +23,9 @@
 #include <string>
 
 #include "include/flow_steer_ntuple.h"
+#include "include/unix_socket_client.h"
+#include "proto/unix_socket_message.pb.h"
+
 namespace gpudirect_tcpxd {
 
 enum FlowSteerRuleOp {
@@ -32,13 +35,23 @@ enum FlowSteerRuleOp {
 
 class RxRuleClient {
  public:
-  explicit RxRuleClient(const std::string& prefix);
+  explicit RxRuleClient(const std::string& prefix,
+                        std::function<int()> vf_reset_cb = nullptr);
   absl::Status UpdateFlowSteerRule(FlowSteerRuleOp op,
                                    const FlowSteerNtuple& flow_steer_ntuple,
                                    std::string gpu_pci_addr = "", int qid = -1);
+  absl::StatusOr<UnixSocketClient*> CreateSkIfReq(FlowSteerRuleOp op);
+
+  std::unique_ptr<UnixSocketClient> sk_cli_;
 
  private:
+  absl::Status SendMsg(UnixSocketMessage message, UnixSocketMessage* response,
+                       UnixSocketClient* client);
+
   std::string prefix_;
+  std::unique_ptr<UnixSocketClient> sk_cli_uninstall_;
+  int epoll_fd_{-1};
+  std::function<int()> vf_reset_cb_;
 };
 }  // namespace gpudirect_tcpxd
 

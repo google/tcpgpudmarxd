@@ -14,6 +14,7 @@
 
 #include "include/unix_socket_client.h"
 
+#include <absl/log/log.h>
 #include <absl/status/status.h>
 #include <absl/status/statusor.h>
 #include <absl/strings/str_format.h>
@@ -23,12 +24,35 @@
 #include <sys/un.h>
 
 #include <memory>
+#include <thread>
 #include <utility>
 
 #include "include/unix_socket_connection.h"
 #include "proto/unix_socket_message.pb.h"
 
 namespace gpudirect_tcpxd {
+UnixSocketClient::UnixSocketClient(std::string path,
+                                   std::function<int()> vf_reset_cb)
+    : path_(path), vf_reset_cb_(vf_reset_cb) {
+  // We only want an epoll instance if vf_reset_cb.
+  // We'll only poll for EPOLLHUP to trigger the callback function.
+  if (vf_reset_cb_) {
+    epoll_fd_ = epoll_create1(0);
+    if (epoll_fd_ < 0) {
+      int err_num = errno;
+      PLOG(ERROR) << absl::StrFormat("epoll_create1() error: %d", err_num);
+    }
+  }
+}
+
+UnixSocketClient::~UnixSocketClient() {
+  if (epoll_fd_ > 0) {
+    close(epoll_fd_);
+    epoll_fd_ = -1;
+    epoll_thread_.join();
+  }
+}
+
 absl::Status UnixSocketClient::Connect() {
   if (path_.empty())
     return absl::InvalidArgumentError("Missing file path to domain socket.");
@@ -52,6 +76,34 @@ absl::Status UnixSocketClient::Connect() {
     return absl::ErrnoToStatus(
         errno, absl::StrFormat("connect() error: %d", error_number));
   }
+
+  // epoll_fd_ exists only if creator of this UnixSocketClient passed a
+  // callback function in case of VF reset.
+  if (epoll_fd_ > 0) {
+    struct epoll_event event = {.events = EPOLLRDHUP};
+    epoll_ctl(epoll_fd_, EPOLL_CTL_ADD, fd, &event);
+
+    // Start a thread that epolls for socket hang-up.
+    // When a hang-up occurs, then we trigger the VF reset callback function.
+    epoll_thread_ = std::thread([this]() {
+      struct epoll_event event;
+      int ret;
+      while (epoll_fd_ > 0) {
+        ret = epoll_wait(epoll_fd_, &event, 1,
+                         std::chrono::milliseconds(100).count());
+
+        if (ret < 0) {
+          PLOG(ERROR) << "epoll_wait error: ";
+          return;
+        }
+        if (ret == 1) {
+          vf_reset_cb_();
+          return;
+        }
+      }
+    });
+  }
+
   conn_ = std::make_unique<UnixSocketConnection>(fd);
   return absl::OkStatus();
 }

@@ -14,7 +14,9 @@
 
 #include "include/rx_rule_client.h"
 
+#include <absl/log/log.h>
 #include <absl/status/status.h>
+#include <absl/status/statusor.h>
 #include <absl/strings/str_format.h>
 
 #include <memory>
@@ -29,18 +31,82 @@
 
 namespace gpudirect_tcpxd {
 
-RxRuleClient::RxRuleClient(const std::string& prefix) {
+RxRuleClient::RxRuleClient(const std::string& prefix,
+                           std::function<int()> vf_reset_cb)
+    : vf_reset_cb_(vf_reset_cb) {
   prefix_ = prefix;
   if (prefix_.back() == '/') {
     prefix_.pop_back();
   }
 }
 
-absl::Status ConnectAndSendMessage(UnixSocketMessage message,
+// Create a UnixSocketClient for this RxRuleClient
+// if one doesn't exist for it already, and return it.
+//
+// Technically RxRuleClient has 2 UnixSocketClients:
+// 1 for installing flow-steering rules, and another for
+// uninstalling them.
+//
+// Only the install UnixSocketClient will trigger the VF
+// reset callback.
+//
+// TODO: This function should just be rolled into the
+// constructor. And a socket for install/uninstall might
+// be better than each operation using its own socket.
+absl::StatusOr<UnixSocketClient*> RxRuleClient::CreateSkIfReq(
+    FlowSteerRuleOp op) {
+  std::string server_addr;
+  UnixSocketClient* us_client;
+  absl::Status status;
+
+  static FlowSteerRuleClientTelemetry telemetry;
+  telemetry.Start();  // No-op if started
+
+  if (op == CREATE) {
+    // TODO basically the same code in the else-clause, move to macro?
+    if (!sk_cli_) {
+      server_addr = "rx_rule_manager";
+      sk_cli_ = std::make_unique<UnixSocketClient>(
+          absl::StrFormat("%s/%s", prefix_, server_addr), vf_reset_cb_);
+
+      status = sk_cli_.get()->Connect();
+      if (!status.ok()) {
+        telemetry.IncrementInstallFailure();
+        telemetry.IncrementFailureAndCause(status.ToString());
+        LOG(ERROR) << absl::StrFormat(
+            "%s Unix Socket Client failed to connect %s", server_addr,
+            status.ToString());
+        sk_cli_.release();
+        return status;
+      }
+    }
+    us_client = sk_cli_.get();
+  } else {
+    if (!sk_cli_uninstall_) {
+      server_addr = "rx_rule_uninstall";
+      sk_cli_uninstall_ = std::make_unique<UnixSocketClient>(
+          absl::StrFormat("%s/%s", prefix_, server_addr), nullptr);
+
+      status = sk_cli_uninstall_.get()->Connect();
+      if (!status.ok()) {
+        telemetry.IncrementInstallFailure();
+        telemetry.IncrementFailureAndCause(status.ToString());
+        LOG(ERROR) << absl::StrFormat("%s Unix Socket Client failed to connect",
+                                      server_addr);
+        sk_cli_uninstall_.release();
+        return status;
+      }
+    }
+    us_client = sk_cli_uninstall_.get();
+  }
+
+  return us_client;
+}
+
+absl::Status RxRuleClient::SendMsg(UnixSocketMessage message,
                                    UnixSocketMessage* response,
                                    UnixSocketClient* client) {
-  auto status = client->Connect();
-  if (!status.ok()) return status;
+  if (!client) LOG(ERROR) << "SendMsg with invalid socket";
 
   client->Send(message);
 
@@ -56,14 +122,16 @@ absl::Status ConnectAndSendMessage(UnixSocketMessage message,
 absl::Status RxRuleClient::UpdateFlowSteerRule(
     FlowSteerRuleOp op, const FlowSteerNtuple& flow_steer_ntuple,
     std::string gpu_pci_addr, int qid) {
+  absl::Status status;
+  absl::StatusOr<UnixSocketClient*> us_client;
   static FlowSteerRuleClientTelemetry telemetry;
   telemetry.Start();  // No-op if started
 
-  std::string server_addr =
-      (op == CREATE) ? "rx_rule_manager" : "rx_rule_uninstall";
+  us_client = CreateSkIfReq(op);
 
-  auto us_client = std::make_unique<UnixSocketClient>(
-      absl::StrFormat("%s/%s", prefix_, server_addr));
+  if (!us_client.ok()) {
+    return us_client.status();
+  }
 
   UnixSocketMessage message;
 
@@ -82,7 +150,7 @@ absl::Status RxRuleClient::UpdateFlowSteerRule(
   UnixSocketMessage response;
 
   absl::Time start = absl::Now();
-  auto status = ConnectAndSendMessage(message, &response, us_client.get());
+  status = SendMsg(message, &response, *us_client);
   telemetry.AddLatency(absl::Now() - start);
 
   if (!status.ok()) {

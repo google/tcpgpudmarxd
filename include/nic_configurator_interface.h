@@ -18,6 +18,8 @@
 #define _EXPERIMENTAL_USERS_CHECHENGLIN_TCPGPUDMAD_INCLUDE_NIC_CONFIGURATOR_INTERFACE_H_
 
 #include <absl/status/status.h>
+#include <absl/status/statusor.h>
+#include <linux/types.h>
 
 #include <cstdint>
 #include <string>
@@ -41,9 +43,11 @@ class NicConfiguratorInterface {
                                int queue_id, int location_id) = 0;
   virtual absl::Status RemoveFlow(const std::string& ifname,
                                   int location_id) = 0;
-  virtual absl::Status SetIpRoute(const std::string& ifname,
-                                 int min_rto, bool quickack) = 0;
-  virtual  absl::Status RunSystem(const std::string& command) = 0;
+  virtual absl::Status SetIpRoute(const std::string& ifname, int min_rto,
+                                  bool quickack) = 0;
+  virtual absl::Status RunSystem(const std::string& command) = 0;
+  virtual absl::StatusOr<__u32> GetStat(const std::string& ifname,
+                                        const std::string& statname) = 0;
 };
 }  // namespace gpudirect_tcpxd
 #endif
