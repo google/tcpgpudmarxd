@@ -14,26 +14,38 @@
 
 #include "include/rx_rule_manager.h"
 
+#include <absl/container/flat_hash_map.h>
+#include <absl/log/check.h>
+#include <absl/log/log.h>
 #include <absl/status/status.h>
 #include <absl/status/statusor.h>
 #include <absl/strings/str_format.h>
+#include <absl/synchronization/mutex.h>
+#include <absl/time/clock.h>
+#include <absl/time/time.h>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <sys/un.h>
 #include <unistd.h>
 
 #include <cstddef>
+#include <cstdint>
 #include <fstream>
 #include <iostream>
+#include <memory>
 #include <string>
+#include <thread>
 #include <utility>
 #include <vector>
 
 #include "gmock/gmock.h"
 #include "include/flow_steer_ntuple.h"
 #include "include/nic_configurator_interface.h"
+#include "include/rx_rule_client.h"
 #include "include/socket_helper.h"
+#include "include/unix_socket_connection.h"
 #include "proto/unix_socket_message.pb.h"
+#include "proto/unix_socket_proto.pb.h"
 
 namespace gpudirect_tcpxd {
 
@@ -42,30 +54,35 @@ using gpudirect_tcpxd::GpuRxqConfigurationList;
 using gpudirect_tcpxd::GpuRxqScaler;
 using gpudirect_tcpxd::NicRulesBank;
 using gpudirect_tcpxd::RxRuleManager;
+using testing::_;
+using testing::DoAll;
+using testing::ElementsAre;
+using testing::Pair;
+using testing::Return;
 
 class MockNicConfigurator : public gpudirect_tcpxd::NicConfiguratorInterface {
  public:
   MOCK_METHOD(absl::Status, Init, (), (override));
   MOCK_METHOD(void, Cleanup, (), (override));
   MOCK_METHOD(absl::Status, TogglePrivateFeature,
-              (const std::string &ifname, const std::string &feature, bool on),
+              (const std::string& ifname, const std::string& feature, bool on),
               (override));
   MOCK_METHOD(absl::Status, ToggleFeature,
-              (const std::string &ifname, const std::string &feature, bool on),
+              (const std::string& ifname, const std::string& feature, bool on),
               (override));
-  MOCK_METHOD(absl::Status, SetRss, (const std::string &ifname, int num_queues),
+  MOCK_METHOD(absl::Status, SetRss, (const std::string& ifname, int num_queues),
               (override));
   MOCK_METHOD(absl::Status, AddFlow,
-              (const std::string &ifname, const FlowSteerNtuple &ntuple,
+              (const std::string& ifname, const FlowSteerNtuple& ntuple,
                int queue_id, int location_id),
               (override));
   MOCK_METHOD(absl::Status, RemoveFlow,
-              (const std::string &ifname, int location_id), (override));
+              (const std::string& ifname, int location_id), (override));
   MOCK_METHOD(absl::Status, SetIpRoute,
-              (const std::string &ifname, int min_rto, bool quickack),
+              (const std::string& ifname, int min_rto, bool quickack),
               (override));
-  MOCK_METHOD(absl::Status, RunSystem,
-              (const std::string &command), (override));
+  MOCK_METHOD(absl::Status, RunSystem, (const std::string& command),
+              (override));
 };
 
 TEST(RxRuleManagerInitTest, InitSuccess) {
@@ -87,8 +104,8 @@ TEST(RxRuleManagerInitTest, PopBackSuccess) {
 TEST(RxRuleManagerConstructorTest, InitGpuRxqConfigSuccess) {
   MockNicConfigurator nic_configurator;
   GpuRxqConfigurationList list;
-  auto *config = list.add_gpu_rxq_configs();
-  auto *gpu_info = config->add_gpu_infos();
+  auto* config = list.add_gpu_rxq_configs();
+  auto* gpu_info = config->add_gpu_infos();
   gpu_info->set_gpu_pci_addr("a.b.c.d");
   gpu_info->add_queue_ids(1);
   gpu_info = config->add_gpu_infos();
@@ -106,9 +123,9 @@ TEST(RxRuleManagerConstructorTest, InitGpuRxqConfigSuccess) {
 
   std::string prefix = "/tmp";
   RxRuleManager rx_rule_manager(list, prefix, &nic_configurator);
-  EXPECT_EQ(rx_rule_manager.ifname_to_rules_bank_map_.size(), 2);
-  EXPECT_TRUE(rx_rule_manager.ifname_to_rules_bank_map_.count("eth0"));
-  EXPECT_TRUE(rx_rule_manager.ifname_to_rules_bank_map_.count("eth1"));
+  EXPECT_EQ(rx_rule_manager.if_workers_.size(), 2);
+  EXPECT_TRUE(rx_rule_manager.if_workers_.count("eth0"));
+  EXPECT_TRUE(rx_rule_manager.if_workers_.count("eth1"));
 
   EXPECT_EQ(rx_rule_manager.ifname_to_first_gpu_map_.size(), 2);
   EXPECT_EQ(rx_rule_manager.ifname_to_first_gpu_map_["eth0"], "a.b.c.d");
@@ -117,8 +134,304 @@ TEST(RxRuleManagerConstructorTest, InitGpuRxqConfigSuccess) {
   EXPECT_EQ(rx_rule_manager.gpu_to_ifname_map_["a.b.c.d"], "eth0");
   EXPECT_EQ(rx_rule_manager.gpu_to_ifname_map_["i.j.k.l"], "eth1");
 
-  EXPECT_TRUE(rx_rule_manager.gpu_to_rxq_scaler_map_.count("a.b.c.d"));
-  EXPECT_TRUE(rx_rule_manager.gpu_to_rxq_scaler_map_.count("i.j.k.l"));
+  EXPECT_THAT(rx_rule_manager.GetQueueIds("a.b.c.d")->queue_ids(),
+              ElementsAre(1));
+  EXPECT_THAT(rx_rule_manager.GetQueueIds("r.s.t.u")->queue_ids(),
+              ElementsAre(2));
+  EXPECT_THAT(rx_rule_manager.GetQueueIds("i.j.k.l")->queue_ids(),
+              ElementsAre(3));
+}
+
+class RxRuleManagerTest : public ::testing::Test {
+ protected:
+  const std::string kPrefix = "/tmp";
+
+  MockNicConfigurator nic_configurator_;
+  std::unique_ptr<RxRuleManager> rx_rule_manager_;
+  GpuRxqConfigurationList configs_list_;
+
+  static GpuRxqConfigurationList GetMultiNicConfig() {
+    GpuRxqConfigurationList list;
+    GpuRxqConfiguration* config;
+    GpuInfo* gpu_info;
+
+    // First NIC: eth0
+    config = list.add_gpu_rxq_configs();
+    gpu_info = config->add_gpu_infos();
+    gpu_info->set_gpu_pci_addr("a.b.c.d");
+    gpu_info->add_queue_ids(1);
+    gpu_info = config->add_gpu_infos();
+    gpu_info->set_gpu_pci_addr("e.f.g.h");
+    gpu_info->add_queue_ids(2);
+    config->set_nic_pci_addr("aa.bb.cc.dd");
+    config->set_ifname("eth0");
+
+    // Second NIC: eth1
+    config = list.add_gpu_rxq_configs();
+    gpu_info = config->add_gpu_infos();
+    gpu_info->set_gpu_pci_addr("i.j.k.l");
+    gpu_info->add_queue_ids(1);
+    gpu_info = config->add_gpu_infos();
+    gpu_info->set_gpu_pci_addr("m.n.o.p");
+    gpu_info->add_queue_ids(2);
+    config->set_nic_pci_addr("ee.ff.gg.hh");
+    config->set_ifname("eth1");
+
+    // Second NIC: eth2
+    config = list.add_gpu_rxq_configs();
+    gpu_info = config->add_gpu_infos();
+    gpu_info->set_gpu_pci_addr("q.r.s.t");
+    gpu_info->add_queue_ids(1);
+    gpu_info = config->add_gpu_infos();
+    gpu_info->set_gpu_pci_addr("u.v.w.x");
+    gpu_info->add_queue_ids(2);
+    config->set_nic_pci_addr("ii.jj.kk.ll");
+    config->set_ifname("eth2");
+
+    // Second NIC: eth2
+    config = list.add_gpu_rxq_configs();
+    gpu_info = config->add_gpu_infos();
+    gpu_info->set_gpu_pci_addr("y.z.a.b");
+    gpu_info->add_queue_ids(1);
+    gpu_info = config->add_gpu_infos();
+    gpu_info->set_gpu_pci_addr("c.d.e.f");
+    gpu_info->add_queue_ids(2);
+    config->set_nic_pci_addr("mm.nn.oo.pp");
+    config->set_ifname("eth3");
+
+    list.set_max_rx_rules(20000);
+    return list;
+  }
+
+  void UpdateFlowSteerRule(const std::string& gpu_pci_addr,
+                           gpudirect_tcpxd::FlowSteerRuleOp op,
+                           const std::string& src_ip, const std::string& dst_ip,
+                           uint16_t src_port, uint16_t dst_port,
+                           bool check_ok = true) {
+    RxRuleClient rx_rule_client(kPrefix);
+
+    FlowSteerNtuple flow_steer_ntuple;
+    flow_steer_ntuple.src_sin = gpudirect_tcpxd::AddressFromStr(src_ip).sin;
+    flow_steer_ntuple.dst_sin = gpudirect_tcpxd::AddressFromStr(dst_ip).sin;
+    gpudirect_tcpxd::SetAddressPort(
+        (union SocketAddress*)&flow_steer_ntuple.src_sin, src_port);
+    gpudirect_tcpxd::SetAddressPort(
+        (union SocketAddress*)&flow_steer_ntuple.dst_sin, dst_port);
+    flow_steer_ntuple.flow_type = 1;
+
+    if (check_ok) {
+      EXPECT_TRUE(rx_rule_client
+                      .UpdateFlowSteerRule(op, flow_steer_ntuple, gpu_pci_addr)
+                      .ok());
+    } else {
+      auto status = rx_rule_client.UpdateFlowSteerRule(op, flow_steer_ntuple,
+                                                       gpu_pci_addr);
+      EXPECT_FALSE(status.ok());
+    }
+  }
+
+  void SetUp() override {
+    configs_list_ = GetMultiNicConfig();
+    rx_rule_manager_ = std::make_unique<RxRuleManager>(configs_list_, kPrefix,
+                                                       &nic_configurator_);
+    CHECK_EQ(rx_rule_manager_->Init(), absl::OkStatus());
+  }
+};
+
+TEST_F(RxRuleManagerTest, ParallelInstallAndUninstallRules) {
+  constexpr size_t kNumRulesPerGpu = 10;
+  constexpr size_t kNumNic = 4;
+  constexpr size_t kNumGpuPerNic = 2;
+
+  constexpr size_t KTotalNumFlows = kNumNic * kNumGpuPerNic * kNumRulesPerGpu;
+  constexpr size_t kTotalRulesPerNic = kNumGpuPerNic * kNumRulesPerGpu;
+  constexpr absl::Duration kAddFlowLatency = absl::Milliseconds(5);
+
+  // Introduce latency in the AddFlow call, and count the number of AddFlow()
+  // per interface.
+  absl::Mutex mu;
+  absl::flat_hash_map<std::string, size_t> if_counters;
+  EXPECT_CALL(nic_configurator_, AddFlow(_, _, _, _))
+      .Times(KTotalNumFlows)
+      .WillRepeatedly(DoAll(
+          [&](const std::string& ifname, const FlowSteerNtuple& ntuple,
+              int queue_id, int location_id) {
+            absl::SleepFor(kAddFlowLatency);
+            {
+              absl::MutexLock lock(&mu);
+              if_counters[ifname]++;
+            }
+          },
+          Return(absl::OkStatus())));
+
+  // Start a thread per GPU, and try to install rule.
+  std::vector<std::thread> threads;
+  threads.reserve(kNumNic * kNumGpuPerNic);
+  absl::Time start = absl::Now();
+  for (size_t nic_id = 0; nic_id < configs_list_.gpu_rxq_configs_size();
+       nic_id++) {
+    auto& gpu_rxq_config = configs_list_.gpu_rxq_configs().at(nic_id);
+    for (size_t gpu_id = 0; gpu_id < gpu_rxq_config.gpu_infos_size();
+         gpu_id++) {
+      auto& gpu_info = gpu_rxq_config.gpu_infos().at(gpu_id);
+      threads.push_back(std::thread([gpu_info, gpu_id, nic_id, this]() {
+        for (int i = 0; i < kNumRulesPerGpu; i++) {
+          UpdateFlowSteerRule(
+              gpu_info.gpu_pci_addr(), CREATE,
+              absl::StrFormat("192.168.%d.%d", gpu_id, nic_id + 1),
+              absl::StrFormat("192.168.%d.%d", gpu_id, nic_id), 3000 + i,
+              3000 + gpu_id * i);
+        }
+      }));
+    }
+  }
+
+  // Wait until the rules are all installed.
+  for (size_t i = 0; i < threads.size(); i++) {
+    threads[i].join();
+  }
+  absl::Time end = absl::Now();
+
+  // Check the latency speedup. At least it should have 1/3 of the serial
+  // latency.
+  EXPECT_LT((end - start),
+            absl::Duration(kAddFlowLatency * KTotalNumFlows) / 3);
+
+  // Check the installed rules count.
+  EXPECT_THAT(if_counters,
+              ::testing::UnorderedElementsAre(Pair("eth0", kTotalRulesPerNic),
+                                              Pair("eth1", kTotalRulesPerNic),
+                                              Pair("eth2", kTotalRulesPerNic),
+                                              Pair("eth3", kTotalRulesPerNic)));
+
+  EXPECT_CALL(nic_configurator_, RemoveFlow(_, _))
+      .Times(KTotalNumFlows)
+      .WillRepeatedly(DoAll(
+          [&](const std::string& ifname, int location_id) {
+            absl::SleepFor(kAddFlowLatency);
+            {
+              absl::MutexLock lock(&mu);
+              if_counters[ifname]--;
+            }
+          },
+          Return(absl::OkStatus())));
+
+  threads.clear();
+  threads.reserve(kNumNic * kNumGpuPerNic);
+  start = absl::Now();
+  for (size_t nic_id = 0; nic_id < configs_list_.gpu_rxq_configs_size();
+       nic_id++) {
+    auto& gpu_rxq_config = configs_list_.gpu_rxq_configs().at(nic_id);
+    for (size_t gpu_id = 0; gpu_id < gpu_rxq_config.gpu_infos_size();
+         gpu_id++) {
+      auto& gpu_info = gpu_rxq_config.gpu_infos().at(gpu_id);
+
+      threads.push_back(std::thread([gpu_info, gpu_id, nic_id, this]() {
+        for (int i = 0; i < kNumRulesPerGpu; i++) {
+          UpdateFlowSteerRule(
+              gpu_info.gpu_pci_addr(), DELETE,
+              absl::StrFormat("192.168.%d.%d", gpu_id, nic_id + 1),
+              absl::StrFormat("192.168.%d.%d", gpu_id, nic_id), 3000 + i,
+              3000 + gpu_id * i);
+        }
+      }));
+    }
+  }
+
+  // Wait until the rules are all removed.
+  for (size_t i = 0; i < threads.size(); i++) {
+    threads[i].join();
+  }
+  end = absl::Now();
+
+  // Check the latency speedup. At least it should have at least 1/3 of the
+  // serial latency.
+  EXPECT_LT((end - start),
+            absl::Duration(kAddFlowLatency * KTotalNumFlows) / 3);
+
+  // Check the rules count after uninstallation.
+  EXPECT_THAT(if_counters, ::testing::UnorderedElementsAre(
+                               Pair("eth0", 0), Pair("eth1", 0),
+                               Pair("eth2", 0), Pair("eth3", 0)));
+}
+
+TEST_F(RxRuleManagerTest, UnKnownGpuAddr) {
+  constexpr size_t kNumRulesPerGpu = 10;
+  constexpr size_t kNumNic = 4;
+  constexpr size_t kNumGpuPerNic = 2;
+
+  constexpr size_t KTotalNumFlows = kNumNic * kNumGpuPerNic * kNumRulesPerGpu;
+  constexpr size_t kTotalRulesPerNic = kNumGpuPerNic * kNumRulesPerGpu;
+  constexpr absl::Duration kAddFlowLatency = absl::Milliseconds(5);
+
+  // If gpu is unknown, the request should be early-exited
+  EXPECT_CALL(nic_configurator_, AddFlow(_, _, _, _)).Times(0);
+
+  // Start a thread per GPU, and try to install rule
+  std::vector<std::thread> threads;
+  threads.reserve(kNumNic * kNumGpuPerNic);
+  for (size_t nic_id = 0; nic_id < configs_list_.gpu_rxq_configs_size();
+       nic_id++) {
+    auto& gpu_rxq_config = configs_list_.gpu_rxq_configs().at(nic_id);
+    for (size_t gpu_id = 0; gpu_id < gpu_rxq_config.gpu_infos_size();
+         gpu_id++) {
+      auto& gpu_info = gpu_rxq_config.gpu_infos().at(gpu_id);
+      threads.push_back(std::thread([gpu_info, gpu_id, nic_id, this]() {
+        for (int i = 0; i < kNumRulesPerGpu; i++) {
+          UpdateFlowSteerRule(
+              "dummy", CREATE,
+              absl::StrFormat("192.168.%d.%d", gpu_id, nic_id + 1),
+              absl::StrFormat("192.168.%d.%d", gpu_id, nic_id), 3000 + i,
+              3000 + gpu_id * i, false);
+        }
+      }));
+    }
+  }
+
+  // Wait until the rules are all installed
+  for (size_t i = 0; i < threads.size(); i++) {
+    threads[i].join();
+  }
+}
+
+TEST_F(RxRuleManagerTest, FailedAddFlow) {
+  constexpr size_t kNumRulesPerGpu = 10;
+  constexpr size_t kNumNic = 4;
+  constexpr size_t kNumGpuPerNic = 2;
+
+  constexpr size_t KTotalNumFlows = kNumNic * kNumGpuPerNic * kNumRulesPerGpu;
+  constexpr size_t kTotalRulesPerNic = kNumGpuPerNic * kNumRulesPerGpu;
+  constexpr absl::Duration kAddFlowLatency = absl::Milliseconds(5);
+
+  // Failed on the AddFlow for each GPU
+  EXPECT_CALL(nic_configurator_, AddFlow(_, _, _, _))
+      .WillRepeatedly(Return(absl::InternalError("Mocked error")));
+
+  // Start a thread per GPU, and try to install rule
+  std::vector<std::thread> threads;
+  threads.reserve(kNumNic * kNumGpuPerNic);
+  for (size_t nic_id = 0; nic_id < configs_list_.gpu_rxq_configs_size();
+       nic_id++) {
+    auto& gpu_rxq_config = configs_list_.gpu_rxq_configs().at(nic_id);
+    for (size_t gpu_id = 0; gpu_id < gpu_rxq_config.gpu_infos_size();
+         gpu_id++) {
+      auto& gpu_info = gpu_rxq_config.gpu_infos().at(gpu_id);
+      threads.push_back(std::thread([gpu_info, gpu_id, nic_id, this]() {
+        for (int i = 0; i < kNumRulesPerGpu; i++) {
+          UpdateFlowSteerRule(
+              gpu_info.gpu_pci_addr(), CREATE,
+              absl::StrFormat("192.168.%d.%d", gpu_id, nic_id + 1),
+              absl::StrFormat("192.168.%d.%d", gpu_id, nic_id), 3000 + i,
+              3000 + gpu_id * i, false);
+        }
+      }));
+    }
+  }
+
+  // Wait until the rules are all installed
+  for (size_t i = 0; i < threads.size(); i++) {
+    threads[i].join();
+  }
 }
 
 TEST(NicRulesBankTest, IsAvailble) {

@@ -17,6 +17,7 @@
 #include <absl/log/log.h>
 #include <absl/status/status.h>
 #include <absl/strings/str_format.h>
+#include <absl/synchronization/mutex.h>
 #include <arpa/inet.h>
 #include <errno.h>
 #include <sys/epoll.h>
@@ -185,20 +186,29 @@ void UnixSocketConnection::SendProto(const UnixSocketProto& proto,
 }
 
 bool UnixSocketConnection::Send() {
-  while (!outgoing_.empty()) {
-    UnixSocketMessage& outmsg = outgoing_.front();
+  while (true) {
+    UnixSocketMessage* outmsg = nullptr;
+    {
+      absl::MutexLock lock(&mu_);
+      if (outgoing_.empty()) {
+        break;
+      }
+
+      outmsg = &outgoing_.front();
+    }
 
     SendStatus status = ERROR;
 
-    if (outmsg.has_fd()) {
-      SendFd(outmsg.fd(), &status);
-    } else if (outmsg.has_proto()) {
-      SendProto(outmsg.proto(), &status);
+    if (outmsg->has_fd()) {
+      SendFd(outmsg->fd(), &status);
+    } else if (outmsg->has_proto()) {
+      SendProto(outmsg->proto(), &status);
     }
 
     if (status == ERROR) {
       return false;
     } else if (status == DONE) {
+      absl::MutexLock lock(&mu_);
       outgoing_.pop();
     } else if (status == STOPPED) {
       return true;

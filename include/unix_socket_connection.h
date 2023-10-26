@@ -17,7 +17,9 @@
 #ifndef _THIRD_PARTY_TCPDIRECT_RX_MANAGER_UNIX_SOCKET_CONNECTION_H_
 #define _THIRD_PARTY_TCPDIRECT_RX_MANAGER_UNIX_SOCKET_CONNECTION_H_
 
+#include <absl/base/thread_annotations.h>
 #include <absl/status/status.h>
+#include <absl/synchronization/mutex.h>
 #include <sys/epoll.h>
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -53,8 +55,12 @@ class UnixSocketConnection {
   // return false if error occurs
   bool Send();
   bool HasNewMessageToRead() { return !incoming_.empty(); }
-  bool HasPendingMessageToSend() { return !outgoing_.empty(); }
+  bool HasPendingMessageToSend() {
+    absl::MutexLock lock(&mu_);
+    return !outgoing_.empty();
+  }
   void AddMessageToSend(UnixSocketMessage&& message) {
+    absl::MutexLock lock(&mu_);
     outgoing_.emplace(std::move(message));
   }
   UnixSocketMessage ReadMessage();
@@ -77,7 +83,7 @@ class UnixSocketConnection {
   size_t send_offset_{0};
   char* send_buffer_;
   std::queue<UnixSocketMessage> incoming_;
-  std::queue<UnixSocketMessage> outgoing_;
+  std::queue<UnixSocketMessage> outgoing_ ABSL_GUARDED_BY(&mu_);
   std::string proto_data_;  // buffer for outgoing proto messages
   struct msghdr send_msg_;
   struct iovec send_iov_;
@@ -86,6 +92,7 @@ class UnixSocketConnection {
   struct msghdr recv_msg_;
   struct iovec recv_iov_;
   char recv_control_[CMSG_SPACE(sizeof(int))];
+  absl::Mutex mu_;
 };
 
 }  // namespace gpudirect_tcpxd

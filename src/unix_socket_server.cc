@@ -14,9 +14,11 @@
 
 #include "include/unix_socket_server.h"
 
+#include <absl/functional/bind_front.h>
 #include <absl/log/log.h>
 #include <absl/status/status.h>
 #include <absl/strings/str_format.h>
+#include <absl/synchronization/mutex.h>
 #include <errno.h>
 #include <sys/epoll.h>
 #include <sys/socket.h>
@@ -47,7 +49,21 @@ UnixSocketServer::UnixSocketServer(std::string path,
                                    std::function<void()> service_setup)
     : path_(path),
       service_handler_(std::move(service_handler)),
-      service_setup_(std::move(service_setup)) {
+      service_setup_(std::move(service_setup)),
+      sync_handler_(true) {
+  sockaddr_un_.sun_family = AF_UNIX;
+  strcpy(sockaddr_un_.sun_path, path_.c_str());
+  sockaddr_len_ =
+      strlen(sockaddr_un_.sun_path) + sizeof(sockaddr_un_.sun_family);
+}
+
+UnixSocketServer::UnixSocketServer(std::string path,
+                                   AsyncServiceFunc service_handler,
+                                   std::function<void()> service_setup)
+    : path_(path),
+      async_service_handler_(std::move(service_handler)),
+      service_setup_(std::move(service_setup)),
+      sync_handler_(false) {
   sockaddr_un_.sun_family = AF_UNIX;
   strcpy(sockaddr_un_.sun_path, path_.c_str());
   sockaddr_len_ =
@@ -60,7 +76,7 @@ absl::Status UnixSocketServer::Start() {
   if (path_.empty())
     return absl::InvalidArgumentError("Missing file path to domain socket.");
 
-  if (service_handler_ == nullptr)
+  if (service_handler_ == nullptr && async_service_handler_ == nullptr)
     return absl::InvalidArgumentError("Missing service handler.");
 
   if (unlink(path_.c_str())) {
@@ -142,7 +158,7 @@ void UnixSocketServer::EventLoop() {
   }
 
   while (running_) {
-    std::vector<struct epoll_event> events(connected_clients_.size() + 1);
+    std::vector<struct epoll_event> events(NumConnections() + 1);
     int nevents = epoll_wait(epoll_fd_, events.data(), events.size(),
                              std::chrono::milliseconds(100).count());
     for (int i = 0; i < nevents; ++i) {
@@ -171,22 +187,45 @@ void UnixSocketServer::HandleListener(uint32_t events) {
     if (socket < 0) {
       PLOG(ERROR) << absl::StrFormat("accept4 error: %d, errno: ", socket);
     } else {
-      connected_clients_[socket] =
-          std::make_unique<UnixSocketConnection>(socket);
+      AddConnectedClient(socket);
       RegisterEvents(socket, EPOLLIN | EPOLLOUT);
     }
   }
 }
 
+void UnixSocketServer::HandleClientCallback(int client,
+                                            UnixSocketMessage&& response,
+                                            bool fin) {
+  // Need to grab the lock for the entire function to make sure the connection
+  // is not cleaned up during this function
+  absl::MutexLock lock(&mu_);
+  auto it = connected_clients_.find(client);
+  if (it == connected_clients_.end()) {
+    return;
+  }
+  it->second->AddMessageToSend(std::move(response));
+  finished_[client] = true;
+}
+
 void UnixSocketServer::HandleClient(int client, uint32_t events) {
-  UnixSocketConnection& connection = *connected_clients_[client];
-  bool fin{false};
+  auto [connection, fin] = GetConnection(client);
+  if (!connection) {
+    return;
+  }
+
   if (events & EPOLLIN) {
-    if (connection.Receive()) {
-      if (connection.HasNewMessageToRead()) {
-        UnixSocketMessage response;
-        service_handler_(connection.ReadMessage(), &response, &fin);
-        connection.AddMessageToSend(std::move(response));
+    if (connection->Receive()) {
+      if (connection->HasNewMessageToRead()) {
+        if (!sync_handler_) {
+          async_service_handler_(
+              connection->ReadMessage(),
+              absl::bind_front(&UnixSocketServer::HandleClientCallback, this,
+                               client));
+        } else {
+          UnixSocketMessage response;
+          service_handler_(connection->ReadMessage(), &response, &fin);
+          connection->AddMessageToSend(std::move(response));
+        }
       }
     } else {
       if (errno) {
@@ -197,7 +236,7 @@ void UnixSocketServer::HandleClient(int client, uint32_t events) {
     }
   }
   if (events & EPOLLOUT) {
-    if (!connection.Send()) {
+    if (!connection->Send()) {
       if (errno) {
         PLOG(ERROR) << absl::StrFormat("Send failure on client %d, errno: ",
                                        client);
@@ -216,6 +255,31 @@ void UnixSocketServer::HandleClient(int client, uint32_t events) {
 
 void UnixSocketServer::RemoveClient(int client_socket) {
   UnregisterFd(client_socket);
+  absl::MutexLock lock(&mu_);
   connected_clients_.erase(client_socket);
+  finished_.erase(client_socket);
 }
+
+void UnixSocketServer::AddConnectedClient(int socket) {
+  absl::MutexLock lock(&mu_);
+  connected_clients_[socket] = std::make_unique<UnixSocketConnection>(socket);
+  finished_[socket] = false;
+}
+
+size_t UnixSocketServer::NumConnections() {
+  absl::MutexLock lock(&mu_);
+  return connected_clients_.size();
+}
+
+std::pair<UnixSocketConnection*, bool> UnixSocketServer::GetConnection(
+    int client) {
+  absl::MutexLock lock(&mu_);
+  auto it = connected_clients_.find(client);
+  if (it == connected_clients_.end()) {
+    LOG(ERROR) << "Connection of " << client << " is not found";
+    return {nullptr, true};
+  }
+  return {it->second.get(), finished_[client]};
+}
+
 }  // namespace gpudirect_tcpxd

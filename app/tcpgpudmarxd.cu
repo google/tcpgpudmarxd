@@ -74,7 +74,7 @@ ABSL_FLAG(std::string, tuning_script_path,
 
 namespace {
 
-constexpr std::string_view kVersion{"v2.0.8"};
+constexpr std::string_view kVersion{"v2.0.9"};
 
 static std::atomic<bool> gShouldStop(false);
 

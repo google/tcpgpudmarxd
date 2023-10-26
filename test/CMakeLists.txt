@@ -40,7 +40,7 @@ add_executable(
 )
 target_include_directories(rx_rule_manager_test PUBLIC ${CMAKE_SOURCE_DIR})
 target_include_directories(rx_rule_manager_test PRIVATE ${CMAKE_BINARY_DIR} ${Protobuf_INCLUDE_DIRS})
-target_link_libraries(rx_rule_manager_test PUBLIC rx_rule_manager)
+target_link_libraries(rx_rule_manager_test PUBLIC rx_rule_manager rx_rule_client)
 target_link_libraries(rx_rule_manager_test PUBLIC rx_rule_manager_telemetry)
 target_link_libraries(rx_rule_manager_test PUBLIC ${Protobuf_LIBRARIES})
 target_link_libraries(rx_rule_manager_test PRIVATE absl::log absl::status absl::statusor absl::str_format)

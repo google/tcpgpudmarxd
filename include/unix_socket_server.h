@@ -18,6 +18,7 @@
 #define _THIRD_PARTY_TCPDIRECT_RX_MANAGER_UNIX_SOCKET_SERVER_H_
 
 #include <absl/container/flat_hash_map.h>
+#include <absl/log/log.h>
 #include <absl/status/status.h>
 #include <sys/epoll.h>
 #include <sys/types.h>
@@ -38,10 +39,14 @@ namespace gpudirect_tcpxd {
 
 class UnixSocketServer {
   using ServiceFunc =
-      std::function<void(UnixSocketMessage &&, UnixSocketMessage *, bool *)>;
+      std::function<void(UnixSocketMessage&&, UnixSocketMessage*, bool*)>;
+  using AsyncServiceFunc = std::function<void(
+      UnixSocketMessage&&, std::function<void(UnixSocketMessage&&, bool)>)>;
 
  public:
   explicit UnixSocketServer(std::string path, ServiceFunc service_handler,
+                            std::function<void()> service_setup = nullptr);
+  explicit UnixSocketServer(std::string path, AsyncServiceFunc service_handler,
                             std::function<void()> service_setup = nullptr);
   ~UnixSocketServer();
   absl::Status Start();
@@ -52,14 +57,20 @@ class UnixSocketServer {
   int UnregisterFd(int fd);
   void EventLoop();
   void HandleListener(uint32_t events);
+  void HandleClientCallback(int client, UnixSocketMessage&& response, bool fin);
   void HandleClient(int client_socket, uint32_t events);
   void RemoveClient(int client_socket);
+  void AddConnectedClient(int socket);
+  size_t NumConnections();
+  std::pair<UnixSocketConnection*, bool> GetConnection(int client);
 
   void Worker();
 
   std::string path_;
   ServiceFunc service_handler_{nullptr};
+  AsyncServiceFunc async_service_handler_{nullptr};
   std::function<void()> service_setup_{nullptr};
+  bool sync_handler_;
 
   struct sockaddr_un sockaddr_un_;
   size_t sockaddr_len_;
@@ -69,7 +80,11 @@ class UnixSocketServer {
   int epoll_fd_{-1};
 
   absl::flat_hash_map<int, std::unique_ptr<UnixSocketConnection>>
-      connected_clients_;
+      connected_clients_ ABSL_GUARDED_BY(&mu_);
+  absl::flat_hash_map<int, bool> finished_
+      ABSL_GUARDED_BY(&mu_);  // used by async handler to indicate this
+                              // connection need to be closed
+  absl::Mutex mu_;
 };
 }  // namespace gpudirect_tcpxd
 #endif
