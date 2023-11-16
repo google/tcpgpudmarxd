@@ -16,3 +16,18 @@ set_and_verify() {
     fi
   fi
 }
+
+# Sets the file to some expected value, unless its
+# current value is already larger than the expected value.
+set_if_lt() {
+  local -r file="$1"
+  local -r expected="$2"
+
+  local -r actual=$(cat "${file}")
+
+  if [[ "${expected}" -gt "${actual}" ]]; then
+    set_and_verify "${file}" "${expected}"
+  else
+    logger "skip setting file=\"${file}\" to smaller value=\"${expected}\", current value=\"${actual}\""
+  fi
+}

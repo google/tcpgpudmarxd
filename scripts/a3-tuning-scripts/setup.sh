@@ -55,7 +55,7 @@ main() {
   set_and_verify "/proc/sys/net/ipv4/tcp_wmem" "4096	1048576	67108864"
   set_and_verify "/proc/sys/net/ipv4/tcp_no_metrics_save" "1"
   set_and_verify "/proc/sys/net/core/optmem_max" "131072"
-  set_and_verify "/proc/sys/net/core/somaxconn" "4096"
+  set_if_lt "/proc/sys/net/core/somaxconn" "4096"
   set_and_verify "/proc/sys/net/ipv4/tcp_max_syn_backlog" "4096"
 
   # For TCP CUBIC Hystart just use: HYSTART_DELAY (0x2).

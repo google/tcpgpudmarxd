@@ -33,7 +33,7 @@ main() {
   set_and_verify "/proc/sys/net/ipv4/tcp_wmem" "4096	16384	4194304"
   set_and_verify "/proc/sys/net/ipv4/tcp_no_metrics_save" "0"
   set_and_verify "/proc/sys/net/core/optmem_max" "20480"
-  set_and_verify "/proc/sys/net/core/somaxconn" "4096"
+  set_if_lt "/proc/sys/net/core/somaxconn" "4096"
   set_and_verify "/proc/sys/net/ipv4/tcp_max_syn_backlog" "4096"
 
   # Re-enable default Hystart: HYSTART_ACK_TRAIN (0x1) | HYSTART_DELAY (0x2):
