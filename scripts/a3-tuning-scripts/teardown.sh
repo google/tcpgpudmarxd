@@ -27,17 +27,27 @@ reset_route_param() {
 main() {
   reset_route_param
 
-  set_and_verify "/proc/sys/net/ipv4/tcp_mtu_probing" "0"
-  set_and_verify "/proc/sys/net/ipv4/tcp_slow_start_after_idle" "0"
-  set_and_verify "/proc/sys/net/ipv4/tcp_rmem" "4096	131072	6291456"
-  set_and_verify "/proc/sys/net/ipv4/tcp_wmem" "4096	16384	4194304"
-  set_and_verify "/proc/sys/net/ipv4/tcp_no_metrics_save" "0"
-  set_and_verify "/proc/sys/net/core/optmem_max" "20480"
-  set_if_lt "/proc/sys/net/core/somaxconn" "4096"
-  set_and_verify "/proc/sys/net/ipv4/tcp_max_syn_backlog" "4096"
+  SYSFS="/hostsysfs"
+  PROCSYSFS="/hostprocsysfs"
+
+  if [[ -d $SYSFS && -d $PROCSYSFS ]]; then
+    echo "Use mounted '$PROCSYSFS' and '$SYSFS' ."
+  else
+    PROCSYSFS="/proc/sys"
+    SYSFS="/sys"
+    echo "Fall back to '$PROCSYSFS' and '$SYSFS' ."
+  fi
+
+  set_and_verify "$PROCSYSFS/net/ipv4/tcp_mtu_probing" "0"
+  set_and_verify "$PROCSYSFS/net/ipv4/tcp_slow_start_after_idle" "0"
+  set_and_verify "$PROCSYSFS/net/ipv4/tcp_rmem" "4096	131072	6291456"
+  set_and_verify "$PROCSYSFS/net/ipv4/tcp_wmem" "4096	16384	4194304"
+  set_and_verify "$PROCSYSFS/net/ipv4/tcp_no_metrics_save" "0"
+  set_if_lt "$PROCSYSFS/net/core/somaxconn" "4096"
+  set_and_verify "$PROCSYSFS/net/ipv4/tcp_max_syn_backlog" "4096"
 
   # Re-enable default Hystart: HYSTART_ACK_TRAIN (0x1) | HYSTART_DELAY (0x2):
-  set_and_verify "/sys/module/tcp_cubic/parameters/hystart_detect" "3"
+  set_and_verify "$SYSFS/module/tcp_cubic/parameters/hystart_detect" "3"
 
   if [[ "${GLOBAL_NETBASE_ERROR_COUNTER}" -ne 0 ]]; then
     echo "Setup incomplete and incorrect! Number of Errors: ${GLOBAL_NETBASE_ERROR_COUNTER}"

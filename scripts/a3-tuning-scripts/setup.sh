@@ -49,19 +49,30 @@ set_route_param() {
 
 main() {
   set_route_param $1 $2 $3
-  set_and_verify "/proc/sys/net/ipv4/tcp_mtu_probing" "0"
-  set_and_verify "/proc/sys/net/ipv4/tcp_slow_start_after_idle" "0"
-  set_and_verify "/proc/sys/net/ipv4/tcp_rmem" "4096	1048576	15728640"
-  set_and_verify "/proc/sys/net/ipv4/tcp_wmem" "4096	1048576	67108864"
-  set_and_verify "/proc/sys/net/ipv4/tcp_no_metrics_save" "1"
-  set_and_verify "/proc/sys/net/core/optmem_max" "131072"
-  set_if_lt "/proc/sys/net/core/somaxconn" "4096"
-  set_and_verify "/proc/sys/net/ipv4/tcp_max_syn_backlog" "4096"
+
+  SYSFS="/hostsysfs"
+  PROCSYSFS="/hostprocsysfs"
+
+  if [[ -d $SYSFS && -d $PROCSYSFS ]]; then
+    echo "Use mounted '$PROCSYSFS' and '$SYSFS' ."
+  else
+    PROCSYSFS="/proc/sys"
+    SYSFS="/sys"
+    echo "Fall back to '$PROCSYSFS' and '$SYSFS' ."
+  fi
+
+  set_and_verify "$PROCSYSFS/net/ipv4/tcp_mtu_probing" "0"
+  set_and_verify "$PROCSYSFS/net/ipv4/tcp_slow_start_after_idle" "0"
+  set_and_verify "$PROCSYSFS/net/ipv4/tcp_rmem" "4096	1048576	15728640"
+  set_and_verify "$PROCSYSFS/net/ipv4/tcp_wmem" "4096	1048576	67108864"
+  set_and_verify "$PROCSYSFS/net/ipv4/tcp_no_metrics_save" "1"
+  set_if_lt "$PROCSYSFS/net/core/somaxconn" "4096"
+  set_and_verify "$PROCSYSFS/net/ipv4/tcp_max_syn_backlog" "4096"
 
   # For TCP CUBIC Hystart just use: HYSTART_DELAY (0x2).
   # The HYSTART_ACK_TRAIN (0x1) mechanism has signiificant false positive risk;
   # particularly when pacing is enabled, but potentially in other cases, too.
-  set_and_verify "/sys/module/tcp_cubic/parameters/hystart_detect" "2"
+  set_and_verify "$SYSFS/module/tcp_cubic/parameters/hystart_detect" "2"
 
   if [[ "${GLOBAL_NETBASE_ERROR_COUNTER}" -ne 0 ]]; then
     echo "Setup incomplete and incorrect! Number of Errors: ${GLOBAL_NETBASE_ERROR_COUNTER}"
