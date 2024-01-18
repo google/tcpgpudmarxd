@@ -29,6 +29,7 @@
 
 #include "cuda/common.cuh"
 #include "cuda/gpu_page_exporter_factory.cuh"
+#include "include/application_registry_manager.h"
 #include "include/gpu_page_exporter_interface.h"
 #include "include/gpu_rxq_configuration_factory.h"
 #include "include/nic_configurator_factory.h"
@@ -36,6 +37,7 @@
 #include "include/rx_rule_manager.h"
 #include "include/vf_reset_detector.h"
 
+using gpudirect_tcpxd::ApplicationRegistryManager;
 using gpudirect_tcpxd::CheckVFReset;
 using gpudirect_tcpxd::GpuPageExporterFactory;
 using gpudirect_tcpxd::GpuPageExporterInterface;
@@ -75,10 +77,13 @@ ABSL_FLAG(std::string, tuning_script_path,
           "/tcpgpudmarxd/build/a3-tuning-scripts",
           "The path where networking tuning script is kept, "
           "updated separately from this binary. ");
+ABSL_FLAG(bool, monitor_shutdown, true,
+          "Open a separate channel to monitor socket connection and let RxDM "
+          "shutdown when NCCL shutdowns");
 
 namespace {
 
-constexpr std::string_view kVersion{"v2.0.11"};
+constexpr std::string_view kVersion{"v2.0.12"};
 
 static std::atomic<bool> gShouldStop(false);
 
@@ -354,6 +359,15 @@ int main(int argc, char** argv) {
       /*config_list=*/gpu_rxq_configs,
       /*prefix=*/uds_path,
       /*nic_configurator=*/nic_configurator.get());
+
+  // 3.5 Start Application Registry Manager
+  std::unique_ptr<ApplicationRegistryManager> application_registry_manager;
+  if (absl::GetFlag(FLAGS_monitor_shutdown)) {
+    application_registry_manager = std::make_unique<ApplicationRegistryManager>(
+        /*prefix=*/uds_path, main_id);
+    LOG(INFO) << "Starting Application Registry Manager ...";
+    RETURN_IF_ERROR(application_registry_manager->Init());
+  }
 
   // 4. Configure NIC for TCPDirect
   LOG(INFO) << "Priming the NICs for GPU-RXQ use case ...";

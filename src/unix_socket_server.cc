@@ -46,10 +46,12 @@ constexpr int kDefaultBacklog{1024};
 
 UnixSocketServer::UnixSocketServer(std::string path,
                                    ServiceFunc service_handler,
-                                   std::function<void()> service_setup)
+                                   std::function<void()> service_setup,
+                                   CleanupFunc cleanup_handler)
     : path_(path),
       service_handler_(std::move(service_handler)),
       service_setup_(std::move(service_setup)),
+      cleanup_handler_(std::move(cleanup_handler)),
       sync_handler_(true) {
   sockaddr_un_.sun_family = AF_UNIX;
   strcpy(sockaddr_un_.sun_path, path_.c_str());
@@ -59,10 +61,12 @@ UnixSocketServer::UnixSocketServer(std::string path,
 
 UnixSocketServer::UnixSocketServer(std::string path,
                                    AsyncServiceFunc service_handler,
-                                   std::function<void()> service_setup)
+                                   std::function<void()> service_setup,
+                                   CleanupFunc cleanup_handler)
     : path_(path),
       async_service_handler_(std::move(service_handler)),
       service_setup_(std::move(service_setup)),
+      cleanup_handler_(std::move(cleanup_handler)),
       sync_handler_(false) {
   sockaddr_un_.sun_family = AF_UNIX;
   strcpy(sockaddr_un_.sun_path, path_.c_str());
@@ -247,6 +251,9 @@ void UnixSocketServer::HandleClient(int client, uint32_t events) {
   if ((events & (EPOLLERR | EPOLLHUP | EPOLLRDHUP)) || fin) {
     if (events & EPOLLERR) {
       LOG(ERROR) << absl::StrFormat("EPOLLERR on client %d", client);
+    }
+    if(cleanup_handler_) {
+      cleanup_handler_(client);
     }
     RemoveClient(client);
     return;

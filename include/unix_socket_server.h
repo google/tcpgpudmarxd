@@ -42,12 +42,15 @@ class UnixSocketServer {
       std::function<void(UnixSocketMessage&&, UnixSocketMessage*, bool*)>;
   using AsyncServiceFunc = std::function<void(
       UnixSocketMessage&&, std::function<void(UnixSocketMessage&&, bool)>)>;
+  using CleanupFunc = std::function<void(int)>;
 
  public:
   explicit UnixSocketServer(std::string path, ServiceFunc service_handler,
-                            std::function<void()> service_setup = nullptr);
+                            std::function<void()> service_setup = nullptr,
+                            CleanupFunc cleanup_handler = nullptr);
   explicit UnixSocketServer(std::string path, AsyncServiceFunc service_handler,
-                            std::function<void()> service_setup = nullptr);
+                            std::function<void()> service_setup = nullptr,
+                            CleanupFunc cleanup_handler = nullptr);
   ~UnixSocketServer();
   absl::Status Start();
   void Stop();
@@ -70,6 +73,7 @@ class UnixSocketServer {
   ServiceFunc service_handler_{nullptr};
   AsyncServiceFunc async_service_handler_{nullptr};
   std::function<void()> service_setup_{nullptr};
+  CleanupFunc cleanup_handler_{nullptr};
   bool sync_handler_;
 
   struct sockaddr_un sockaddr_un_;

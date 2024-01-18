@@ -20,7 +20,7 @@ import "status.proto";
 
 message UnixSocketProto {
   // Update the "last_modified" comment below after you add your message type
-  // last_modified: queue_id_response, index: 4.
+  // last_modified: application_register_request, index: 6.
   oneof proto_payload_oneof {
     bytes raw_bytes = 1;  // Leave this intact for now for backward
                           // compatibility, so we can gradually migrate
@@ -31,6 +31,8 @@ message UnixSocketProto {
     FlowSteerRuleRequest flow_steer_rule_request = 2;
     QueueIdQuery queue_id_query = 3;
     QueueIdResponse queue_id_response = 4;
+    // For long living connection
+    ApplicationRegisterRequest application_register_request = 6;
   }
 
   optional google.rpc.Status status = 5;
@@ -62,4 +64,8 @@ message FlowSteerNtupleProto {
   }
   optional SocketAddress src = 2;
   optional SocketAddress dst = 3;
+}
+
+message ApplicationRegisterRequest {
+  optional bool register_client = 1;
 }

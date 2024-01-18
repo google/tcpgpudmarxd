@@ -32,6 +32,7 @@ target_link_libraries(tcpgpudmarxd google_status_proto)
 target_link_libraries(tcpgpudmarxd rx_rule_manager_telemetry)
 target_link_libraries(tcpgpudmarxd gpu_mem_exporter_telemetry)
 target_link_libraries(tcpgpudmarxd tcpgpudmarxd_telemetry_proto)
+target_link_libraries(tcpgpudmarxd application_registry_manager)
 target_link_libraries(tcpgpudmarxd ${Protobuf_LIBRARIES})
 target_link_libraries(tcpgpudmarxd absl::absl_check absl::flags absl::flags_parse absl::log absl::str_format absl::debugging absl::debugging_internal absl::failure_signal_handler)
 
