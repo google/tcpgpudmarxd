@@ -21,6 +21,7 @@
 #include <absl/status/statusor.h>
 
 #include <atomic>
+#include <cstddef>
 #include <memory>
 #include <string>
 
@@ -36,6 +37,9 @@ class UnixSocketClient {
   absl::Status Connect();
   absl::StatusOr<UnixSocketMessage> Receive();
   void Send(UnixSocketMessage msg);
+  bool IsConnected (){
+    return conn_ != NULL;
+  }
 
  private:
   std::unique_ptr<UnixSocketConnection> conn_;
@@ -45,5 +49,10 @@ class UnixSocketClient {
       vf_reset_cb_; /* callback function for when a VF reset occurs */
   std::thread epoll_thread_;
 };
+
+absl::Status ConnectAndSendMessage(UnixSocketMessage message,
+                                   UnixSocketMessage* response,
+                                   UnixSocketClient* client);
+
 }  // namespace gpudirect_tcpxd
 #endif

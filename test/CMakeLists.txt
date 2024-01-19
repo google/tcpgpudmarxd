@@ -66,6 +66,22 @@ target_link_libraries(rx_rule_client_test PUBLIC GTest::gtest_main)
 target_link_libraries(rx_rule_client_test PUBLIC GTest::gmock_main)
 
 add_executable(
+    application_registry_test
+    application_registry_test.cc
+)
+target_include_directories(application_registry_test PUBLIC ${CMAKE_SOURCE_DIR})
+target_include_directories(application_registry_test PRIVATE ${CMAKE_BINARY_DIR} ${Protobuf_INCLUDE_DIRS})
+target_link_libraries(application_registry_test PUBLIC application_registry_client)
+target_link_libraries(application_registry_test PUBLIC application_registry_manager)
+target_link_libraries(application_registry_test PUBLIC ${Protobuf_LIBRARIES})
+target_link_libraries(application_registry_test PRIVATE absl::log absl::status absl::statusor absl::str_format)
+target_link_libraries(application_registry_test PUBLIC tcpgpudmarxd_proto)
+target_link_libraries(application_registry_test PUBLIC google_status_proto)
+target_link_libraries(application_registry_test PUBLIC unix_socket_client_lib unix_socket_server_lib)
+target_link_libraries(application_registry_test PUBLIC GTest::gtest_main)
+target_link_libraries(application_registry_test PUBLIC GTest::gmock_main)
+
+add_executable(
     gpu_rxq_configuration_factory_test
     gpu_rxq_configuration_factory_test.cc
 )
@@ -113,6 +129,7 @@ include(GoogleTest)
 gtest_discover_tests(unix_socket_test)
 gtest_discover_tests(rx_rule_manager_test)
 gtest_discover_tests(rx_rule_client_test)
+gtest_discover_tests(application_registry_test)
 gtest_discover_tests(gpu_rxq_configuration_factory_test)
 gtest_discover_tests(proto_utils_test)
 gtest_discover_tests(socket_helper_test)

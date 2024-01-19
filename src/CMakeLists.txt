@@ -142,6 +142,20 @@ target_link_libraries(application_registry_manager PUBLIC proto_utils)
 target_link_libraries(application_registry_manager PUBLIC ${Protobuf_LIBRARIES})
 target_link_libraries(application_registry_manager PUBLIC GTest::gtest_main)
 
+# application registry client
+add_library(application_registry_client STATIC application_registry_client.cc)
+target_include_directories(
+        application_registry_client
+        PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}>
+        $<INSTALL_INTERFACE:${TCPGPUDMARXD_INCLUDE_DIR}>
+)
+target_include_directories(application_registry_client PRIVATE $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}> $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/third_party>  ${Protobuf_INCLUDE_DIRS})
+target_link_libraries(application_registry_client PRIVATE absl::log absl::status absl::str_format)
+target_link_libraries(application_registry_client PUBLIC proto_utils)
+target_link_libraries(application_registry_client PUBLIC ${Protobuf_LIBRARIES})
+add_dependencies(application_registry_client tcpgpudmarxd_proto)
+
 set(client_headers
         ${CMAKE_SOURCE_DIR}/include/rx_rule_client.h
         ${CMAKE_SOURCE_DIR}/include/proto_utils.h

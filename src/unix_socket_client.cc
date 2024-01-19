@@ -128,4 +128,23 @@ void UnixSocketClient::Send(UnixSocketMessage msg) {
   }
 }
 
+absl::Status ConnectAndSendMessage(UnixSocketMessage message,
+                                   UnixSocketMessage* response,
+                                   UnixSocketClient* client) {
+  if (!client->IsConnected()) {
+    auto status = client->Connect();
+    if (!status.ok()) {
+      return status;
+    }
+  }
+
+  client->Send(message);
+  auto response_status = client->Receive();
+  if (!response_status.ok()) {
+    return response_status.status();
+  }
+  *response = response_status.value();
+  return absl::OkStatus();
+}
+
 }  // namespace gpudirect_tcpxd
