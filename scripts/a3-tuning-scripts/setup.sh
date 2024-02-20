@@ -9,46 +9,10 @@ if [[ $* == *"--verbose"* ]]; then
   set -x
 fi
 
-set_route_param() {
-  initcwnd=$1
-  rto_min=$2
-  quickack=$3
-  suffix=
-
-  # Note that suffix strings are added in the reverse of the
-  # order in which they are removed:
-
-  if [ "$#" -eq 0 ]; then
-      echo "No routes are modified"
-      return
-  fi
-
-  if [[ ! "${initcwnd}" -eq 0 ]]; then
-    suffix="initcwnd ${initcwnd}"
-  fi
-
-  if [[ ! "${rto_min}" -eq 0 ]]; then
-    suffix="${suffix} rto_min ${rto_min}ms"
-  fi
-
-  if [[ ! "${quickack}" -eq 0 ]]; then
-    suffix="${suffix} quickack 1"
-  fi
-
-  if [[ -z "$suffix" ]]; then
-    return
-  fi
-
-  while read -r line; do
-    ip route del ${line} 2> /dev/null
-    ip route add ${line} ${suffix} 2> /dev/null
-  done < <(ip route show)
-
-  ip route show
-}
 
 main() {
-  set_route_param $1 $2 $3
+  python3 /tcpgpudmarxd/build/a3-tuning-scripts/tuning_persistence.py $1 $2 $3 &
+  echo "A3 network tuning persistence thread started"
 
   SYSFS="/hostsysfs"
   PROCSYSFS="/hostprocsysfs"
@@ -79,7 +43,6 @@ main() {
     exit "${GLOBAL_NETBASE_ERROR_COUNTER}"
   fi
 
-  echo "A3 network tuning v1.0.5 setup completed"
 }
 
 main $@
