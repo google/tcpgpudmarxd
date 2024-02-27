@@ -83,7 +83,7 @@ ABSL_FLAG(bool, monitor_shutdown, true,
 
 namespace {
 
-constexpr std::string_view kVersion{"v2.0.12"};
+constexpr std::string_view kVersion{"v2.0.13"};
 
 static std::atomic<bool> gShouldStop(false);
 
