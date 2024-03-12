@@ -12,6 +12,7 @@ check_intervals = 5
 initcwnd = str(sys.argv[1])
 rto_min = str(sys.argv[2])+"ms"
 quickack = str(sys.argv[3])
+
 def AddTuningIfNeeded(prefix_cmd: str, ip_route: str):
   """Add a3 tcp tuning to an ip route if needed.
 
@@ -83,11 +84,15 @@ def FindAllNetnsDomains() -> list[str]:
 
 
 
+print("starting tuning thread")
+sys.stdout.flush()
 print("initcwnd is " + initcwnd)
 print("rto_mins is " + rto_min)
 print("quickack is " + quickack)
+sys.stdout.flush()
 while (True):
   netns_domain_names = FindAllNetnsDomains()
   FixTcpTunings(netns_domain_names)
+  sys.stdout.flush()
   time.sleep(check_intervals)
 
