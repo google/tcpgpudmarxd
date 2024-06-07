@@ -64,7 +64,7 @@ RUN cp ../ethtool-6.3/LICENSE license_ethtool.txt
 
 COPY . /tcpgpudmarxd
 
-ENV LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:/usr/local/lib"
+ENV LD_LIBRARY_PATH="/usr/local/nvidia/lib:/usr/local/nvidia/lib64:/usr/local/lib"
 WORKDIR /tcpgpudmarxd
 RUN rm -rf build docker-build
 WORKDIR build

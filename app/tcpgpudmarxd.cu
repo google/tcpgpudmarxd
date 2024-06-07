@@ -58,9 +58,9 @@ ABSL_FLAG(
 ABSL_FLAG(std::string, gpu_nic_topology_proto, "",
           "The string of protobuf that defines the gpu to nic topology");
 ABSL_FLAG(bool, show_version, false, "Show the version of this binary.");
-ABSL_FLAG(std::string, gpu_shmem_type, "file",
+ABSL_FLAG(std::string, gpu_shmem_type, "fd",
           "The type of GPU memory sharing to use. options: [file, fd]");
-ABSL_FLAG(std::string, uds_path, "/tmp",
+ABSL_FLAG(std::string, uds_path, "/run/tcpx",
           "The path to the filesystem folder where unix domain sockets will be "
           "bound to.");
 ABSL_FLAG(uint64_t, rx_pool_size, 0,
@@ -71,7 +71,7 @@ ABSL_FLAG(uint32_t, max_rx_rules, 0,
           "Default: 0, meaning no override and either the value from the "
           "config (if present) or the component level default will be used.  "
           "Maximum number of flow steering rules to use.");
-ABSL_FLAG(std::string, setup_param, "--verbose 128 5 0",
+ABSL_FLAG(std::string, setup_param, "--verbose 128 2 0",
           "All params required for setup.sh in a3 tuning scripts");
 ABSL_FLAG(std::string, tuning_script_path,
           "/tcpgpudmarxd/build/a3-tuning-scripts",
@@ -83,7 +83,7 @@ ABSL_FLAG(bool, monitor_shutdown, true,
 
 namespace {
 
-constexpr std::string_view kVersion{"v2.0.13"};
+constexpr std::string_view kVersion{"v2.0.14"};
 
 static std::atomic<bool> gShouldStop(false);
 
