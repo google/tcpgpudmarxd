@@ -11,9 +11,8 @@ fi
 
 
 main() {
-  python3 /tcpgpudmarxd/build/a3-tuning-scripts/tuning_persistence.py $1 $2 $3 >tty 2 >&1 &
-  tuning_pid=$!
-  echo "${tuning_pid} started in the background"
+  python3 /tcpgpudmarxd/build/a3-tuning-scripts/tuning_persistence.py $1 $2 $3 &
+  echo "A3 network tuning persistence thread started"
 
   SYSFS="/hostsysfs"
   PROCSYSFS="/hostprocsysfs"
@@ -38,13 +37,6 @@ main() {
   # The HYSTART_ACK_TRAIN (0x1) mechanism has signiificant false positive risk;
   # particularly when pacing is enabled, but potentially in other cases, too.
   set_and_verify "$SYSFS/module/tcp_cubic/parameters/hystart_detect" "2"
-
-  if ps -p $tuning_pid > /dev/null ; then
-    echo "A3 network tuning persistence thread is running"
-  else
-    echo "A3 network tuning thread is shutdown, exiting the script and cleaning up"
-    GLOBAL_NETBASE_ERROR_COUNTER+=1
-  fi
 
   if [[ "${GLOBAL_NETBASE_ERROR_COUNTER}" -ne 0 ]]; then
     echo "Setup incomplete and incorrect! Number of Errors: ${GLOBAL_NETBASE_ERROR_COUNTER}"

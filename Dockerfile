@@ -20,7 +20,7 @@ RUN apt update \
   && apt-get install -y --no-install-recommends \
         git openssh-server wget iproute2 vim build-essential cmake gdb \
         protobuf-compiler libprotobuf-dev libprotoc-dev rsync libssl-dev \
-        python3 pkg-config libmnl-dev \
+        pkg-config libmnl-dev \
   && rm -rf /var/lib/apt/lists/*
 
 # build absl
