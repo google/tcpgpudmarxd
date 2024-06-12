@@ -25,7 +25,6 @@ reset_route_param() {
 }
 
 main() {
-  pkill -9 -f tuning_persistence
   reset_route_param
 
   SYSFS="/hostsysfs"
