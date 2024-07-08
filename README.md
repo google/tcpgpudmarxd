@@ -7,4 +7,4 @@ workloads using the GPUDirect-TCPX (formerly TCPDirect) feature. The public guid
 
 ## Release
 
-The latest version of RxDM can be found in [Artifact Registry](us-docker.pkg.dev/gce-ai-infra/gpudirect-tcpx/tcpgpudmarxd-dev). We recommend to use version tag (e.g. v2.0.12) instead of using latest tag to specify the version for better debugging.
+The latest version of RxDM can be found in [Artifact Registry](https://pantheon.corp.google.com/artifacts/docker/gce-ai-infra/us/gpudirect-tcpx/tcpgpudmarxd-dev?e=13803378&mods=monitoring_api_prod). We recommend to use version tag (e.g. v2.0.12) instead of using latest tag to specify the version for better debugging.
