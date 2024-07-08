@@ -51,10 +51,7 @@ RxRuleClient::RxRuleClient(const std::string& prefix,
 //
 // Only the install UnixSocketClient will trigger the VF
 // reset callback.
-//
-// TODO: This function should just be rolled into the
-// constructor. And a socket for install/uninstall might
-// be better than each operation using its own socket.
+
 absl::StatusOr<UnixSocketClient*> RxRuleClient::CreateSkIfReq(
     FlowSteerRuleOp op) {
   std::string server_addr;
@@ -65,7 +62,6 @@ absl::StatusOr<UnixSocketClient*> RxRuleClient::CreateSkIfReq(
   telemetry.Start();  // No-op if started
 
   if (op == CREATE) {
-    // TODO basically the same code in the else-clause, move to macro?
     if (!sk_cli_) {
       server_addr = "rx_rule_manager";
       sk_cli_ = std::make_unique<UnixSocketClient>(

@@ -76,7 +76,6 @@ GpuRxqConfigurationList A3GpuRxqConfigurator::GetConfigurations() {
       if (if_sysfs_realpath[i] == '/') ++path_length;
     }
     // The host NIC should be closest to the CPU, exclude it.
-    // TODO (penzhao@): consider using pciutil
     if (path_length <= 5) continue;
     int kNumHops = std::min(absl::GetFlag(FLAGS_num_hops), MAX_HOPS);
     char *pci_addr = nullptr;
