@@ -14,5 +14,5 @@ to learn how to contriute.
 
 ## License
 
-NCCL GPUDirectTCPX is licensed under the terms of a BSD-style license.
+RxDM GPUDirectTCPX is licensed under the terms of a BSD-style license.
 See [LICENSE](LICENSE) for more information.
