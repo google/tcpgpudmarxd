@@ -1,0 +1,45 @@
+/*
+ Copyright 2026 Google LLC
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+      https://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
+
+#ifndef _THIRD_PARTY_TCPDIRECT_RX_MANAGER_NETDEV_BRIDGE_H_
+#define _THIRD_PARTY_TCPDIRECT_RX_MANAGER_NETDEV_BRIDGE_H_
+
+#include <absl/status/status.h>
+#include <absl/status/statusor.h>
+#include <libmnl/libmnl.h>
+
+namespace gpudirect_tcpxd {
+
+// Class to Init Netlink Sockets and bind
+// to queues using the mnl APIs
+class NetdevBridge {
+ public:
+  NetdevBridge() {}
+  absl::Status Init();
+  absl::StatusOr<int> BindRx(uint32_t ifindex,
+                             const std::vector<int>& queue_ids,
+                             uint32_t dmabuf_fd);
+  void Cleanup();
+  ~NetdevBridge() { Cleanup(); }
+
+ private:
+  struct mnl_socket* nl_ = nullptr;
+  int netdev_family_id_ = -1;
+  unsigned int seq_ = 0;
+};
+}  // namespace gpudirect_tcpxd
+
+#endif

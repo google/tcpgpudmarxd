@@ -19,10 +19,13 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <linux/types.h>
+#include <memory>
+#include <net/if.h>
 #include <sys/ioctl.h>
 
 #include "cuda/common.cuh"
 #include "cuda/cu_dmabuf_gpu_page_allocator.cuh"
+#include "include/netdev_bridge.h"
 
 namespace gpudirect_tcpxd {
 
@@ -61,9 +64,10 @@ CuDmabufGpuPageAllocator::CuDmabufGpuPageAllocator(int dev_id,
       nic_pci_addr_(nic_pci_addr),
       pool_size_(pool_size) {}
 
-void CuDmabufGpuPageAllocator::AllocatePage(size_t size, unsigned long* id,
-                                            bool* success) {
-  *success = false;
+GpuPageAllocatorStatus CuDmabufGpuPageAllocator::AllocatePage(
+    size_t size, unsigned long* id, const std::vector<int>& qids,
+    const bool use_netdev_bridge, const std::string& ifname) {
+  GpuPageAllocatorStatus ret = GpuPageAllocatorStatus::ALLOC_FAILURE;
 
   // lazy initialization
   if (!initialized_) {
@@ -72,7 +76,7 @@ void CuDmabufGpuPageAllocator::AllocatePage(size_t size, unsigned long* id,
   }
 
   if (size + bytes_allocated_ > pool_size_) {
-    return;
+    return GpuPageAllocatorStatus::ALLOC_FAILURE;
   }
 
   *id = next_id_;
@@ -98,25 +102,50 @@ void CuDmabufGpuPageAllocator::AllocatePage(size_t size, unsigned long* id,
     LOG(ERROR) << absl::StrFormat("Failed to parse NIC PCI bpf: %s",
                                   nic_pci_addr_.c_str());
     close(gpu_dma_buf.dma_buf_fd);
-    return;
+    return GpuPageAllocatorStatus::ALLOC_FAILURE;
   }
 
   frags_create_info.pci_bdf[0] = pci_bdf[0];
   frags_create_info.pci_bdf[1] = pci_bdf[1];
   frags_create_info.pci_bdf[2] = pci_bdf[2];
 
-  gpu_dma_buf.gpu_mem_fd =
-      ioctl(gpu_dma_buf.dma_buf_fd, DMA_BUF_FRAGS_CREATE, &frags_create_info);
+  // use netdev bridge
+  if (use_netdev_bridge) {
+    netdev_bridge_ = std::make_unique<NetdevBridge>();
+    if (!netdev_bridge_->Init().ok()) {
+      LOG(ERROR) << "Netdev bridge init failed while page allocation";
+      netdev_bridge_.reset();
+      return GpuPageAllocatorStatus::ALLOC_FAILURE;
+    }
 
-  if (gpu_dma_buf.gpu_mem_fd < 0) {
-    PLOG(ERROR) << "Error getting dma_buf frags: ";
-    close(gpu_dma_buf.dma_buf_fd);
-    return;
+    uint32_t ifindex = if_nametoindex(ifname.c_str());
+    auto bind_rx_ret =
+        netdev_bridge_->BindRx(ifindex, qids, gpu_dma_buf.dma_buf_fd);
+    if (bind_rx_ret.ok()) {
+      LOG(INFO) << "Netdev BindRx success";
+      ret = GpuPageAllocatorStatus::ALLOC_NETDEV_NETLINK_SUCCESS;
+    } else {
+      LOG(ERROR) << "Netdev BindRx failed: " << bind_rx_ret.status();
+    }
+  }
+
+  // Fallback to ioctl APIs
+  if (ret == GpuPageAllocatorStatus::ALLOC_FAILURE) {
+    gpu_dma_buf.gpu_mem_fd =
+        ioctl(gpu_dma_buf.dma_buf_fd, DMA_BUF_FRAGS_CREATE, &frags_create_info);
+
+    if (gpu_dma_buf.gpu_mem_fd < 0) {
+      PLOG(ERROR) << "Error getting dma_buf frags ";
+      close(gpu_dma_buf.dma_buf_fd);
+      return GpuPageAllocatorStatus::ALLOC_FAILURE;
+    }
+    LOG(INFO) << "Dma_buf frags create (IOCTL) success...";
+    ret = GpuPageAllocatorStatus::ALLOC_DMA_BUF_IOCTL_SUCCESS;
   }
 
   gpu_dma_buf.size = size;
   bytes_allocated_ += size;
-  *success = true;
+  return ret;
 }
 
 void CuDmabufGpuPageAllocator::FreePage(unsigned long id) {
@@ -129,6 +158,9 @@ void CuDmabufGpuPageAllocator::FreePage(unsigned long id) {
   }
   if (gpu_dma_buf.gpu_mem_fd >= 0) {
     close(gpu_dma_buf.gpu_mem_fd);
+  }
+  if (netdev_bridge_) {
+    netdev_bridge_.reset();
   }
   if (gpu_dma_buf.ipc_gpu_mem_fd >= 0) {
     close(gpu_dma_buf.ipc_gpu_mem_fd);
@@ -147,7 +179,8 @@ CUdeviceptr CuDmabufGpuPageAllocator::GetGpuMem(unsigned long id) {
 }
 
 int CuDmabufGpuPageAllocator::GetGpuMemFd(unsigned long id) {
-  if (gpu_dma_buf_map_.find(id) == gpu_dma_buf_map_.end()) return -1;
+  if (netdev_bridge_ || gpu_dma_buf_map_.find(id) == gpu_dma_buf_map_.end())
+    return -1;
   return gpu_dma_buf_map_[id].gpu_mem_fd;
 }
 

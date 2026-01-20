@@ -28,6 +28,7 @@
 #include <string>
 #include <vector>
 
+#include "include/nic_configurator_interface.h"
 #include "proto/gpu_rxq_configuration.pb.h"
 
 namespace gpudirect_tcpxd {
@@ -45,8 +46,9 @@ struct dma_buf_frags_bind_rx_queue {
 class GpuPageExporterInterface {
  public:
   virtual ~GpuPageExporterInterface() = default;
-  virtual absl::Status Initialize(const GpuRxqConfigurationList& config_list,
-                                  const std::string& prefix) = 0;
+  virtual absl::Status Initialize(
+      const GpuRxqConfigurationList& config_list, const std::string& prefix,
+      NicConfiguratorInterface& nic_configurator) = 0;
   virtual absl::Status Export() = 0;
   virtual void Cleanup() = 0;
   static int gpumem_bind_rxq(int fd, const std::string& ifname, int rxqid);

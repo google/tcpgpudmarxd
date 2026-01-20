@@ -24,3 +24,5 @@ protobuf_generate_cpp(PROTO_SRC PROTO_HEADER
 add_library(tcpgpudmarxd_proto ${PROTO_HEADER} ${PROTO_SRC})
 target_include_directories(tcpgpudmarxd_proto PUBLIC ${CMAKE_BINARY_DIR}/third_party)
 target_link_libraries(tcpgpudmarxd_proto google_status_proto)
+
+install(FILES ${PROTO_HEADER} DESTINATION "${TCPGPUDMARXD_INCLUDE_DIR}/proto")

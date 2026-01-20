@@ -29,6 +29,7 @@
 #include "cuda/cuda_context_manager.cuh"
 #include "include/gpu_page_exporter_interface.h"
 #include "include/ipc_gpumem_fd_metadata.h"
+#include "include/netdev_bridge.h"
 #include "include/unix_socket_server.h"
 #include "proto/gpu_rxq_configuration.pb.h"
 #include "proto/unix_socket_proto.pb.h"
@@ -36,8 +37,22 @@
 namespace gpudirect_tcpxd {
 
 absl::Status CuIpcMemfdExporter::Initialize(
-    const GpuRxqConfigurationList& config_list, const std::string& prefix) {
+    const GpuRxqConfigurationList& config_list, const std::string& prefix,
+    NicConfiguratorInterface& nic_configurator) {
   prefix_ = prefix;
+  config_list_ = &config_list;
+  nic_configurator_ = &nic_configurator;
+
+#define RETURN_IF_ERROR(x)               \
+  if (auto status = (x); !status.ok()) { \
+    LOG(ERROR) << status;                \
+    return status;                              \
+  }
+#define LOG_IF_ERROR(x)                  \
+  if (auto status = (x); !status.ok()) { \
+    LOG(ERROR) << status;                \
+  }
+
   if (prefix_.back() == '/') {
     prefix_.pop_back();
   }
@@ -53,9 +68,42 @@ absl::Status CuIpcMemfdExporter::Initialize(
     rx_pool_size = config_list.rx_pool_size();
   }
 
+  bool use_netdev_bridge = false;
+  auto netdev_bridge = std::make_unique<NetdevBridge>();
+  use_netdev_bridge = netdev_bridge->Init().ok();
+  netdev_bridge.reset();
+  if (use_netdev_bridge) {
+    LOG(INFO) << "Using netdev bridge...";
+  } else {
+    LOG(INFO) << "Skip using netdev bridge...";
+  }
+
+  LOG(INFO) << "Priming the NICs for GPU-RXQ use case ...";
+  LOG_IF_ERROR(nic_configurator.RunSystem("ethtool --version"));
+
   for (const auto& gpu_rxq_config : config_list.gpu_rxq_configs()) {
     std::string ifname = gpu_rxq_config.ifname();
     std::string nic_pci_addr = gpu_rxq_config.nic_pci_addr();
+
+    // Resetting header-split and strict-header-split here to ensure that the
+    // subsequent enablement will trigger re-initializing the receive buffer
+    // pool.
+    if(use_netdev_bridge) {
+      RETURN_IF_ERROR(
+          nic_configurator.ToggleHeaderSplit(ifname, true));
+    } else {
+      RETURN_IF_ERROR(
+          nic_configurator.ToggleHeaderSplit(ifname, false));
+    }
+
+    // Resetting Ntuple here to flush all stale flow steering rules.
+    RETURN_IF_ERROR(nic_configurator.ToggleFeature(ifname,
+                                                     "ntuple", false));
+    RETURN_IF_ERROR(nic_configurator.ToggleFeature(ifname,
+                                                     "ntuple", true));
+    RETURN_IF_ERROR(nic_configurator.SetRss(
+        ifname, /*num_queues=*/config_list.rss_set_size()));
+
     for (const auto& gpu_info : gpu_rxq_config.gpu_infos()) {
       std::string gpu_pci_addr = gpu_info.gpu_pci_addr();
       int dev_id;
@@ -90,23 +138,25 @@ absl::Status CuIpcMemfdExporter::Initialize(
     auto& qids = gpu_rxq_binding.queue_ids;
     alloc_threads.emplace_back([&]() {
       CUDA_ASSERT_SUCCESS(cudaSetDevice(dev_id));
-      bool allocation_success = false;
-      page_allocator.AllocatePage(rx_pool_size, &page_id, &allocation_success);
+      auto alloc_status = page_allocator.AllocatePage(
+          rx_pool_size, &page_id, qids, use_netdev_bridge, ifname);
 
-      if (!allocation_success) {
+      if (alloc_status == GpuPageAllocatorStatus::ALLOC_FAILURE) {
         LOG(ERROR) << "Failed to allocate GPUMEM page: " << ifname;
         return;
       }
 
-      for (int qid : qids) {
-        if (int ret = gpumem_bind_rxq(page_allocator.GetGpuMemFd(page_id),
-                                      ifname, qid);
-            ret < 0) {
-          LOG(ERROR) << "Failed to bind rxq: " << ifname;
-          return;
+      if (alloc_status == GpuPageAllocatorStatus::ALLOC_DMA_BUF_IOCTL_SUCCESS) {
+        for (int qid : qids) {
+          if (int ret = gpumem_bind_rxq(page_allocator.GetGpuMemFd(page_id),
+                                        ifname, qid);
+              ret < 0) {
+            LOG(ERROR) << "Failed to bind rxq: " << ifname;
+            return;
+          }
+          LOG(INFO) << "Bind rxq success for " << ifname << " queue " << qid;
         }
       }
-
       gpumem_fd_metadata = page_allocator.GetIpcGpuMemFdMetadata(page_id);
     });
 
@@ -165,6 +215,17 @@ absl::Status CuIpcMemfdExporter::Initialize(
   for (auto& th : alloc_threads) {
     th.join();
   }
+
+  if (!use_netdev_bridge) {
+    // Explicitly enable Header split here in case of internal implementation
+    for (const auto& gpu_rxq_config : config_list.gpu_rxq_configs()) {
+      std::string ifname = gpu_rxq_config.ifname();
+      if (!nic_configurator.ToggleHeaderSplit(ifname, true).ok()) {
+        return absl::InternalError("ToggleHeaderSplit(true) failed for " + ifname);
+      }
+    }
+  }
+
   return absl::OkStatus();
 }
 
@@ -187,5 +248,24 @@ void CuIpcMemfdExporter::Cleanup() {
   for (auto& gpu_rxq_binding : gpu_pci_bindings_) {
     gpu_rxq_binding.page_allocator->Cleanup();
   }
+
+  if (config_list_ && nic_configurator_) {
+    int total_queue =
+        config_list_->rss_set_size() + config_list_->tcpd_queue_size();
+
+    LOG(INFO) << "Recovering NIC configurations ...";
+    for (auto& gpu_rxq_config : config_list_->gpu_rxq_configs()) {
+      LOG_IF_ERROR(
+          nic_configurator_->ToggleHeaderSplit(gpu_rxq_config.ifname(), false));
+      LOG_IF_ERROR(
+          nic_configurator_->ToggleHeaderSplit(gpu_rxq_config.ifname(), false));
+      LOG_IF_ERROR(nic_configurator_->SetRss(gpu_rxq_config.ifname(),
+                                            /*num_queues=*/total_queue));
+      LOG_IF_ERROR(nic_configurator_->ToggleFeature(gpu_rxq_config.ifname(),
+                                                  "ntuple", false));
+    }
+  }
+#undef LOG_IF_ERROR
+#undef RETURN_IF_ERROR
 }
 }  // namespace gpudirect_tcpxd

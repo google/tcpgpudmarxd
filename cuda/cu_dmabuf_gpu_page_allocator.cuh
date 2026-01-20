@@ -19,11 +19,13 @@
 
 #include <cuda.h>
 
+#include <memory>
 #include <string>
 #include <unordered_map>
 
 #include "cuda/gpu_page_allocator_interface.cuh"
 #include "include/ipc_gpumem_fd_metadata.h"
+#include "include/netdev_bridge.h"
 
 namespace gpudirect_tcpxd {
 
@@ -41,7 +43,9 @@ class CuDmabufGpuPageAllocator : public GpuPageAllocatorInterface {
  public:
   CuDmabufGpuPageAllocator(int dev_id, std::string gpu_pci_addr,
                            std::string nic_pci_addr, size_t pool_size);
-  void AllocatePage(size_t size, unsigned long* id, bool* success) override;
+  GpuPageAllocatorStatus AllocatePage(
+      size_t pool_size, unsigned long* id, const std::vector<int>& qids,
+      const bool use_netdev_bridge, const std::string& ifname) override;
   void FreePage(unsigned long id) override;
   CUdeviceptr GetGpuMem(unsigned long id) override;
   int GetGpuMemFd(unsigned long id) override;
@@ -70,6 +74,7 @@ class CuDmabufGpuPageAllocator : public GpuPageAllocatorInterface {
   CUmemAllocationHandleType cu_mem_handle_type_{
       CU_MEM_HANDLE_TYPE_POSIX_FILE_DESCRIPTOR};
   size_t cu_mem_alloc_align_{1UL << 21};
+  std::unique_ptr<NetdevBridge> netdev_bridge_;
   // disallow copy and assign
   CuDmabufGpuPageAllocator(const CuDmabufGpuPageAllocator&);
   void operator=(const CuDmabufGpuPageAllocator&);

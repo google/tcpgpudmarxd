@@ -33,7 +33,8 @@
 namespace gpudirect_tcpxd {
 
 absl::Status CudaIpcMemhandleExporter::Initialize(
-    const GpuRxqConfigurationList& config_list, const std::string& prefix) {
+    const GpuRxqConfigurationList& config_list, const std::string& prefix,
+    NicConfiguratorInterface& nic_configurator) {
   prefix_ = prefix;
   if (prefix_.back() == '/') {
     prefix_.pop_back();
@@ -81,10 +82,10 @@ absl::Status CudaIpcMemhandleExporter::Initialize(
     auto& ifname = gpu_rxq_binding.ifname;
     auto& qids = gpu_rxq_binding.queue_ids;
     cuda_ctx.PushContext();
-    bool allocation_success = false;
-    page_allocator.AllocatePage(rx_pool_size, &page_id, &allocation_success);
+    auto alloc_status = page_allocator.AllocatePage(
+        rx_pool_size, &page_id, qids, false, ifname);
 
-    if (!allocation_success) {
+    if (alloc_status == GpuPageAllocatorStatus::ALLOC_FAILURE) {
       return absl::UnavailableError("Failed to allocate GPUMEM page: " +
                                     ifname);
     }

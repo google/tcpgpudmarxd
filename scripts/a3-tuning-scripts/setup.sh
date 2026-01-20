@@ -78,7 +78,15 @@ main() {
   set_and_verify "$PROCSYSFS/net/ipv4/tcp_mtu_probing" "0"
   set_and_verify "$PROCSYSFS/net/ipv4/tcp_slow_start_after_idle" "0"
   set_and_verify "$PROCSYSFS/net/ipv4/tcp_rmem" "4096	1048576	15728640"
-  set_and_verify "$PROCSYSFS/net/ipv4/tcp_wmem" "4096	1048576	67108864"
+
+  # NCCL expects to be able to sendmsg(MSG_DONTWAIT) and not face EAGAIN, (or
+  # any errors for that matter). Configure tcp_wmem very generously at 8MB
+  # default to address that. NCCL typically uses ~4MB in its largest tx buffer.
+  #
+  # Additionally, do not set /proc/sys/net/ipv4/tcp_notsent_lowat to 2MB as we
+  # do in Google fleet, as that will limit the amount of unsent data in the tx
+  # buffers before we hit EAGAIN as well.
+  set_and_verify "$PROCSYSFS/net/ipv4/tcp_wmem" "4096	8388608	67108864"
   set_and_verify "$PROCSYSFS/net/ipv4/tcp_no_metrics_save" "1"
   set_if_lt "$PROCSYSFS/net/core/somaxconn" "4096"
   set_and_verify "$PROCSYSFS/net/ipv4/tcp_max_syn_backlog" "4096"

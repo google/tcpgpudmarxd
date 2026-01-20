@@ -45,8 +45,9 @@ class CuIpcMemfdExporter : public GpuPageExporterInterface {
   };
   CuIpcMemfdExporter() = default;
   ~CuIpcMemfdExporter() { Cleanup(); }
-  absl::Status Initialize(const GpuRxqConfigurationList& config_list,
-                          const std::string& prefix) override;
+  absl::Status Initialize(
+        const GpuRxqConfigurationList& config_list, const std::string& prefix,
+        NicConfiguratorInterface& nic_configurator) override;
   absl::Status Export() override;
   void Cleanup() override;
 
@@ -56,6 +57,8 @@ class CuIpcMemfdExporter : public GpuPageExporterInterface {
   std::vector<std::unique_ptr<UnixSocketServer>> us_servers_;
   GpuMemExporterTelemetry gpu_fd_telemetry_;
   GpuMemExporterTelemetry gpu_metadata_telemetry_;
+  GpuRxqConfigurationList const *config_list_ = nullptr;
+  NicConfiguratorInterface *nic_configurator_ = nullptr;
 };
 
 }  // namespace gpudirect_tcpxd

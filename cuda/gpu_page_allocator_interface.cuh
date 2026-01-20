@@ -19,11 +19,24 @@
 
 #include <cuda.h>
 
+#include <vector>
+
+#include "include/nic_configurator_interface.h"
+
 namespace gpudirect_tcpxd {
+
+enum class GpuPageAllocatorStatus {
+  ALLOC_FAILURE,
+  ALLOC_NETDEV_NETLINK_SUCCESS,
+  ALLOC_DMA_BUF_IOCTL_SUCCESS
+};
+
 class GpuPageAllocatorInterface {
  public:
-  virtual void AllocatePage(size_t pool_size, unsigned long *id,
-                            bool *success) = 0;
+  virtual GpuPageAllocatorStatus AllocatePage(size_t pool_size, unsigned long* id,
+                            const std::vector<int>& qids,
+                            const bool use_netdev_bridge,
+                            const std::string& ifname) = 0;
   virtual void FreePage(unsigned long id) = 0;
   virtual CUdeviceptr GetGpuMem(unsigned long id) = 0;
   virtual int GetGpuMemFd(unsigned long id) = 0;

@@ -99,7 +99,7 @@ ABSL_FLAG(bool, monitor_shutdown, true,
 
 namespace {
 
-constexpr std::string_view kVersion{"v2.0.14"};
+constexpr std::string_view kVersion{"v2.0.15"};
 
 static std::atomic<bool> gShouldStop(false);
 
@@ -376,7 +376,7 @@ int main(int argc, char** argv) {
       /*prefix=*/uds_path,
       /*nic_configurator=*/nic_configurator.get());
 
-  // 3.5 Start Application Registry Manager
+  // 4. Start Application Registry Manager
   std::unique_ptr<ApplicationRegistryManager> application_registry_manager;
   if (absl::GetFlag(FLAGS_monitor_shutdown)) {
     application_registry_manager = std::make_unique<ApplicationRegistryManager>(
@@ -385,41 +385,12 @@ int main(int argc, char** argv) {
     RETURN_IF_ERROR(application_registry_manager->Init());
   }
 
-  // 4. Configure NIC for TCPDirect
-  LOG(INFO) << "Priming the NICs for GPU-RXQ use case ...";
-
-  LOG_IF_ERROR(nic_configurator->RunSystem("ethtool --version"));
-
-  for (auto& gpu_rxq_config : gpu_rxq_configs.gpu_rxq_configs()) {
-    // Resetting header-split here to ensure that the subsequent enablement will
-    // trigger re-initializing the receive buffer pool.
-    LOG_IF_ERROR(nic_configurator->TogglePrivateFeature(
-        gpu_rxq_config.ifname(), "enable-strict-header-split", false));
-    LOG_IF_ERROR(nic_configurator->TogglePrivateFeature(
-        gpu_rxq_config.ifname(), "enable-header-split", false));
-    // Resetting Ntuple here to flush all stale flow steering rules.
-    LOG_IF_ERROR(nic_configurator->ToggleFeature(gpu_rxq_config.ifname(),
-                                                 "ntuple", false));
-    CLEANUP_IF_ERROR(nic_configurator->TogglePrivateFeature(
-        gpu_rxq_config.ifname(), "enable-max-rx-buffer-size", true));
-    CLEANUP_IF_ERROR(nic_configurator->ToggleFeature(gpu_rxq_config.ifname(),
-                                                     "ntuple", true));
-    CLEANUP_IF_ERROR(nic_configurator->SetRss(
-        gpu_rxq_config.ifname(),
-        /*num_queues=*/gpu_rxq_configs.rss_set_size()));
-  }
-
-  // 5. Start the Gpu-Rxq exporter
+  // 5. Configure NIC for TCPDirect and start the Gpu-Rxq exporter
   LOG(INFO) << absl::StrFormat("Starting GPU-RXQ exporters at path: %s ...",
                                uds_path);
 
-  RETURN_IF_ERROR(gpu_page_exporter->Initialize(gpu_rxq_configs, uds_path));
+  RETURN_IF_ERROR(gpu_page_exporter->Initialize(gpu_rxq_configs, uds_path, *nic_configurator));
   RETURN_IF_ERROR(gpu_page_exporter->Export());
-
-  for (auto& gpu_rxq_config : gpu_rxq_configs.gpu_rxq_configs()) {
-    RETURN_IF_ERROR(nic_configurator->TogglePrivateFeature(
-        gpu_rxq_config.ifname(), "enable-strict-header-split", true));
-  }
 
   CLEANUP_IF_ERROR(nic_configurator->RunSystem(
       absl::StrFormat("%s/setup.sh %s", absl::GetFlag(FLAGS_tuning_script_path),
@@ -457,24 +428,6 @@ CLEANUP:
                "GPU memories ...";
   gpu_page_exporter->Cleanup();
 
-  int total_queue =
-      gpu_rxq_configs.rss_set_size() + gpu_rxq_configs.tcpd_queue_size();
-
-  LOG(INFO) << "Recovering NIC configurations ...";
-  for (auto& gpu_rxq_config : gpu_rxq_configs.gpu_rxq_configs()) {
-    LOG_IF_ERROR(nic_configurator->TogglePrivateFeature(
-        gpu_rxq_config.ifname(), "enable-strict-header-split", true));
-    LOG_IF_ERROR(nic_configurator->TogglePrivateFeature(
-        gpu_rxq_config.ifname(), "enable-strict-header-split", false));
-    LOG_IF_ERROR(nic_configurator->TogglePrivateFeature(
-        gpu_rxq_config.ifname(), "enable-header-split", false));
-    LOG_IF_ERROR(nic_configurator->TogglePrivateFeature(
-        gpu_rxq_config.ifname(), "enable-max-rx-buffer-size", false));
-    LOG_IF_ERROR(nic_configurator->SetRss(gpu_rxq_config.ifname(),
-                                          /*num_queues=*/total_queue));
-    LOG_IF_ERROR(nic_configurator->ToggleFeature(gpu_rxq_config.ifname(),
-                                                 "ntuple", false));
-  }
   LOG_IF_ERROR(nic_configurator->RunSystem(absl::StrFormat(
       "%s/teardown.sh", absl::GetFlag(FLAGS_tuning_script_path))));
 

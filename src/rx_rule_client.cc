@@ -51,7 +51,7 @@ RxRuleClient::RxRuleClient(const std::string& prefix,
 //
 // Only the install UnixSocketClient will trigger the VF
 // reset callback.
-
+//
 absl::StatusOr<UnixSocketClient*> RxRuleClient::CreateSkIfReq(
     FlowSteerRuleOp op) {
   std::string server_addr;

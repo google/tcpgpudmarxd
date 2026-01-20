@@ -34,6 +34,9 @@ class EthtoolNicConfigurator : public NicConfiguratorInterface {
   ~EthtoolNicConfigurator() override { Cleanup(); }
   absl::Status Init() override { return absl::OkStatus(); }
   void Cleanup() override {}
+  absl::Status ToggleHeaderSplit(const std::string& ifname, bool on) override;
+  absl::Status ToggleUpstreamHeaderSplit(const std::string& ifname,
+                                         bool on) override;
   absl::Status TogglePrivateFeature(const std::string& ifname,
                                     const std::string& feature,
                                     bool on) override;

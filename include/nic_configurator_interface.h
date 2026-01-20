@@ -32,6 +32,10 @@ class NicConfiguratorInterface {
   virtual ~NicConfiguratorInterface() = default;
   virtual absl::Status Init() = 0;
   virtual void Cleanup() = 0;
+  virtual absl::Status ToggleHeaderSplit(const std::string& ifname,
+                                         bool on) = 0;
+  virtual absl::Status ToggleUpstreamHeaderSplit(const std::string& ifname,
+                                                 bool on) = 0;
   virtual absl::Status TogglePrivateFeature(const std::string& ifname,
                                             const std::string& feature,
                                             bool on) = 0;

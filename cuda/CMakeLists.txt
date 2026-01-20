@@ -132,6 +132,7 @@ target_include_directories(cu_dmabuf_gpu_page_allocator PUBLIC ${CMAKE_SOURCE_DI
 target_link_libraries(cu_dmabuf_gpu_page_allocator PRIVATE CUDA::cuda_driver)
 target_link_libraries(cu_dmabuf_gpu_page_allocator PRIVATE absl::log absl::status absl::str_format)
 target_link_libraries(cu_dmabuf_gpu_page_allocator PRIVATE cuda_common)
+target_link_libraries(cu_dmabuf_gpu_page_allocator PUBLIC netdev_bridge libmnl.so)
 set_target_properties(cu_dmabuf_gpu_page_allocator PROPERTIES CUDA_RUNTIME_LIBRARY Shared)
 
 # cu ipc memfd handle exporter

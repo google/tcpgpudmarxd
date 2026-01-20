@@ -19,10 +19,12 @@
 
 #include <cuda.h>
 
+#include <memory>
 #include <string>
 #include <unordered_map>
 
 #include "cuda/gpu_page_allocator_interface.cuh"
+#include "include/netdev_bridge.h"
 
 namespace gpudirect_tcpxd {
 
@@ -39,7 +41,9 @@ class DmabufGpuPageAllocator : public GpuPageAllocatorInterface {
   DmabufGpuPageAllocator(std::string gpu_pci_addr, std::string nic_pci_addr);
   DmabufGpuPageAllocator(std::string gpu_pci_addr, std::string nic_pci_addr,
                          bool create_page_pool, size_t pool_size);
-  void AllocatePage(size_t size, unsigned long *id, bool *success) override;
+  GpuPageAllocatorStatus AllocatePage(
+      size_t size, unsigned long* id, const std::vector<int>& qids,
+      const bool use_netdev_bridge, const std::string& ifname) override;
   void FreePage(unsigned long id) override;
   CUdeviceptr GetGpuMem(unsigned long id) override;
   int GetGpuMemFd(unsigned long id) override;

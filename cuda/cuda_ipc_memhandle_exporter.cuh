@@ -25,6 +25,7 @@
 #include "cuda/cuda_context_manager.cuh"
 #include "cuda/dmabuf_gpu_page_allocator.cuh"
 #include "include/gpu_page_exporter_interface.h"
+#include "include/nic_configurator_interface.h"
 #include "include/unix_socket_server.h"
 #include "proto/gpu_rxq_configuration.pb.h"
 #include "telemetry/gpu_mem_exporter_telemetry.h"
@@ -43,8 +44,9 @@ class CudaIpcMemhandleExporter : public GpuPageExporterInterface {
   };
   CudaIpcMemhandleExporter() = default;
   ~CudaIpcMemhandleExporter() { Cleanup(); }
-  absl::Status Initialize(const GpuRxqConfigurationList& config_list,
-                          const std::string& prefix) override;
+  absl::Status Initialize(
+        const GpuRxqConfigurationList& config_list, const std::string& prefix,
+        NicConfiguratorInterface& nic_configurator) override;
   absl::Status Export() override;
   void Cleanup() override;
 

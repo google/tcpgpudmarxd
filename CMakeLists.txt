@@ -14,7 +14,7 @@
 
 cmake_minimum_required(VERSION 3.10)
 
-project(tcpgpudmarxd VERSION 1.0.0)
+project(tcpgpudmarxd VERSION 2.0.15)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
@@ -49,7 +49,6 @@ ADD_SUBDIRECTORY(app)
 
 include(CTest)
 ADD_SUBDIRECTORY(test)
-ADD_SUBDIRECTORY(machine_test)
 ADD_SUBDIRECTORY(telemetry)
 install(FILES gpudirect_tcpxd-config.cmake DESTINATION "${TCPGPUDMARXD_INSTALL_DIR}")
 install(EXPORT gpudirect_tcpxd DESTINATION "${TCPGPUDMARXD_INSTALL_DIR}")

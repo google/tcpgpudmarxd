@@ -67,9 +67,13 @@ class MockNicConfigurator : public gpudirect_tcpxd::NicConfiguratorInterface {
  public:
   MOCK_METHOD(absl::Status, Init, (), (override));
   MOCK_METHOD(void, Cleanup, (), (override));
+  MOCK_METHOD(absl::Status, ToggleHeaderSplit,
+              (const std::string& ifname, bool on), (override));
   MOCK_METHOD(absl::Status, TogglePrivateFeature,
               (const std::string& ifname, const std::string& feature, bool on),
               (override));
+  MOCK_METHOD(absl::Status, ToggleUpstreamHeaderSplit,
+              (const std::string& ifname, bool on), (override));
   MOCK_METHOD(absl::Status, ToggleFeature,
               (const std::string& ifname, const std::string& feature, bool on),
               (override));

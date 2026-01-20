@@ -156,6 +156,12 @@ target_link_libraries(application_registry_client PUBLIC proto_utils)
 target_link_libraries(application_registry_client PUBLIC ${Protobuf_LIBRARIES})
 add_dependencies(application_registry_client tcpgpudmarxd_proto)
 
+# netdev bridge
+add_library(netdev_bridge STATIC
+        netdev_bridge.cc)
+target_include_directories(netdev_bridge PUBLIC ${CMAKE_SOURCE_DIR})
+target_link_libraries(netdev_bridge PRIVATE absl::log absl::status absl::str_format)
+
 set(client_headers
         ${CMAKE_SOURCE_DIR}/include/rx_rule_client.h
         ${CMAKE_SOURCE_DIR}/include/proto_utils.h

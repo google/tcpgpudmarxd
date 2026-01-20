@@ -70,15 +70,15 @@ RUN cmake \
 
 # build ethtool
 WORKDIR /third_party
-RUN wget https://mirrors.edge.kernel.org/pub/software/network/ethtool/ethtool-6.3.tar.gz
-RUN tar -xvf ethtool-6.3.tar.gz
-WORKDIR ethtool-6.3
+RUN wget https://mirrors.edge.kernel.org/pub/software/network/ethtool/ethtool-6.7.tar.gz
+RUN tar -xvf ethtool-6.7.tar.gz
+WORKDIR ethtool-6.7
 RUN ./configure && make && make install
 
 # copy all license files
 WORKDIR /third_party/licenses
 RUN cp ../abseil-cpp/LICENSE license_absl.txt
-RUN cp ../ethtool-6.3/LICENSE license_ethtool.txt
+RUN cp ../ethtool-6.7/LICENSE license_ethtool.txt
 
 COPY . /tcpgpudmarxd
 

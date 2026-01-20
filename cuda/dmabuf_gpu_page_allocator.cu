@@ -131,16 +131,16 @@ DmabufGpuPageAllocator::DmabufGpuPageAllocator(std::string gpu_pci_addr,
       create_page_pool_(create_page_pool),
       pool_size_(pool_size) {}
 
-void DmabufGpuPageAllocator::AllocatePage(size_t size, unsigned long *id,
-                                          bool *success) {
+GpuPageAllocatorStatus DmabufGpuPageAllocator::AllocatePage(
+    size_t size, unsigned long* id, const std::vector<int>& qids,
+    const bool use_netdev_bridge, const std::string& ifname) {
   // // may not need this for dmabuf
   // size_t alloc_size = std::max(size, (unsigned long)GPUMEM_MINSZ);
   // if (alloc_size % GPUMEM_ALIGNMENT != 0) {
   //   alloc_size += GPUMEM_ALIGNMENT - (alloc_size % GPUMEM_ALIGNMENT);
   // }
   if (size + bytes_allocated_ > pool_size_) {
-    *success = false;
-    return;
+    return GpuPageAllocatorStatus::ALLOC_FAILURE;
   }
   *id = next_id_;
   next_id_++;
@@ -156,13 +156,15 @@ void DmabufGpuPageAllocator::AllocatePage(size_t size, unsigned long *id,
       gpu_pci_addr_, nic_pci_addr_, create_page_pool_, gpu_dma_buf.gpu_mem_ptr,
       size, &gpu_dma_buf.dma_buf_fd);
 
-  if (gpu_dma_buf.gpu_mem_fd < 0) {
-    LOG(WARNING) << "get_gpumem_dmabuf_pages_fd() failed!";
-    *success = false;
-  }
   gpu_dma_buf.size = size;
   bytes_allocated_ += size;
-  *success = true;
+
+  if (gpu_dma_buf.gpu_mem_fd < 0) {
+    LOG(WARNING) << "get_gpumem_dmabuf_pages_fd() failed!";
+    return GpuPageAllocatorStatus::ALLOC_FAILURE;
+  }
+
+  return GpuPageAllocatorStatus::ALLOC_DMA_BUF_IOCTL_SUCCESS;
 }
 
 void DmabufGpuPageAllocator::FreePage(unsigned long id) {

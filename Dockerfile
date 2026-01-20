@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM nvidia/cuda:12.0.0-devel-ubuntu22.04
+FROM nvidia/cuda:12.0.0-devel-ubuntu22.04 AS base
 
 ENV DEBIAN_FRONTEND='noninteractive'
 
@@ -20,7 +20,7 @@ RUN apt update \
   && apt-get install -y --no-install-recommends \
         git openssh-server wget iproute2 vim build-essential cmake gdb \
         protobuf-compiler libprotobuf-dev libprotoc-dev rsync libssl-dev \
-        pkg-config libmnl-dev \
+        pkg-config libmnl-dev python3 \
   && rm -rf /var/lib/apt/lists/*
 
 # build absl
@@ -52,15 +52,15 @@ RUN cmake \
 
 # build ethtool
 WORKDIR /third_party
-RUN wget https://mirrors.edge.kernel.org/pub/software/network/ethtool/ethtool-6.3.tar.gz
-RUN tar -xvf ethtool-6.3.tar.gz
-WORKDIR ethtool-6.3
+RUN wget https://mirrors.edge.kernel.org/pub/software/network/ethtool/ethtool-6.7.tar.gz
+RUN tar -xvf ethtool-6.7.tar.gz
+WORKDIR ethtool-6.7
 RUN ./configure && make && make install
 
 # copy all license files
 WORKDIR /third_party/licenses
 RUN cp ../abseil-cpp/LICENSE license_absl.txt
-RUN cp ../ethtool-6.3/LICENSE license_ethtool.txt
+RUN cp ../ethtool-6.7/LICENSE license_ethtool.txt
 
 COPY . /tcpgpudmarxd
 
@@ -77,4 +77,7 @@ RUN ctest
 WORKDIR /tcpgpudmarxd
 RUN ls | grep -v "build\|LICENSE" | xargs rm -rf
 USER root
+
+FROM base AS use_standard
+
 ENTRYPOINT /tcpgpudmarxd/build/app/tcpgpudmarxd

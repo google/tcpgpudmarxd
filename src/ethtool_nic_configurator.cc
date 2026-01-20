@@ -30,6 +30,34 @@
 #include "include/flow_steer_ntuple.h"
 
 namespace gpudirect_tcpxd {
+absl::Status EthtoolNicConfigurator::ToggleHeaderSplit(
+    const std::string& ifname, bool on) {
+  if (ToggleUpstreamHeaderSplit(ifname, on).ok()) {
+    return absl::OkStatus();
+  }
+
+  auto status = TogglePrivateFeature(ifname, "enable-strict-header-split", on);
+  if (!status.ok()) {
+    return status;
+  }
+  status = TogglePrivateFeature(ifname, "enable-header-split", on);
+  if (!status.ok()) {
+    return status;
+  }
+  status = TogglePrivateFeature(ifname, "enable-max-rx-buffer-size", on);
+  if (!status.ok()) {
+    return status;
+  }
+
+  return absl::OkStatus();
+}
+
+absl::Status EthtoolNicConfigurator::ToggleUpstreamHeaderSplit(
+    const std::string& ifname, bool on) {
+  return RunSystem(absl::StrFormat("ethtool -G %s tcp-data-split %s", ifname,
+                                   (on ? "on" : "off")));
+}
+
 absl::Status EthtoolNicConfigurator::TogglePrivateFeature(
     const std::string& ifname, const std::string& feature, bool on) {
   return RunSystem(absl::StrFormat("ethtool --set-priv-flags %s %s %s", ifname,
