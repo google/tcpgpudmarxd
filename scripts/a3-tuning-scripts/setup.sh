@@ -90,6 +90,7 @@ main() {
   set_and_verify "$PROCSYSFS/net/ipv4/tcp_no_metrics_save" "1"
   set_if_lt "$PROCSYSFS/net/core/somaxconn" "4096"
   set_and_verify "$PROCSYSFS/net/ipv4/tcp_max_syn_backlog" "4096"
+  set_and_verify "$PROCSYSFS/net/ipv4/tcp_autocorking" "0"
 
   # For TCP CUBIC Hystart just use: HYSTART_DELAY (0x2).
   # The HYSTART_ACK_TRAIN (0x1) mechanism has signiificant false positive risk;

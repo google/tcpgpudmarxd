@@ -59,6 +59,7 @@ main() {
   set_and_verify "$PROCSYSFS/net/ipv4/tcp_no_metrics_save" "0"
   set_if_lt "$PROCSYSFS/net/core/somaxconn" "4096"
   set_and_verify "$PROCSYSFS/net/ipv4/tcp_max_syn_backlog" "4096"
+  set_and_verify "$PROCSYSFS/net/ipv4/tcp_autocorking" "1"
 
   # Re-enable default Hystart: HYSTART_ACK_TRAIN (0x1) | HYSTART_DELAY (0x2):
   set_and_verify "$SYSFS/module/tcp_cubic/parameters/hystart_detect" "3"
